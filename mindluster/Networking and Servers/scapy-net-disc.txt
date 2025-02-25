@@ -1,0 +1,126 @@
+]#scapy
+INFO: Can't import PyX. Won't be able to use psdump() or pdfdump().
+                                      
+                     aSPY//YASa       
+             apyyyyCY//////////YCa       |
+            sY//////YSpcs  scpCY//Pp     | Welcome to Scapy
+ ayp ayyyyyyySCP//Pp           syY//C    | Version 2.5.0
+ AYAsAYYYYYYYY///Ps              cY//S   |
+         pCCCCY//p          cSSps y//Y   | https://github.com/secdev/scapy
+         SPPPP///a          pP///AC//Y   |
+              A//A            cyP////C   | Have fun!
+              p///Ac            sC///a   |
+              P////YCpc           A//A   | Wanna support scapy? Star us on
+       scccccp///pSP///p          p//Y   | GitHub!
+      sY/////////y  caa           S//P   |             -- Satoshi Nakamoto
+       cayCyayP//Ya              pY/Ya   |
+        sY/PsY////YCc          aC//Yp 
+         sc  sccaCY//PCypaapyCP//YSs  
+                  spCPY//////YPSps    
+                       ccaacs         
+                                       using IPython 8.5.0
+>>> IP()
+<IP  |>
+>>> ip = IP()
+>>> ip.display()
+###[ IP ]### 
+  version   = 4
+  ihl       = None
+  tos       = 0x0
+  len       = None
+  id        = 1
+  flags     = 
+  frag      = 0
+  ttl       = 64
+  proto     = hopopt
+  chksum    = None
+  src       = 127.0.0.1
+  dst       = 127.0.0.1
+  \options   \
+
+>>> ip.dst = "192.168.56.6"
+>>> ip.display()
+###[ IP ]### 
+  version   = 4
+  ihl       = None
+  tos       = 0x0
+  len       = None
+  id        = 1
+  flags     = 
+  frag      = 0
+  ttl       = 64
+  proto     = hopopt
+  chksum    = None
+  src       = 192.168.56.4
+  dst       = 192.168.56.6
+  \options   \
+
+>>> ping = ICMP()
+>>> ping.display()
+###[ ICMP ]### 
+  type      = echo-request
+  code      = 0
+  chksum    = None
+  id        = 0x0
+  seq       = 0x0
+  unused    = ''
+
+>>> windows = sr1(ip/ping)
+Begin emission:
+Finished sending 1 packets.
+...*
+Received 4 packets, got 1 answers, remaining 0 packets
+>>> windows.display()
+###[ IP ]### 
+  version   = 4
+  ihl       = 5
+  tos       = 0x0
+  len       = 28
+  id        = 3595
+  flags     = 
+  frag      = 0
+  ttl       = 128
+  proto     = icmp
+  chksum    = 0x3b7b
+  src       = 192.168.56.6
+  dst       = 192.168.56.4
+  \options   \
+###[ ICMP ]### 
+     type      = echo-reply
+     code      = 0
+     chksum    = 0xffff
+     id        = 0x0
+     seq       = 0x0
+     unused    = ''
+
+>>> ip.dst = "192.168.56.1"
+>>> linux = sr1(ip/ping)
+Begin emission:
+Finished sending 1 packets.
+..*
+Received 3 packets, got 1 answers, remaining 0 packets
+>>> linux.display()
+###[ IP ]### 
+  version   = 4
+  ihl       = 5
+  tos       = 0x0
+  len       = 28
+  id        = 54250
+  flags     = 
+  frag      = 0
+  ttl       = 64
+  proto     = icmp
+  chksum    = 0xb5a0
+  src       = 192.168.56.1
+  dst       = 192.168.56.4
+  \options   \
+###[ ICMP ]### 
+     type      = echo-reply
+     code      = 0
+     chksum    = 0x0
+     id        = 0x0
+     seq       = 0x0
+     unused    = ''
+
+>>> exit()
+
