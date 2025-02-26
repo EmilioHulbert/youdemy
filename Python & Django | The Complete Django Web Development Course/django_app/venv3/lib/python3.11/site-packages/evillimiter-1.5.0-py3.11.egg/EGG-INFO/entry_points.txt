@@ -1,0 +1,2 @@
+[console_scripts]
+evillimiter = evillimiter.evillimiter:run

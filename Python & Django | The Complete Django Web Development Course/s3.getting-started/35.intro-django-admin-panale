@@ -1,0 +1,7 @@
+django administration
+prebuilt backend given to us for use
+no username or pass yet so we create a super user
+python manage.py --help
+python manage.py createsuperuser
+creds root, melody254
+

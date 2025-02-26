@@ -1,0 +1,2 @@
+django-admin startproject automax
+python manage.py runserver

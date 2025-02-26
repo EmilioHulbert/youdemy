@@ -1,0 +1,7 @@
+https://getbootstrap.com/docs/5.3/getting-started/download/
+https://bootswatch.com/
+whenever you make changes to your 
+template files django does not automatically reload itself
+so you re run the server
+satic folder is the folder we use
+

@@ -1,0 +1,15 @@
+django automatically reloads content on the fly
+apps creation
+asynchronious server gateway interface asgi.py file allow external apps to interact with django app or service
+wsgi is entry point 4 apps that act like web servers so that it can be served as a website as a webserver
+settings.py major settings for webserver
+autopep is autoformatter for python
+CommandError: You must set settings.ALLOWED_HOSTS if DEBUG is False.
+ALLOWED_HOSTS = ['*'] os some domain nairobiskates.com
+INSTALLED APPS WHAT APPS INSTALLED WHAT THEY ARE DDOING CONTENT TYPES SESIONS THEY COME TOGETHER TO FORM A COMPLETE APPLICATION
+MIDDLEWARE Is anything comes between req come to server and server returning reponse back to user
+TEMPLTES what templates helps embed dynamic data and render data changed based on what user asks for
+good quality maintainable code is what django helps a developer do and helps in DRY
+url.py is paths that are accessible
+path('admin/', admin.site.urls), takes user to sites urls and taken down the required path
+

@@ -1,0 +1,21 @@
+Metadata-Version: 2.1
+Name: evillimiter
+Version: 1.5.0
+Summary: Monitors, analyzes and limits the bandwidth of devices on the local network
+Home-page: https://github.com/bitbrute/evillimiter
+Author: bitbrute
+Author-email: bitbrute@gmail.com
+License: MIT
+Keywords: evillimiter,limit,bandwidth,network
+Classifier: Development Status :: 3 - Alpha
+Classifier: Environment :: Console
+Classifier: Intended Audience :: End Users/Desktop
+Classifier: Intended Audience :: System Administrators
+Classifier: Intended Audience :: DevelopersLicense :: OSI Approved :: MIT License
+Classifier: Natural Language :: English
+Classifier: Operating System :: Unix
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Topic :: System :: Networking
+Requires-Python: >= 3
+License-File: LICENSE

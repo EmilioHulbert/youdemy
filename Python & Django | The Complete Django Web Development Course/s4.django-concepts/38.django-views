@@ -1,0 +1,19 @@
+sic django app creation
+src urls.py file
+from django.urls import path, include
+path('', include(main_app_urls))
+main app ls.py file
+from django.urls import path
+
+from .views import main_view
+urlpatterns = [
+    path('', main_view, name='main')
+]
+
+views.py file in main app
+from django.http import HttpResponse
+from django.shortcuts import render
+
+# Create your views here.
+def main_view(request):
+    return HttpResponse("<h1>Welcome to Automax!</h1>")

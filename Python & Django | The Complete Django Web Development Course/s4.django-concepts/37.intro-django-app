@@ -1,0 +1,18 @@
+python manage.py startapp main 
+appended main
+
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'main',
+]
+nit.py maps folder under file exists as a package
+admin.py extend capabilities of adm panel
+apps.py stores details for app we create
+models.py python classes ditinct entities for our app that we will create
+view.py handles request
+
