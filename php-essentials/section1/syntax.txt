@@ -1,0 +1,2 @@
+echo has no return value
+print has return value of 1

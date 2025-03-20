@@ -1,0 +1,25 @@
+client side script
+javascript
+ajax
+vbscript
+
+
+server side script
+python
+php
+ruby
+c++
+java
+
+php hypertex preprocessor
+programming hypertex preprocessor
+previous was personal hompage
+php is opensource
+php IS OOP
+SHORTENS PROG WITHOUT AFFECTING FUNCTIONALITY
+cross platform
+works well with all servers
+wordpress / facebook ue php
+mailserver
+nodejs uses mongodb
+
