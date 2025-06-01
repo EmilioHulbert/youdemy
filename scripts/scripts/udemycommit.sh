@@ -1,1 +1,0 @@
-/opt/scripts/udemycommit/udemycommit.sh
