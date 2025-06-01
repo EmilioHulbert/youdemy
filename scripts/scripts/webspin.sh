@@ -1,0 +1,1 @@
+/opt/scripts/webspin/webspin.sh

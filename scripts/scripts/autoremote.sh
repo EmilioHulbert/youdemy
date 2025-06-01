@@ -1,0 +1,1 @@
+/opt/scripts/autoremote/autoremote.sh

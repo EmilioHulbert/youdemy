@@ -1,0 +1,1 @@
+/opt/scripts/devilspie/devilspie.sh

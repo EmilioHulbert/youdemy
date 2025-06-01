@@ -1,0 +1,1 @@
+/opt/scripts/gitgen/gitgen.sh

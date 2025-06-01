@@ -1,0 +1,1 @@
+/opt/scripts/ownhome/ownhome.sh

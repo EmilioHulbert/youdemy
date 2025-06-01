@@ -1,0 +1,1 @@
+/opt/scripts/sudoers_append/sudoers_append.sh
