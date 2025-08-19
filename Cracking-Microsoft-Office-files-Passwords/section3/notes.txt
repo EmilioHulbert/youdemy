@@ -1,0 +1,103 @@
+office2john crackme.docx > hash.txt
+office2john crackme2.docx > hash2.txt
+To show cracked passwords
+john --show hash2.txt
+To speed up cracking process
+john hash2.txt --fork=3
+To clear john cache
+find -name "john.pot"
+rm ./.john/john.pot
+Using a dictionary with john
+john -w hash2.txt 
+Use rockyou dictionary with john
+locate rockyou.txt
+john -w="/mnt/prim/transfer/downloads/rockyou.txt" hash.txt 
+john --show hash.txt
+For mask attack
+john --mask="?d?d?d" hash2.txt
+Cracking execelfiles, same process
+office2john excelfile.xlxs > hash.txt
+To get past readonly excelfiles
+Rename to zip
+open zip with windows explorer 
+Open  xl folder 
+see workbook.xml file
+Drag to desktop, open with notepad
+press ctrl + f , search filesharing
+delete all content in filesharing tags
+save file, drag back to archieve and replace
+
+change ext back to xlxs extension and open 
+Remove sheet and workbook protection from excel sheets
+
+To get past readonly excelfiles
+Rename to zip
+open zip with windows explorer 
+Open  xl folder, worksheets folder 
+see sheet.xml file
+Drag to desktop, open with notepad
+press ctrl + f , search sheetprotection content and tags and remove
+delete all content in  tags
+save file, drag back to archieve and replace
+
+change ext back to xlxs extension and open 
+
+To remove workbook protection, use the method one, in xl folder open workbook.xml and remove workbook protection tags
+and replace and rename
+To unlock readonly files like powerpoint or word
+To get past readonly powerpoint
+Rename to zip
+open zip with windows explorer 
+Open  ppt folder,  
+see presentation.xml file
+Drag to desktop, open with notepad
+press ctrl + f , search modify, should be inside p tags content and tags and remove
+delete all content in  tags
+save file, drag back to archieve and replace
+
+change ext back to pptx extension and open 
+
+To remove the readonly for word files we do
+
+To get past readonly wordfile
+Rename to zip
+open zip with windows explorer 
+Openor go to word folder, settings.xml  
+Drag to desktop, open with notepad
+press ctrl + f , search writeprotection
+delete all content in  tags
+save file, drag back to archieve and replace
+
+change ext back to docx extension and open 
+
+Cloud pass rec services
+lostmypass website
+
+very old files are 97-2000
+for cracking pdf files, use pdftrip
+https://github.com/mufeedvh/pdfrip/releases
+syntax below
+
+./pdfrip_amd64 -f crackme.pdf wordlist /mnt/prim/transfer/downloads/rockyou.txt
+below is some example output ┌─[✗]─[root@Intel5]─[/home/hulbert/Desktop/crack]
+└──╼ #./pdfrip_amd64 -f crackme.pdf wordlist /mnt/prim/transfer/downloads/rockyou.txt
+           .___ _____       .__        
+______   __| _// ____\______|__|_____  
+\____ \ / __ |\   __\\_  __ \  \____ \ 
+|  |_> > /_/ | |  |   |  | \/  |  |_> >
+|   __/\____ | |__|   |__|  |__|   __/ 
+|__|        \/                 |__|    2.0.1
+
+ 2025-08-19T07:07:12.486Z INFO  pdfrip::core::engine > Starting password cracking job...
+  [00:00:00] [████████████████████████████████████████] 14344391/14344391 100% 19456/s ETA: 0s
+ 2025-08-19T07:07:12.557Z INFO  pdfrip::core::engine > Success! Found password: 1234
+┌─[root@Intel5]─[/home/hulbert/Desktop/crack]
+└──╼ #
+
+using pdfcrack
+apt install pdfcrack
+syntax to crak
+pdfcrack -c 012345678 -f test.pdf
+for a dictionary attack
+pdfcrack -w /usr/share/wordlists/rockyou.txt -f crackme.pdf 
+
