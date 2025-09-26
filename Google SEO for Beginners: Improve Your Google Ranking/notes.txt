@@ -1,0 +1,19 @@
+organic traffic  is traffic that comes from google search engines
+align website content with what users are looking for
+keyword are phrases people use when searching for something on google
+backlins are links from other websites that point to your websie
+u/x = user experience
+seo requires regular monitoring and adjustments
+Google crawlers and indexing
+Google uses bots to visit and collect data (crawlers)
+once crawled, data is added to Google's index where it can be retrived when needed
+How well page satisfies user intent
+Rank brain is Googles' Ml algorithm
+Pages hat load quickly and provide smooth experience accross all platforms are favoured 
+Google favours websites that are Authoritative sources of information
+keyword research is foundation of seo
+Understunding your audience and keywords they use when looking for keywords when looking for content on google
+Backlinks are considered vote of confidence
+Keword research is not a one time thing and is an essential part of SEO
+
+
