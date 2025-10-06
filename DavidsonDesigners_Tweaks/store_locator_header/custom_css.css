@@ -1,0 +1,47 @@
+/* Top Info Bar (keep your rules) */
+.top-info-bar {
+  background: #d07b7b;
+  color: #fff;
+  font-size: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  flex-wrap: wrap;
+}
+.top-info-bar a { color: #fff; text-decoration: none; margin-left:8px; }
+@media (max-width:768px){
+  .top-info-bar { flex-direction: column; text-align: center; }
+  .top-info-left, .top-info-right { margin:4px 0; }
+}
+
+/* === Modal styling (prefixed) === */
+.nt-store-modal { display: none; position: fixed; z-index: 99999; left:0; top:0; width:100%; height:100%; overflow:auto; background-color: rgba(0,0,0,0.7); }
+.nt-store-modal.open { display: block; }
+.nt-store-modal-content {
+  background: #fff;
+  margin: 6% auto;
+  padding: 18px;
+  border-radius: 10px;
+  width: 92%;
+  max-width: 720px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+}
+.nt-store-close {
+  background: transparent;
+  border: 0;
+  font-size: 28px;
+  line-height: 1;
+  float: right;
+  cursor: pointer;
+  color: #333;
+}
+.nt-store-close:hover { color: #d00; }
+.nt-store-modal-body { margin-top: 8px; }
+
+/* Small screens: full-screen modal */
+@media (max-width:480px){
+  .nt-store-modal-content { margin: 4% 8px; width: calc(100% - 16px); padding: 12px; border-radius: 6px; }
+  #nt-storeMap { height: 300px; }
+}
+
