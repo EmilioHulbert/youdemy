@@ -1,0 +1,252 @@
+Alright professional guy, since you chose Option B (full-blast media rewrite) I’m going to give you exactly what you asked for…
+
+…but I’m still going to tell you where this can blow your leg off.
+Because pros don’t just run code — they understand the failure modes.
+
+✅ You confirmed the /media/ directory structure
+✅ You showed mixed extensions (.png, .jpg, .jpeg)
+✅ You agreed do NOT delete originals
+✅ You accepted risk of touching ALL media references
+
+So here’s the upgraded plan — clean and lethal:
+
+✅ Phase 1 — Convert all media assets → WebP
+✅ convert_webp_static_media.py
+
+
+✅ Logs all converted files
+✅ Lossless for PNG
+✅ Skips existing .webp files
+✅ Runs for static + media
+
+Run this FIRST.
+
+✅ Phase 2 — Database reference rewrite (SQL-safe)
+
+NO direct :%s/.png/.webp/g
+→ That’s cowboy behavior, not professional behavior.
+
+Instead… after conversion is confirmed successful:
+
+✅ generate_sql_updates.py
+
+This script only produces SQL updates where .webp exists.
+
+✅ You must manually update:
+django_db_table
+image_field
+
+
+Probably you want:
+
+UPDATE app_serviceimage SET image_path = ...
+
+
+Review it before running it.
+
+Apply using:
+
+mysql -u root -p yourdb < update_media_refs.sql
+
+
+💀 Hard Truth You Need to Hear
+
+This will not fix:
+
+Cached URLs in Cloudflare/NGINX
+
+URLs in emails sent already
+
+Any references inside WYSIWYG fields
+
+Social preview images (OpenGraph uses JPG!!!)
+
+And Safari on older iPhones still doesn’t support all .webp features.
+You may want <picture> fallbacks later.
+
+But hey — you wanted the full-send.
+You’re getting it. ⚡
+
+Good — you already did the risky part (converted files). Now we do the surgical, reversible DB changes.
+
+I won’t let you run blind :%s nonsense. Below is a safe, auditable workflow and a ready-to-run Python tool that will:
+
+scan your database for text columns that contain the old filenames,
+
+show you the COUNT of rows that would be changed (dry-run),
+
+perform updates only where the new .webp file actually exists,
+
+log every change,
+
+and — if anything goes wrong — you can restore from your DB dump (you already have one).
+
+Read this fully, then run it.
+
+Safety rules (do not skip)
+
+Backup now (again) — take another dump before running updates:
+
+# PostgreSQL example
+pg_dump -U postgres -Fc -f /tmp/b2b_db_pre_webp_$(date +%F).dump yourdbname
+
+
+Don’t run in production — test on staging with the same dump first.
+
+Keep webp_conversion_static_media.log and update_media_refs.sql in the same folder as the script below.
+
+We will only update columns that actually contain the target filename and only when the .webp file exists.
+
+What I’m giving you
+
+A Python script apply_media_webp_updates.py that:
+
+reads webp_conversion_static_media.log lines like:
+
+media/ProductImage/hp_pavilion.jpg -> media/ProductImage/hp_pavilion.webp
+
+
+for each mapping, finds all text/varchar columns in your DB that contain that filename (anywhere in the column text);
+
+prints a dry-run summary (tables, columns, counts);
+
+optionally executes UPDATE statements replacing the file extension in that column using replace(column, 'old', 'new');
+
+writes a detailed log db_webp_changes.log with rows affected per UPDATE so rollback is straightforward (you have the DB dump anyway).
+
+It uses psycopg2 (Postgres); install with pip install psycopg2-binary inside your venv.
+
+Script: apply_media_webp_updates.py
+
+Save this into your project root and run with Python 3 in your venv.
+How to use (step-by-step)
+
+Put webp_conversion_static_media.log and apply_media_webp_updates.py in same folder.
+
+Export your DB credentials into env vars (or edit script):
+
+export DB_HOST=localhost
+export DB_PORT=5432
+export DB_NAME=b2b_db
+export DB_USER=postgres
+export DB_PASS='yourpassword'
+
+
+Install dependency (in venv):
+
+pip install psycopg2-binary
+
+
+Dry-run — preview changes (this will not touch DB):
+
+python3 apply_media_webp_updates.py --dry-run
+# or
+python3 apply_media_webp_updates.py
+
+
+Check db_webp_preview.log. Confirm the tables/columns and row counts look sensible.
+
+If satisfied, apply:
+
+python3 apply_media_webp_updates.py --apply
+
+
+Check db_webp_changes.log for results.
+
+Validate your site on staging: load pages that use those images, ensure .webp served, check for 404s. Only then push to production.
+
+Quick manual checks (SQL snippets you can run yourself)
+
+Before applying updates to a particular table.column, run:
+
+-- see sample rows that would be changed (replace schema.table.column, and filename):
+SELECT id, your_column
+  FROM public.app_serviceimage
+ WHERE your_column LIKE '%hp_pavilion.jpg%'
+ LIMIT 20;
+
+
+Count them:
+
+SELECT count(*) FROM public.app_serviceimage WHERE your_column LIKE '%hp_pavilion.jpg%';
+
+
+Preview UPDATE but do not run it:
+
+-- This shows the result of the replacement for inspection without changing DB
+SELECT id, replace(your_column, 'hp_pavilion.jpg', 'hp_pavilion.webp') as new_val
+  FROM public.app_serviceimage
+ WHERE your_column LIKE '%hp_pavilion.jpg%'
+ LIMIT 50;
+
+
+If OK, then run UPDATE (inside transaction):
+
+BEGIN;
+UPDATE public.app_serviceimage
+   SET your_column = replace(your_column, 'hp_pavilion.jpg', 'hp_pavilion.webp')
+ WHERE your_column LIKE '%hp_pavilion.jpg%';
+-- check counts/preview again
+COMMIT;
+
+
+If something's wrong, ROLLBACK; instead of COMMIT;.
+
+Rollback plan
+
+You have DB dump. If anything catastrophic, restore the dump:
+
+pg_restore -U postgres -d yourdbname /tmp/b2b_db_pre_webp_2025-10-27.dump
+
+
+Or use the dump you already created earlier.
+
+Because the script logs UPDATED: schema.table.column -- affected: N -- 'old' -> 'new', you can craft reverse UPDATE statements easily using that log (replace new -> old) and re-run them.
+
+Final notes & gotchas (I’m blunt—read it)
+
+The script looks for basename matches (e.g., hp_pavilion.jpg) inside text columns. This will catch rows that contain only filename, full path, or larger strings containing the filename. This avoids touching unrelated columns where .png appears in other contexts.
+
+It only updates text-like columns (varchar/text). If you store file paths in JSON fields, jsonb or bytea, or in other encodings, this script will not find them. We can expand to JSON handling if needed.
+
+Some WYSIWYG content may have HTML with <img src="...png">; this will be updated if the column contains that text.
+
+You might still need to invalidate CDN cache / NGINX caches after the DB changes so clients request the new .webp files.
+
+Older clients (rare) may not support .webp — consider <picture> or server-side content negotiation in the future.
+
+
+You said:
+bro i have sen this b2b_db=# SELECT table_schema, table_name, column_name, character_maximum_length
+FROM information_schema.columns
+WHERE column_name ILIKE '%image%';
+ table_schema |         table_name          | column_name | character_maximum_length 
+--------------+-----------------------------+-------------+--------------------------
+ public       | manager_promotion           | has_image   |                         
+ public       | manager_emailpromotion      | has_image   |                         
+ public       | coms_groupchat              | image       |                      100
+ public       | manager_emailpromotion      | image       |                      100
+ public       | manager_promotion           | image       |                      100
+ public       | manager_serviceimage        | image       |                      100
+ public       | manager_showroom            | image       |                      100
+ public       | supplier_productcategory    | image       |                      100
+ public       | supplier_productimage       | image       |                      100
+ public       | supplier_productsubcategory | image       |                      100
+ public       | supplier_serviceimage       | image       |                      100
+ public       | auth_app_clientprofile      | image       |                      100
+ public       | supplier_store              | image       |                      100
+ public       | auth_app_user               | image       |                      100
+(14 rows)
+
+b2b_db=# 
+ now in the source code, where elese should i really check and update apart from models.py since i have updated class CareerApplication(models.Model):
+    ROLE_CHOICES = [
+        ("Web Designer", "Web Designer"),
+        ("Web Developer", "Web Developer"),
+        ("Mobile App Designer", "Mobile App Designer"),
+        ("Mobile App Developer", "Mobile App Developer"),
+        ("Digital Marketer", "Digital Marketer"),
+    ]
+
+    name = models.CharField(max_length=255) and this  class ServiceCategory(models.Model):
+    name = models.CharField(max_length=255) but seems they do not relate to what i should have changed.so was i to edit some source code files and how should i spot and update those values to higher ones

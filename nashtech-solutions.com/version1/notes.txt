@@ -1,0 +1,17 @@
+✅ Deployment Check Notes (do NOT skip)
+
+Before going to production:
+
+python3 convert_to_webp.py
+python3 update_references.py
+python3 manage.py collectstatic
+sudo systemctl reload nginx
+
+
+Then test:
+
+Mobile + Safari browsers
+
+Lighthouse performance score difference
+
+Redirect rules for .webp
