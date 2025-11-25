@@ -1,0 +1,5 @@
+what is vue.js
+javascript framework for building web app
+progressive framewor start small and gradually grow bigger
+spa(single page application)
+

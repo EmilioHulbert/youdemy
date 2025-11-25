@@ -1,0 +1,7 @@
+package.json keeps all details of our project name script plugins etc
+package-lock.json excessive amnts of details helps link angular or react 
+babel.config.js helps when we use modern js if we use react plugins we use them here mostly useful for angular and react projects 
+app.vue root of app defs template for page
+main.js js file to init root component into element on your page also components you may need 2 use
+
+
