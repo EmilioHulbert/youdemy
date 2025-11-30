@@ -12,29 +12,33 @@
     </ul>
     <!-- <h1>{{ emailaddress }}</h1> -->
      <!-- <div v-html="emailaddress"></div> -->
-     <div ><h1 v-html="emailaddress"></h1></div>
-     <div v-html="id" ></div>
-     <Newuser />
-    
-
-    </template>
+     <!-- <div ><h1 v-html="emailaddress"></h1></div> -->
+     <!-- <div v-html="id" ></div> -->
+     <h1>Class Binding</h1>
+     <!-- <h3 :class="{yellow:true}">Dynamic class</h3> -->
+     <h3 :class="{ yellow:color }">Dynamic class</h3> 
+     <button v-on:click="color = !color">Change the color</button>
+     <!-- <Newuser/> -->
+     <!-- <Newuser :data="{ name: 'Default User', email: 'default@example.com' }"/> -->
+    <School />
+</template>
     <script>
     import Newuser from "./newuser.vue";
+    import School from "./school.vue";
     export default
     {
     name: "child-components",
     props:{
         name: String,
         user: Object,
-        getData: Function,
-        
-    },
+        getData: Function, 
+},
     data(){
         return {
-        //     users: [{
-        //         name:'jackson',
-        //         email:'jackson454@gmail.com'
-        //     },
+            // users: [{
+            //     name:'jackson',
+            //     email:'jackson454@gmail.com'
+            // },
         //     {
         //         name:'jamws',
         //         email:'jamsw8454@gmail.com'
@@ -52,18 +56,26 @@
         //         email:'Samuel890@gmail.com'
         //     },
         // ],
-        names: "peter",
-        emailaddress:"<h3>peter123@gmail.com<h3/>",
-        id: '06343455',
+        // names: "peter",
+        // emailaddress:"<h3>peter123@gmail.com<h3/>",
+        // id: '06343455',
+        color:false,
         };
     },
-    components: {Newuser},
+    components: {Newuser, School,},
     };
     </script>
 
     <style>
-    h3{
+    /* h3{
     color: blue;
     font-weight: bold;
+    } */
+    .yellow{
+    color: blue;
+    font-weight: bold;
+    background-color: yellow;
+    width: 150px;
+    height: 50px;
     }
     </style>
