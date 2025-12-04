@@ -21,10 +21,12 @@
      <!-- <Newuser/> -->
      <!-- <Newuser :data="{ name: 'Default User', email: 'default@example.com' }"/> -->
     <School />
+    <Form/>
 </template>
     <script>
     import Newuser from "./newuser.vue";
     import School from "./school.vue";
+    import Form from "./loginform.vue";
     export default
     {
     name: "child-components",
@@ -62,7 +64,7 @@
         color:false,
         };
     },
-    components: {Newuser, School,},
+    components: {Newuser, School,Form,},
     };
     </script>
 
