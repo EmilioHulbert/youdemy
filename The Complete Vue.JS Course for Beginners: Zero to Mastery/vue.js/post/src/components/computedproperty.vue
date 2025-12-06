@@ -1,35 +1,24 @@
-<!-- https://vuejs.org/guide/essentials/computed.html#basic-example -->
 <template>
-    <h1> Computed Property</h1>
-    <span>{{ author.books.length > 0 ? "Yes" : "No" }}</span>
+    <h1>Computed Property</h1>
+    <!-- <h2>{{ cashinhand * balance - discount }}</h2> -->
+    <h2>{{ getTotal }}</h2>
     </template>
     <script>
-    export default{
+    export default {
     name: "Computed - com",
-data() {
-return {
-author: {
-name: "John Doe",
-books:
-[
-"Vue 2 Advanced Guide",
-"Vue 3 Basic Guide",
-"Vue 4 The Mystery",
-],
-},
-};
-},
-
-computed:{
-// a computed getter
-publishedBooksMessage() {
-// this points to the component instance
-return this.author.books.length > 0? 'Yes': 'No'
-}
-}
-
-};
-</script>
-    I
-    
+    data() {
+    return {
+    cashinhand: 200,
+    balance: 200,
+    discount: 300,
+    };
+    },
+    computed: {
+        getTotal(){
+            return (this.cashinhand * this.balance) - this.discount;
+        },
+        
+    }
+    };
+    </script>
 
