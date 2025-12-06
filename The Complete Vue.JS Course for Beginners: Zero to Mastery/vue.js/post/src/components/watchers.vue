@@ -5,10 +5,29 @@
     <button v-on:click="counter = counter - 1">-</button>
     <!-- <Childslot data="Meta"/> -->
 <Childslot> 
-    <h1>MetaBrains.org</h1> 
+    <!-- <h1>MetaBrains.org</h1> 
     <button>Click Here</button>
     <a href="#">Youtube.com</a>
-    <img src="https://images.pexels.com/photos/674010/pexels-photo-674010.jpeg?cs=srgb&dl-pexels-anjana-c-674010.jpg&fm=jpg" width="200" alt="" />
+    <img src="https://images.pexels.com/photos/674010/pexels-photo-674010.jpeg?cs=srgb&dl-pexels-anjana-c-674010.jpg&fm=jpg" width="200" alt="" /> -->
+    <!-- <h1>Meta</h1> -->
+     <template v-slot:header><h1>First Heading</h1></template>
+     <template v-slot:section><h1>Product Name:</h1></template>
+     <template v-slot:main><h1>Price$:</h1></template>
+     <template v-slot:footer><h1>Buy Now</h1></template>
+     
+</Childslot>
+<br />
+<Childslot> 
+    <!-- <h1>MetaBrains.org</h1> 
+    <button>Click Here</button>
+    <a href="#">Youtube.com</a>
+    <img src="https://images.pexels.com/photos/674010/pexels-photo-674010.jpeg?cs=srgb&dl-pexels-anjana-c-674010.jpg&fm=jpg" width="200" alt="" /> -->
+    <!-- <h1>Meta</h1> -->
+     <template v-slot:header><h1>Brand</h1></template>
+     <template v-slot:section><h1>Product Name:</h1></template>
+     <template v-slot:main><h1>Price$:</h1></template>
+     <template v-slot:footer><h1>Buy Now</h1></template>
+     
 </Childslot>
 
 <!-- 

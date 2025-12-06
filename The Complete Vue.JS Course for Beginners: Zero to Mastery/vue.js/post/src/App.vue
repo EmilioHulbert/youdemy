@@ -7,6 +7,7 @@
   <Inputboxes />
   <IfElseCondition/>
   <ForLoop />
+  <Home />
 </template>
 
 <script>
@@ -17,6 +18,7 @@ import  PagesOne from './components/pages.vue'
 import  Inputboxes from './components/inputboxes.vue'
 import  IfElseCondition from './components/if-else-condition.vue'
 import  ForLoop from './components/For-loop.vue'
+import  Home from './components/home.vue'
 
 
 export default {
@@ -28,7 +30,8 @@ export default {
     PagesOne,
     Inputboxes,
     IfElseCondition,
-    ForLoop
+    ForLoop,
+    Home,
 
   }
 }
