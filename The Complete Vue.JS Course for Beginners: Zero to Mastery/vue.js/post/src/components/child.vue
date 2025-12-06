@@ -22,11 +22,15 @@
      <!-- <Newuser :data="{ name: 'Default User', email: 'default@example.com' }"/> -->
     <School />
     <Form/>
+    <Props />
+    <ComputedProperty />
 </template>
     <script>
     import Newuser from "./newuser.vue";
     import School from "./school.vue";
     import Form from "./loginform.vue";
+    import Props from "./props.vue";
+    import ComputedProperty from "./computedproperty.vue";
     export default
     {
     name: "child-components",
@@ -64,7 +68,7 @@
         color:false,
         };
     },
-    components: {Newuser, School,Form,},
+    components: {Newuser, School,Form,Props,ComputedProperty,},
     };
     </script>
 
