@@ -24,6 +24,7 @@
     <Form/>
     <Props />
     <ComputedProperty />
+    <Watchers />
 </template>
     <script>
     import Newuser from "./newuser.vue";
@@ -31,6 +32,7 @@
     import Form from "./loginform.vue";
     import Props from "./props.vue";
     import ComputedProperty from "./computedproperty.vue";
+    import Watchers from "./watchers.vue"; 
     export default
     {
     name: "child-components",
@@ -68,7 +70,7 @@
         color:false,
         };
     },
-    components: {Newuser, School,Form,Props,ComputedProperty,},
+    components: {Newuser, School,Form,Props,ComputedProperty,Watchers,},
     };
     </script>
 
