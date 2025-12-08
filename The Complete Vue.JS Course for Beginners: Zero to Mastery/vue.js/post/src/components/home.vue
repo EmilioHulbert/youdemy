@@ -8,10 +8,10 @@
     <Second /> 
     <Third /> -->
     <component :is="active" />
-    <teleport to="header">
+    <!-- <teleport to="header">
         <Header />
     </teleport>
-    
+     -->
 
     
     </template>

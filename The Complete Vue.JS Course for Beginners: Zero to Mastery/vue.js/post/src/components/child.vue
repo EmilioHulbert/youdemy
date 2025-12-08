@@ -25,6 +25,7 @@
     <Props />
     <ComputedProperty />
     <Watchers />
+    <BeforeCreate />
 </template>
     <script>
     import Newuser from "./newuser.vue";
@@ -33,6 +34,7 @@
     import Props from "./props.vue";
     import ComputedProperty from "./computedproperty.vue";
     import Watchers from "./watchers.vue"; 
+    import BeforeCreate from "./beforecreate.vue";
     export default
     {
     name: "child-components",
@@ -70,7 +72,7 @@
         color:false,
         };
     },
-    components: {Newuser, School,Form,Props,ComputedProperty,Watchers,},
+    components: {Newuser, School,Form,Props,ComputedProperty,Watchers,BeforeCreate,},
     };
     </script>
 
