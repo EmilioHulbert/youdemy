@@ -2,15 +2,19 @@
   "name": "post",
   "version": "0.1.0",
   "private": true,
-"scripts": {
-  "serve": "node ./node_modules/@vue/cli-service/bin/vue-cli-service.js serve",
-  "build": "node ./node_modules/@vue/cli-service/bin/vue-cli-service.js build",
-  "lint": "node ./node_modules/@vue/cli-service/bin/vue-cli-service.js lint"
-},
-
+  "scripts": {
+    "serve": "node ./node_modules/@vue/cli-service/bin/vue-cli-service.js serve",
+    "dev": "node ./node_modules/@vue/cli-service/bin/vue-cli-service.js dev",
+    "build": "node ./node_modules/@vue/cli-service/bin/vue-cli-service.js build",
+    "lint": "node ./node_modules/@vue/cli-service/bin/vue-cli-service.js lint"
+  },
   "dependencies": {
+    "@popperjs/core": "^2.11.8",
+    "axios": "^1.13.2",
+    "bootstrap": "^5.3.8",
     "core-js": "^3.8.3",
-    "vue": "^3.2.13"
+    "vue": "^3.2.13",
+    "vue-router": "^4.6.3"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",

@@ -8,6 +8,7 @@
   <IfElseCondition/>
   <ForLoop />
   <Home />
+  
 </template>
 
 <script>
@@ -21,6 +22,7 @@ import  ForLoop from './components/For-loop.vue'
 import  Home from './components/home.vue'
 
 
+
 export default {
   name: 'App',
   components: {
@@ -31,9 +33,8 @@ export default {
     Inputboxes,
     IfElseCondition,
     ForLoop,
-    Home,
-
-  }
+    Home, 
+    }
 }
 </script>
 
