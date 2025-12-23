@@ -1,0 +1,97 @@
+##Install composer and create project using the below comands
+apt update && apt install composer
+composer create-project laravel/laravel Freshcery
+
+generating optimized autoload files
+> Illuminate\Foundation\ComposerScripts::postAutoloadDump
+> @php artisan package:discover --ansi
+
+   INFO  Discovering packages.  
+
+  laravel/pail ................................................................................................................................ DONE
+  laravel/sail ................................................................................................................................ DONE
+  laravel/tinker .............................................................................................................................. DONE
+  nesbot/carbon ............................................................................................................................... DONE
+  nunomaduro/collision ........................................................................................................................ DONE
+
+  nunomaduro/termwind ......................................................................................................................... DONE
+
+81 packages you are using are looking for funding.
+Use the `composer fund` command to find out more!
+> @php artisan vendor:publish --tag=laravel-assets --ansi --force
+
+   INFO  No publishable resources for tag [laravel-assets].  
+
+No security vulnerability advisories found
+> @php artisan key:generate --ansi
+
+   INFO  Application key set successfully.  
+
+> @php -r "file_exists('database/database.sqlite') || touch('database/database.sqlite');"
+> @php artisan migrate --graceful --ansi
+
+   WARN  could not find driver (Connection: sqlite, SQL: select exists (select 1 from "main".sqlite_master where name = 'migrations' and type = 'table') as "exists").  
+
+┌─[hulbert@Intel5]─[/var/www/html]
+└──╼ $
+
+##Fixing the above error.Do the belo fixes
+sudo apt update
+sudo apt install php8.2-sqlite3
+If you’re not sure of the exact PHP minor version:
+
+php -v
+
+2️⃣ Verify the extension is enabled
+
+Run:
+
+php -m | grep -i sqlite
+
+You must see:
+
+pdo_sqlite
+sqlite3
+
+3️⃣ Restart your PHP service (important)
+
+If using Laravel’s built-in server only:
+
+# usually not needed, but safe
+php artisan serve
+
+
+If you’re using Apache:
+
+sudo systemctl restart apache2
+
+
+If using PHP-FPM:
+
+sudo systemctl restart php8.2-fpm
+
+4️⃣ Re-run migrations cleanly
+
+From your Laravel project root:
+
+php artisan migrate:fresh
+
+
+Expected result:
+
+No “could not find driver”
+
+Tables created successfully
+
+5️⃣ Start Laravel again
+php artisan serve
+
+
+Open:
+
+http://127.0.0.1:8000
+
+
+✅ The app should now load without a 500 error.
+#Install authentication system
+composer require laravel/ui
