@@ -95,3 +95,101 @@ http://127.0.0.1:8000
 ✅ The app should now load without a 500 error.
 #Install authentication system
 composer require laravel/ui
+php artisan ui bootstrap --auth
+npm install && npm run dev
+#VITE
+vite is a bundler
+executes every editing we perform on the views
+npm install && npm run dev
+
+
+##Revert and remove composer packages and also install specific laravel version 
+1️⃣ Remove laravel/ui package
+composer remove laravel/ui
+Confirm:
+
+composer show | grep laravel/ui
+2️⃣ Remove generated auth routes & files
+Delete auth routes (if present)
+
+Open:
+
+routes/web.php
+
+
+Remove anything like:
+
+Auth::routes();
+Or imports like:
+
+use Illuminate\Support\Facades\Auth;
+Delete auth views
+rm -rf resources/views/auth
+rm -rf resources/views/layouts
+Delete HomeController (Laravel UI artifact)
+rm -f app/Http/Controllers/HomeController.php
+3️⃣ Remove Bootstrap frontend leftovers
+rm -rf resources/sass
+rm -rf resources/js
+rm -rf node_modules
+rm -f package-lock.json
+rm -f package.json
+rm -f vite.config.js
+4️⃣ Clear caches
+php artisan optimize:clear
+check laravel version
+Verify Laravel version
+php artisan --version
+✅ The CORRECT way to get Laravel 10.16.x (guaranteed)
+🔑 Method 1 (BEST & safest – use this)
+
+Create a Laravel 10 app, then pin the framework version.
+
+composer create-project laravel/laravel Freshcery "10.*"
+cd Freshcery
+
+
+Now force exact framework version:
+
+composer require laravel/framework:10.16.1 --no-update
+composer update
+
+
+Verify:
+
+php artisan --version
+
+
+✅ You should now see:
+
+Laravel Framework 10.16.1
+
+
+This is exactly what your tutor is running, even if he didn’t say it.
+After this: install Laravel UI (matching tutor)
+
+Now that versions align:
+
+composer require laravel/ui:^4.2
+php artisan ui bootstrap --auth
+npm install
+npm run dev
+php artisan serve
+
+
+Now:
+
+Same Laravel generation
+
+Same auth scaffolding
+
+Same UI
+
+Same behavior
+
+Everything will finally rhyme.
+composer require laravel/ui:^4.2
+php artisan ui bootstrap --auth
+#Mkae db migrations
+php artisan migrate
+
