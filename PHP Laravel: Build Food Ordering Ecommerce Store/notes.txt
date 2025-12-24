@@ -192,4 +192,12 @@ composer require laravel/ui:^4.2
 php artisan ui bootstrap --auth
 #Mkae db migrations
 php artisan migrate
+php artisan make:model Product/Category
+php artisan make:controller Products/ProductsController
+$php artisan make:model Product/Product
+php artisan make:model Product/Cart
+[hulbert@Intel5]─[/var/www/html/Freshcery]
+└──╼ $php artisan make:model Product/Order
+
+   INFO  Model [app/Models/Product/Order.php] created successfully.  
 
