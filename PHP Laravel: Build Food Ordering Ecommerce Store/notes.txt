@@ -206,3 +206,15 @@ php artisan make:controller Users/UsersController
 
 php artisan make:controller Admins/AdminsController
 
+✅ After editing config — run these commands
+
+Open your project terminal and run:
+
+php artisan config:clear
+php artisan cache:clear
+php artisan optimize:clear
+
+
+If using Sail or Valet or built-in server, restart it.
+
+php artisan serve
