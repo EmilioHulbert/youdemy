@@ -218,3 +218,5 @@ php artisan optimize:clear
 If using Sail or Valet or built-in server, restart it.
 
 php artisan serve
+php artisan make:middleware CheckForAuth
+
