@@ -200,4 +200,7 @@ php artisan make:model Product/Cart
 └──╼ $php artisan make:model Product/Order
 
    INFO  Model [app/Models/Product/Order.php] created successfully.  
+middlewares are just some checkpoints that reinforce  some rules
+php artisan make:middleware CheckForPrice
+php artisan make:controller Users/UsersController
 
