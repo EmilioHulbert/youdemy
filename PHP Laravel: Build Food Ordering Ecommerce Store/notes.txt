@@ -204,3 +204,5 @@ middlewares are just some checkpoints that reinforce  some rules
 php artisan make:middleware CheckForPrice
 php artisan make:controller Users/UsersController
 
+php artisan make:controller Admins/AdminsController
+
