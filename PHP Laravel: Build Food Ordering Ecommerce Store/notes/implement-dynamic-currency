@@ -1,0 +1,325 @@
+Nice — your database row is correct. The issue is only in the Blade + controller.
+
+There are **two small mistakes**:
+
+1. You are still using a **collection** instead of a single row earlier
+2. You are using the wrong attribute name in Blade
+
+Your column is:
+
+```
+currency_symbol
+```
+
+But your Blade is using:
+
+```
+$currencySymbol->currencySymbol   ❌ wrong
+```
+
+Laravel will never find that property — so the input stays empty.
+
+---
+
+## ✅ Do these exact fixes
+
+### 1) Fix controller to fetch ONE record
+
+```php
+public function editCurrencySymbol()
+{
+    $currencySymbol = Config::orderBy('id', 'desc')->first();
+
+    return view('admins.site-settings.editcurrencysymbol', compact('currencySymbol'));
+}
+```
+
+➡️ `first()` instead of `get()`
+➡️ Now `$currencySymbol` is **one model**, not a collection
+
+---
+
+### 2) Fix your Blade input field
+
+Change:
+
+```php
+value="{{ $currencySymbol->currencySymbol }}"
+```
+
+to:
+
+```php
+value="{{ $currencySymbol->currency_symbol }}"
+```
+
+Full corrected input:
+
+```blade
+<div class="form-outline mb-4 mt-4">
+    <input
+        type="text"
+        name="currency_symbol"
+        value="{{ $currencySymbol->currency_symbol }}"
+        class="form-control"
+        placeholder="Currency symbol"
+    />
+</div>
+```
+
+---
+
+### 3) Make sure your update route uses the same field
+
+Your update method should read:
+
+```php
+public function updateCurrencySymbol(Request $request, $id)
+{
+    $config = Config::findOrFail($id);
+
+    $config->update([
+        'currency_symbol' => $request->currency_symbol,
+    ]);
+
+    return back()->with('success', 'Currency symbol updated successfully');
+}
+```
+
+---
+
+## ✅ After these changes, you should now see:
+
+```
+KES
+```
+
+inside the textbox in the browser.
+
+---
+
+### If it still shows blank
+
+Check these quickly:
+
+* controller method actually runs
+* view file edited is the one being loaded
+* clear view cache:
+
+```bash
+php artisan view:clear
+php artisan cache:clear
+```
+
+---
+
+If you want, paste your **routes**, and I’ll align them so edit + update work perfectly.
+
+Great, your Blade form is already correct. Now you just need to actually **receive the submitted value and save it to DB**.
+
+### 1️⃣ Your controller method (update)
+
+In your controller, change it to accept `Request $request` and the `$id`:
+
+```php
+public function updateCurrencySymbol(Request $request, $id)
+{
+    // validate
+    $request->validate([
+        'name' => 'required|string|max:20',
+    ]);
+
+    // fetch row
+    $currencySymbol = \DB::table('config')->where('id', $id)->first();
+
+    // update
+    \DB::table('config')
+        ->where('id', $id)
+        ->update([
+            'currency_symbol' => $request->name,
+        ]);
+
+    return redirect()->back()->with('success', 'Currency symbol updated successfully');
+}
+```
+
+### 2️⃣ Make sure your route matches
+
+```php
+Route::post('/currency-symbol/update/{id}', [CurrencyController::class, 'updateCurrencySymbol'])
+    ->name('currency.symbol.update');
+```
+
+### 3️⃣ Your Blade input is already correct
+
+```php
+<input type="text" name="name" value="{{ $currencySymbol->currency_symbol }}" class="form-control">
+```
+
+---
+
+## ✔️ After doing this, test it
+
+### Steps to run and verify
+
+1. Save controller file
+2. Save routes file
+3. Ensure server is running:
+
+```bash
+php artisan serve
+```
+
+4. Go to your **Update Currency Symbol** page in browser
+5. Change the value
+6. Click **update**
+7. Confirm in MariaDB:
+
+```sql
+select * from config;
+```
+
+You should now see the updated value.
+
+---
+
+If you want the symbol to show everywhere in the site (like KES, $, €), tell me:
+
+* where it should display (header, product page, checkout, etc.)
+  and we’ll hook it into views or helpers.
+
+
+Nice—now you just need to **pull the saved symbol from the DB and display it everywhere.** There are a few clean options; I’ll give you the simplest that works now, then the cleaner “global” way.
+
+---
+
+# ✅ Quick working solution (directly in Blade)
+
+If you just want it working immediately:
+
+```php
+@php
+    $currency = DB::table('config')->first()->currency_symbol ?? 'KES';
+@endphp
+
+<span class="reguler">{{ $currency }} {{ $product->price }}</span>
+```
+
+That will:
+
+* read the symbol from your `config` table
+* default to `KES` if empty
+* show it like: `KES 500`
+
+Use the **same snippet anywhere** in any Blade where you need it.
+
+---
+
+# ⚠️ But the better way: make it available globally
+
+So you don’t have to write DB queries in every Blade.
+
+---
+
+## ✅ Option A — Share it through a Service Provider (recommended)
+
+### 1) Open `AppServiceProvider.php`
+
+`app/Providers/AppServiceProvider.php`
+
+### 2) Add this inside `boot()`:
+
+```php
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\View;
+
+public function boot()
+{
+    $currency = DB::table('config')->first()->currency_symbol ?? 'KES';
+
+    View::share('currencySymbol', $currency);
+}
+```
+
+### 3) Now use it anywhere in Blade:
+
+```php
+<span class="reguler">{{ $currencySymbol }} {{ $product->price }}</span>
+```
+
+And elsewhere:
+
+```php
+{{ $currencySymbol }} {{ $order->total }}
+{{ $currencySymbol }} {{ $cartTotal }}
+{{ $currencySymbol }} {{ $shipping_fee }}
+```
+
+No more DB lookups in each page.
+
+---
+
+## ✅ Option B — Helper function (also good)
+
+Create file:
+
+`app/helpers.php`
+
+```php
+use Illuminate\Support\Facades\DB;
+
+function currency_symbol()
+{
+    return DB::table('config')->first()->currency_symbol ?? 'KES';
+}
+```
+
+Register helper in `composer.json` autoload:
+
+```json
+"files": [
+    "app/helpers.php"
+]
+```
+
+Then:
+
+```bash
+composer dump-autoload
+```
+
+Use anywhere:
+
+```php
+<span class="reguler">{{ currency_symbol() }} {{ $product->price }}</span>
+```
+
+---
+
+# 🧪 How to test it end-to-end
+
+1. Change symbol in your admin form (e.g., `KES` → `$`)
+2. Click update
+3. Refresh product page
+4. You should now see:
+
+```
+$ 1200
+```
+
+instead of:
+
+```
+KES 1200
+```
+
+---
+
+If you tell me:
+
+* your Laravel version
+* whether you want symbol before or after price
+* if you need formatting like `1,200.00`
+
+…I can refine it further.
+
