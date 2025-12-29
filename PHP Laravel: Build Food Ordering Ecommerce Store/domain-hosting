@@ -1,0 +1,52 @@
+CREATE DATABASE Freshcery;
+CREATE USER 'freshcery-user'@'localhost' IDENTIFIED BY 'U1XdDU@^ER';
+GRANT ALL PRIVILEGES ON Freshcery.* TO 'freshcery-user'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
+
+rsync -avz --exclude ".env" Freshcery amazon:/tmp/
+
+cd /var/www/
+chmod 777 /var/www/laravel.davidsondesigners.com/ -R
+
+rsync -avz --no-times --no-perms --delete \
+--exclude ".env" \
+--exclude "storage/logs/*" \
+--exclude "storage/framework/cache/*" \
+--exclude "node_modules" \
+--exclude "vendor" \
+.  admin@amazon:/var/www/laravel.davidsondesigners.com/Freshcery
+
+
+sudo chown -R admin:www-data /var/www/laravel.davidsondesigners.com/Freshcery
+sudo find /var/www/laravel.davidsondesigners.com/Freshcery -type d -exec chmod 775 {} \;
+sudo find /var/www/laravel.davidsondesigners.com/Freshcery -type f -exec chmod 664 {} \;
+sudo chmod -R 775 /var/www/laravel.davidsondesigners.com/Freshcery/storage /var/www/laravel.davidsondesigners.com/Freshcery/bootstrap/cache
+
+cd /var/www/laravel.davidsondesigners.com/Freshcery
+composer install --no-dev --optimize-autoloader
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+php artisan config:clear
+php artisan view:clear
+
+sudo chown -R admin:www-data storage bootstrap/cache
+sudo chmod -R 775 storage bootstrap/cache
+
+
+composer install --no-dev --optimize-autoloader
+php artisan migrate --force
+php artisan config:clear
+php artisan config:cache
+php artisan route:cache
+php artisan view:clear
+php artisan view:cache
+
+#php artisan queue:restart
+
+sudo systemctl restart nginx
+sudo systemctl restart php8.4-fpm
+
+
+
