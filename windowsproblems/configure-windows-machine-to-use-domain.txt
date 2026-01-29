@@ -1,0 +1,258 @@
+Got you. This is **normal, clean Windows domain behavior** you’re trying to achieve — and yes, it’s 100% doable. Let’s tighten it up properly so your Windows 10 VM can **log in either locally or to the KUTRRH domain**, depending on what you need at that moment.
+
+I’ll explain **what’s required**, **how Windows decides which account you’re logging into**, and then give you **exact steps** to verify/fix it.
+
+---
+
+## What you want (clarified)
+
+On the **same Windows 10 VM**, you want the login screen to allow:
+
+* ✅ Local login
+
+  * `emilio` → local account
+* ✅ Domain logins
+
+  * `KUTRRH\emilio.muriuki`
+  * `KUTRRH\ict.sec` (or similar)
+
+This is **exactly how a domain-joined machine is supposed to work**.
+
+---
+
+## The single non-negotiable requirement
+
+### 🔴 The VM **must be joined to the KUTRRH Active Directory domain**
+
+If the machine is **not domain-joined**, Windows will:
+
+* Only authenticate local users
+* Silently ignore domain usernames
+
+So first principle:
+
+> **One machine, many identities — but only if it’s domain-joined**
+
+---
+
+## Step 1: Confirm the VM is actually domain-joined
+
+On the Windows 10 VM:
+
+### Option A: GUI
+
+1. `Win + R` → type:
+
+   ```
+   sysdm.cpl
+   ```
+2. Go to **Computer Name** tab
+3. Check:
+
+   * **Domain:** `kutrrh`
+   * NOT “Workgroup”
+
+### Option B: Command line (my preference)
+
+Open **Command Prompt** as Administrator:
+
+```cmd
+systeminfo | findstr /B /C:"Domain"
+```
+
+Expected output:
+
+```
+Domain: kutrrh
+```
+
+❌ If it says `WORKGROUP` → stop here, domain isn’t joined.
+
+---
+
+## Step 2: If NOT joined — join it properly
+
+You need:
+
+* Domain admin or delegated join rights
+* Network connectivity to the DC
+* Correct DNS (this is critical)
+
+### 1️⃣ Fix DNS (do NOT skip this)
+
+Set the VM’s DNS **to the Domain Controller IP**, not 8.8.8.8.
+
+Check:
+
+```cmd
+ipconfig /all
+```
+
+DNS should look like:
+
+```
+DNS Servers . . . . . : 10.x.x.x   (DC IP)
+```
+
+---
+
+### 2️⃣ Join the domain
+
+```cmd
+sysdm.cpl
+```
+
+* Computer Name → **Change**
+* Select **Domain**
+* Enter:
+
+  ```
+  kutrrh
+  ```
+* Authenticate with a domain account
+* Reboot when prompted
+
+---
+
+## Step 3: Understanding the login screen (THIS is the key)
+
+Windows login is **context-based**.
+
+### At the login screen, click:
+
+👉 **“Other user”**
+
+Now you can log in using **any of these formats**:
+
+### ✅ Domain users
+
+```
+KUTRRH\emilio.muriuki
+```
+
+or
+
+```
+emilio.muriuki@kutrrh.local
+```
+
+```
+KUTRRH\ict.sec
+```
+
+### ✅ Local users
+
+```
+.\emilio
+```
+
+or explicitly:
+
+```
+VMNAME\emilio
+```
+
+> The `.\` tells Windows:
+> **“Use the local SAM database, not AD”**
+
+This is the most important trick people miss.
+
+---
+
+## Step 4: Make sure domain users are allowed to log in
+
+By default, **Domain Users CAN log in** — unless restricted.
+
+Check local policy:
+
+```cmd
+secpol.msc
+```
+
+Navigate:
+
+```
+Local Policies
+ → User Rights Assignment
+   → Allow log on locally
+```
+
+Ensure:
+
+* `Domain Users` OR the specific users/groups are listed
+
+Also confirm they are **not** in:
+
+```
+Deny log on locally
+```
+
+---
+
+## Step 5: First login behavior (expected)
+
+When a domain user logs in **for the first time**:
+
+* Windows creates a profile:
+
+  ```
+  C:\Users\emilio.muriuki
+  ```
+* This is normal
+* Takes longer the first time
+
+Local users keep their own profiles:
+
+```
+C:\Users\emilio
+```
+
+No conflict. Windows isolates them cleanly.
+
+---
+
+## Step 6: Optional but smart (for admin work)
+
+If `ict.sec` is meant to do admin/security work:
+
+Add domain admin group locally:
+
+```cmd
+net localgroup administrators KUTRRH\ict.sec /add
+```
+
+Or better:
+
+```cmd
+net localgroup administrators "KUTRRH\Domain Admins" /add
+```
+
+---
+
+## Common mistakes (I’ll save you hours)
+
+❌ Using domain usernames on a **non-domain-joined** VM
+❌ DNS pointing to public DNS instead of DC
+❌ Forgetting `.\` for local login
+❌ Thinking login screen “hides” domain users (it doesn’t — it waits for format)
+
+---
+
+## Final mental model (lock this in)
+
+* **Local account** → `.\username`
+* **Domain account** → `DOMAIN\username`
+* **Same machine, multiple identities**
+* **Domain join + DNS = everything**
+
+---
+
+If you want, next we can:
+
+* Lock down **which domain users can log in**
+* Enable **cached credentials** for offline domain login
+* Inspect where **DSS Client auto-logon credentials** are stored
+* Or harden the VM like a real enterprise endpoint
+
+Say the word — we build this clean 💪
+
