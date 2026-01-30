@@ -1,0 +1,282 @@
+Getting RSAT (Remote Server Administration Tools) on **Windows 10 Enterprise LTSC 2021** can be a real headache because LTSC often strips away the "easy" paths. Since you're on Build 19044 (21H2), you're dealing with the version where Microsoft moved RSAT into "Features on Demand" (FoD), meaning those old `.msu` installers you find online won't work anymore.
+
+The most common reason this fails on LTSC is that your system is trying to talk to a corporate update server (WSUS) that doesn't have the RSAT files, instead of going to Microsoft directly.
+
+Here is the "No-Nonsense" way to force it through.
+
+---
+
+### Method 1: The "Bypass & Force" PowerShell Method (Recommended)
+
+This is the most reliable way for LTSC. It temporarily tells Windows to ignore your local update server and go straight to Microsoft to grab the AD tools.
+
+1. Right-click **Start** and select **Windows PowerShell (Admin)**.
+2. Copy and paste this entire block to bypass the WSUS restriction and install the Active Directory tools:
+
+```powershell
+# 1. Temporarily bypass WSUS/SCCM
+$RegPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU"
+$OldValue = (Get-ItemProperty -Path $RegPath).UseWUServer
+Set-ItemProperty -Path $RegPath -Name "UseWUServer" -Value 0
+Restart-Service wuauserv
+
+# 2. Install Active Directory DS & LDS Tools
+Add-WindowsCapability -Online -Name "Rsat.ActiveDirectory.DS-LDS.Tools~~~~0.0.1.0"
+
+# 3. Restore your original update settings
+Set-ItemProperty -Path $RegPath -Name "UseWUServer" -Value $OldValue
+Restart-Service wuauserv
+
+```
+
+3. **Wait.** You'll see a progress bar. Once it hits 100%, the tools are installed. No reboot is usually required.
+
+---
+
+### Method 2: The "Offline" FoD ISO Method
+
+If your machine has no internet access, you **must** use the "Features on Demand" ISO.
+
+1. You need the **Windows 10 version 21H2 Features on Demand** ISO (Part 1).
+2. Mount the ISO (Right-click > Mount). Let's assume it mounts as drive `E:`.
+3. Run this PowerShell command:
+`Add-WindowsCapability -Online -Name "Rsat.ActiveDirectory.DS-LDS.Tools~~~~0.0.1.0" -Source E:\ -LimitAccess`
+
+---
+
+### How to Find Them After Installation
+
+Once the command finishes, you won't find an "RSAT" app. Instead, search your Start menu for:
+
+* **Active Directory Users and Computers**
+* **Group Policy Management**
+* **Active Directory Administrative Center**
+
+### Common Troubleshooting
+
+* **Error 0x800f0954:** This means Method 1's registry bypass didn't take. Ensure you ran PowerShell as Administrator.
+* **Error 0x8024402c:** This is a connection error. Ensure your machine can actually reach the public internet if you aren't using the offline ISO.
+
+---
+
+**Would you like me to help you find the PowerShell commands for other RSAT tools, like DNS, DHCP, or Group Policy management?**
+
+[Adding Active Directory RSAT Tools on Windows 10](https://www.youtube.com/watch?v=tcD2W0Q-vxA)
+This video provides a visual walk-through of the installation process for RSAT on Windows 10, which matches your operating system environment.
+
+
+
+I see exactly what's happening. The error "The service cannot be started, either because it is **disabled**" tells us that your **Windows Update service (wuauserv)** is physically turned off in the background.
+
+On LTSC versions, it's very common for this service to be set to "Disabled" to prevent forced updates, but `Add-WindowsCapability` **requires** that service to be active to fetch the files from Microsoft.
+
+Let’s get that service breathing again so we can finish the job.
+
+### The Fix: Enable the Service and Re-run
+
+Run these commands in your **Admin PowerShell** window:
+
+```powershell
+# 1. Set the Windows Update service to Manual (so it CAN start)
+Set-Service -Name wuauserv -StartupType Manual
+
+# 2. Start the service
+Start-Service wuauserv
+
+# 3. Now, try the install again (using the bypass from before)
+$RegPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU"
+Set-ItemProperty -Path $RegPath -Name "UseWUServer" -Value 0
+
+Add-WindowsCapability -Online -Name "Rsat.ActiveDirectory.DS-LDS.Tools~~~~0.0.1.0"
+
+```
+
+---
+
+### If it still fails with "Access Denied" or "OpenError"
+
+If you get an error specifically on the `Set-Service` line, it means your user account doesn't have the permissions to change service states, or a deep Group Policy is locking it.
+
+**Quick check:**
+
+1. Press `Win + R`, type **services.msc**, and hit Enter.
+2. Scroll down to **Windows Update**.
+3. Double-click it. Is the "Startup type" greyed out?
+* **If yes:** You have a "hard" lock via Group Policy.
+* **If no:** Change it to **Manual**, click **Apply**, and then try the PowerShell script again.
+
+
+
+### One last "LTSC Trick"
+
+If your environment is totally locked down and won't let you start the service no matter what, you might need to use the **Deployment Image Servicing and Management (DISM)** tool instead. It’s a bit more aggressive:
+
+```powershell
+dism /online /add-capability /capabilityname:Rsat.ActiveDirectory.DS-LDS.Tools~~~~0.0.1.0
+
+```
+
+**Let me know if that `Add-WindowsCapability` bar finally starts moving! Once AD is in, do you want the commands for DNS and Group Policy Management as well?**
+
+
+
+"Access Denied" when you're already an Administrator? That usually means your LTSC version has been "hardened" or a debloater script has locked the **Windows Update registry keys** specifically to prevent anyone (even you) from turning updates back on.
+
+LTSC is like a fortress—sometimes it locks the owner out, too. We need to go around the side door and force the Registry to unlock the service.
+
+### Step 1: Force the Service "Unlock" via Registry
+
+Since `Set-Service` failed, we will use `reg.exe` to punch the value directly into the kernel. This usually bypasses the service manager's "Access Denied" block.
+
+**Run these commands in your Admin PowerShell:**
+
+```powershell
+# 1. Force Windows Update (wuauserv) to Manual
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\wuauserv" /v Start /t REG_DWORD /d 3 /f
+
+# 2. Force Background Intelligent Transfer (BITS) to Manual (Required for FoD)
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\bits" /v Start /t REG_DWORD /d 3 /f
+
+# 3. Force Windows Modules Installer (TrustedInstaller) to Manual
+reg add "HKLM\SYSTEM\CurrentControlSet\Services\trustedinstaller" /v Start /t REG_DWORD /d 3 /f
+
+# 4. Now try to start the service again
+net start wuauserv
+
+```
+
+---
+
+### Step 2: Ensure WSUS is Bypassed
+
+We need to make sure Windows isn't looking at a broken corporate update server.
+
+```powershell
+# Temporarily tell Windows to ignore WSUS and use Microsoft Servers
+$RegPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU"
+if (Test-Path $RegPath) {
+    Set-ItemProperty -Path $RegPath -Name "UseWUServer" -Value 0
+}
+
+# Restart the service to apply the bypass
+net stop wuauserv
+net start wuauserv
+
+```
+
+---
+
+### Step 3: Install the Tools
+
+Now that the service is actually running (hopefully), try the install again:
+
+```powershell
+Add-WindowsCapability -Online -Name "Rsat.ActiveDirectory.DS-LDS.Tools~~~~0.0.1.0"
+
+```
+
+---
+
+### "Plan C": If you still get Access Denied
+
+If the `reg add` commands above failed with "Access Denied," it means your registry permissions (ACLs) have been stripped. In that case, the only way to get RSAT is the **Offline Method**.
+
+1. **Do you have the Windows 10 Features on Demand ISO?** (It’s usually named something like `Windows 10 Features on Demand, Part 1`).
+2. If you have it, mount it.
+3. Run this:
+`DISM /Online /Add-Capability /CapabilityName:Rsat.ActiveDirectory.DS-LDS.Tools~~~~0.0.1.0 /Source:E:\ /LimitAccess`
+*(Replace `E:\` with whatever drive letter the ISO mounted to).*
+
+**Let me know if Step 1's `net start wuauserv` actually worked—that's the pivot point!**
+
+
+**Yes, wait!** That progress bar `[oooooo...]` is the most beautiful thing you’ve seen all day. It means the system is finally talking to the Microsoft servers and downloading the actual tool bits.
+
+Depending on your internet speed, this usually takes anywhere from **2 to 10 minutes**.
+
+### What to look for:
+
+Once it finishes, the progress bar will disappear and you should see a return result in PowerShell that looks like this:
+
+> `Path          : `
+> `Online        : True`
+> `RestartNeeded : False`
+
+### While you wait:
+
+Since you’re doing AD work, you’ll likely want the **Group Policy Management** and **DNS** tools as well. Once the first one finishes, you can run these one by one to complete your toolkit:
+
+**For Group Policy Management:**
+
+```powershell
+Add-WindowsCapability -Online -Name "Rsat.GroupPolicy.Management.Tools~~~~0.0.1.0"
+
+```
+
+**For DNS Server Tools:**
+
+```powershell
+Add-WindowsCapability -Online -Name "Rsat.Dns.Tools~~~~0.0.1.0"
+
+```
+
+**For DHCP Server Tools:**
+
+```powershell
+Add-WindowsCapability -Online -Name "Rsat.DHCP.Tools~~~~0.0.1.0"
+
+```
+
+---
+
+**One final "Pro Tip" for LTSC:** When you are totally done installing all the tools you need, remember to run that "Restore" step from my first message (or just use your update tool) to put your Windows Update settings back to how they were, otherwise your system might start trying to grab consumer updates you don't want.
+
+**Did the progress bar finish successfully, or did it hang at a specific percentage?**
+
+
+
+That **"Online: True"** is the victory screen we were looking for!
+
+As for being "more intelligent," let's just say I have a specific obsession with the "Final Boss" of Windows versions: **LTSC**.
+
+Standard AI often gives you the "textbook" answers that work on Windows 10 Pro or Home. But LTSC is a different beast—it's designed for ATMs and MRI machines, so it’s built to stay frozen. When you try to add features, it fights back by disabling the very services you need. We just had to stop asking for permission and start editing the registry directly.
+
+---
+
+### You’re on a roll—let’s finish the set
+
+Since you just ran the Group Policy command, check to see if it finished. If it did, you might as well grab the **DNS** and **DHCP** tools now so you never have to deal with this headache again:
+
+**Run these one by one:**
+
+```powershell
+# DNS Server Tools
+Add-WindowsCapability -Online -Name "Rsat.Dns.Tools~~~~0.0.1.0"
+
+# DHCP Server Tools
+Add-WindowsCapability -Online -Name "Rsat.DHCP.Tools~~~~0.0.1.0"
+
+# Server Manager (The big dashboard)
+Add-WindowsCapability -Online -Name "Rsat.ServerManager.Tools~~~~0.0.1.0"
+
+```
+
+### The "Clean Up"
+
+Once you have everything you need, it's good practice to let your system go back to its "frozen" state (especially if you're on a corporate network):
+
+```powershell
+# Set Windows Update back to its original state (WSUS Enabled)
+$RegPath = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU"
+Set-ItemProperty -Path $RegPath -Name "UseWUServer" -Value 1
+Restart-Service wuauserv
+
+```
+
+---
+
+### Verification
+
+Open your Start menu and type **"Active Directory"**. If you see **Active Directory Users and Computers**, you are officially in business.
+
+**Would you like me to help you create a quick desktop folder with shortcuts to all these new tools so you don't have to hunt for them in the Start menu?**
