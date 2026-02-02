@@ -1,0 +1,193 @@
+Alright, let’s tackle this cleanly and properly.
+
+What you’re seeing is **normal behavior in Windows domain environments** and it trips up even experienced admins.
+
+## Key point (important)
+
+**Network Discovery ≠ Access to shares**
+
+Not seeing `\\ictsec` under **Network** does **NOT** mean:
+
+* the machine is unreachable
+* the share doesn’t exist
+* your account lacks access
+
+Windows Network browsing (NetBIOS/WS-Discovery) is unreliable, especially on:
+
+* domain-joined machines
+* mixed Windows versions
+* hardened networks
+* firewalled VMs
+
+In real environments, **we almost never rely on Network view**.
+
+---
+
+## Correct ways to access the shares (do these in order)
+
+### 1️⃣ Access directly by UNC path (most reliable)
+
+Press **Win + R** → type:
+
+```
+\\ictsec
+```
+
+or explicitly:
+
+```
+\\ictsec.ad.kutrrh.go.ke
+```
+
+If that opens → problem solved.
+If not, continue.
+
+---
+
+### 2️⃣ Verify name resolution (this is usually the culprit)
+
+Open **Command Prompt** and run:
+
+```
+nslookup ictsec
+ping ictsec
+```
+
+You should see the correct domain IP.
+
+If that fails but this works:
+
+```
+ping ictsec.ad.kutrrh.go.ke
+```
+
+👉 then NetBIOS name resolution is missing (normal in domains).
+
+**Fix (recommended):**
+Always access shares using **FQDN**:
+
+```
+\\ictsec.ad.kutrrh.go.ke
+```
+
+---
+
+### 3️⃣ List available shares explicitly
+
+From CMD:
+
+```
+net view \\ictsec
+```
+
+If this shows shares → discovery is fine, Explorer browsing is just lying to you.
+
+If it says *Access denied* → auth issue, not network.
+
+---
+
+### 4️⃣ Map the share manually (best practice)
+
+Explorer → **This PC** → **Map network drive**
+
+Example:
+
+```
+\\ictsec.ad.kutrrh.go.ke\Sharename
+```
+
+Check **Reconnect at sign-in**
+
+If credentials are required:
+
+* Use **DOMAIN\username**
+* Not local account
+
+---
+
+## If it STILL doesn’t show up, check these on your VM
+
+### 🔧 A. Network profile MUST be Private
+
+PowerShell (Admin):
+
+```powershell
+Get-NetConnectionProfile
+```
+
+If it’s `Public`, change it:
+
+```powershell
+Set-NetConnectionProfile -NetworkCategory Private
+```
+
+---
+
+### 🔧 B. Required services must be running
+
+Open **services.msc**, ensure these are **Running + Automatic**:
+
+* Function Discovery Provider Host
+* Function Discovery Resource Publication
+* Workstation
+* Server
+
+Restart them if needed.
+
+---
+
+### 🔧 C. Firewall (common in hardened setups)
+
+Temporarily test:
+
+```powershell
+netsh advfirewall set allprofiles state off
+```
+
+Test access, then re-enable:
+
+```powershell
+netsh advfirewall set allprofiles state on
+```
+
+If this fixes it → SMB rules are blocked.
+
+---
+
+## Important reality check (domain truth)
+
+In **Active Directory environments**:
+
+* Network tab is **cosmetic**
+* GPOs often disable discovery
+* Shares are meant to be accessed by:
+
+  * UNC paths
+  * mapped drives
+  * login scripts
+
+So **not seeing it is NOT a failure**.
+
+---
+
+## The fastest, cleanest solution (what admins actually do)
+
+Just use:
+
+```
+\\ictsec.ad.kutrrh.go.ke\share
+```
+
+or map it permanently.
+
+---
+
+If you want, next we can:
+
+* trace SMB traffic (tcp 445)
+* check if the share is hidden (`$`)
+* audit share vs NTFS permissions
+* or script auto-mount via PowerShell or GPO
+
+Tell me where it breaks **exactly** (name resolution, auth, or access denied) and we’ll pin it down precisely.
+
