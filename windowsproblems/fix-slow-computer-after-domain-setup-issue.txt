@@ -1,0 +1,200 @@
+Good — the data you’ve provided is **very clean**, and it lets us stop guessing. We now know **exactly** what’s happening.
+
+---
+
+## The hard facts from your output
+
+### 1️⃣ Boot duration: **460,231 ms ≈ 7.6 minutes**
+
+That is **not** a driver or CCleaner issue. That duration almost always points to **policy processing before logon**.
+
+---
+
+### 2️⃣ Domain connectivity is healthy *after* boot
+
+This result is important:
+
+```text
+nltest /dsgetdc:KUTRRH → SUCCESS
+DC: \\KUH-DC01 (10.80.3.200)
+```
+
+So:
+
+* DNS ✔
+* DC reachable ✔
+* Secure channel ✔
+* Site configuration ✔
+
+This means **the delay is NOT because the DC is unreachable**.
+
+---
+
+### 3️⃣ The smoking gun: **Software Installation GPO**
+
+This warning tells us everything:
+
+> **“The Group Policy Client Side Extension Software Installation was unable to apply one or more settings because the changes must be processed before system startup or user logon.”**
+
+Translated into admin language:
+
+👉 **Your VM is waiting at boot for a Software Installation GPO**
+👉 That GPO is either **slow**, **blocking**, or **waiting on something that’s not ready**
+
+Windows will **not proceed** until this finishes or times out.
+
+This explains:
+
+* 7+ minute boot
+* Happens only after domain join
+* Happens before logon
+* Happens every restart
+
+---
+
+## What exactly is causing the delay
+
+Most likely one (or more) of these:
+
+1. **MSI deployment via GPO**
+
+   * App pushed to computers (not users)
+   * MSI hosted on:
+
+     * Slow file share
+     * DFS path
+     * SYSVOL but large
+     * Path that requires authentication before network is fully up
+
+2. **Old or failed software assignment**
+
+   * Package no longer exists
+   * Version mismatch
+   * Supersedence misconfigured
+   * Waiting for rollback / repair
+
+3. **“Always wait for the network at startup” is ENABLED**
+
+   * This makes Software Installation *blocking*
+   * Especially brutal on VMs
+
+---
+
+## Why it didn’t happen before domain join
+
+Because **local Windows does not process Software Installation CSE at boot**.
+Only domain-joined machines do.
+
+---
+
+## Immediate confirmation (do this now)
+
+Run this:
+
+```cmd
+gpresult /h C:\temp\gpreport.html
+```
+
+Then open the file and check:
+
+* **Computer Configuration**
+* Look for:
+
+  * Software Installation
+  * Assigned applications
+  * Any MSI names
+  * Source paths (UNC paths)
+
+You will almost certainly see the package that’s blocking startup.
+
+---
+
+## Fastest way to FIX it (without waiting for domain admins)
+
+### 🔥 Option 1: Stop waiting for Software Installation at boot (most effective)
+
+Run:
+
+```cmd
+gpedit.msc
+```
+
+Navigate to:
+
+```
+Computer Configuration
+→ Administrative Templates
+→ System
+→ Group Policy
+```
+
+Set:
+
+* **“Specify startup policy processing wait time”** → Enabled → `0`
+* **“Always wait for the network at computer startup and logon”** → Disabled
+
+Then:
+
+```cmd
+gpupdate /force
+shutdown /r /t 0
+```
+
+⏱️ This alone usually drops boot time from minutes to seconds.
+
+---
+
+### 🔥 Option 2: Exclude THIS VM from the software GPO (clean solution)
+
+If you have AD access:
+
+1. Identify the **GPO name** applying Software Installation
+2. Either:
+
+   * Move VM to a different OU
+   * Or add **Security Filtering → Deny Apply** for this VM
+   * Or WMI filter (VM-only exclusion)
+
+This is the **correct enterprise fix**.
+
+---
+
+### 🔥 Option 3: Temporary test (proof)
+
+Boot **without network**:
+
+* Disable VM NIC
+* Restart
+* Time the boot
+
+You will see a **dramatic improvement**, confirming the policy block.
+
+---
+
+## What NOT to waste time on
+
+❌ CCleaner
+❌ Drivers
+❌ Disk health
+❌ Time sync (already perfect)
+❌ Rejoining the domain (won’t fix this)
+
+---
+
+## Final diagnosis (no ambiguity)
+
+> **Your VM is blocking at startup due to a Computer-level Software Installation Group Policy that must complete before logon.**
+
+Windows is behaving **exactly as designed** — just very badly for VMs.
+
+---
+
+## What I recommend you do next (best order)
+
+1️⃣ Generate `gpresult /h` and identify the MSI
+2️⃣ Disable *“Always wait for network”* locally
+3️⃣ If possible, exclude the VM from that GPO
+4️⃣ Reboot and recheck **Event ID 100**
+
+If you want, paste the **Software Installation section** from `gpreport.html` here — we can pinpoint the exact package causing the stall and decide whether to kill it, bypass it, or fix it properly.
+
