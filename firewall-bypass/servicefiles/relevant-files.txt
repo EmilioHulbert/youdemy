@@ -1,0 +1,107 @@
+To make this setup "production-grade" for your pentest, we’ll use **systemd**. This ensures that if the server reboots or the app crashes, the tunnel automatically resurrects itself.
+
+---
+
+### 1. Server-Side Service (AWS)
+
+Create a service file to keep the `wstunnel` server running in the background.
+
+1. **Create the file:**
+`sudo nano /etc/systemd/system/wstunnel-server.service`
+2. **Paste this configuration:**
+```ini
+[Unit]
+Description=Wstunnel Server
+After=network.target
+
+[Service]
+Type=simple
+User=root
+# Adjust the path /opt/wstunnel to where your binary actually lives
+ExecStart=/opt/wstunnel/wstunnel server --restrict-to 127.0.0.1:53 ws://127.0.0.1:8080
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+
+```
+
+
+3. **Enable and Start:**
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable wstunnel-server
+sudo systemctl start wstunnel-server
+
+```
+
+
+
+---
+
+### 2. Client-Side Service (Laptop)
+
+On your laptop, we need to handle the **Route**, the **Wstunnel**, and **WireGuard**. While we could make three services, it's cleaner to have a service for `wstunnel` and let `wg-quick` handle the rest.
+
+1. **Create the file:**
+`sudo nano /etc/systemd/system/wstunnel-client.service`
+2. **Paste this configuration:**
+```ini
+[Unit]
+Description=Wstunnel Client for WireGuard
+After=network.target
+
+[Service]
+Type=simple
+User=root
+# We add ExecStartPre to ensure the static route exists before connecting
+ExecStartPre=/usr/bin/bash -c "ip route add 13.50.43.129 via 10.80.96.1 dev wlp1s0 || true"
+ExecStart=/opt/wstunnel/wstunnel client -L udp://51820:127.0.0.1:53 wss://covert.davidsondesigners.com
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+
+```
+
+
+3. **Enable and Start:**
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable wstunnel-client
+sudo systemctl start wstunnel-client
+
+```
+
+
+
+---
+
+### 3. Automating WireGuard
+
+To make WireGuard start automatically on boot (now that its dependency `wstunnel` is a service), simply run:
+
+```bash
+sudo systemctl enable wg-quick@amazon
+
+```
+
+---
+
+### 🛠️ The "Panic" Troubleshooting Commands
+
+Now that these are services, you won't see the output in your terminal. Use these commands to see what's happening:
+
+| Task | Command |
+| --- | --- |
+| **Check Server Logs** | `sudo journalctl -u wstunnel-server -f` |
+| **Check Client Logs** | `sudo journalctl -u wstunnel-client -f` |
+| **Restart Everything** | `sudo systemctl restart wstunnel-client wg-quick@amazon` |
+
+### A quick pro-tip for your pentest:
+
+Since you are using `AllowedIPs = 0.0.0.0/0`, if the `wstunnel-client` service fails, your laptop will lose all internet connectivity because the routing table is waiting for a tunnel that isn't there. If that happens, just run `sudo wg-quick down amazon` to restore your normal WiFi.
+
+**Everything is locked in now. Would you like me to help you script a "Kill Switch" that automatically cleans up the routes and brings down the services if the connection drops
