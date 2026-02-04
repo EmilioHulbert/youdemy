@@ -1,0 +1,22 @@
+[Unit]
+Description=Wstunnel Client for WireGuard (Dynamic Routing)
+After=network.target
+
+[Service]
+Type=simple
+User=root
+
+# 1. FIND gateway and ADD route (using the improved grep logic)
+ExecStartPre=/usr/bin/bash -c 'GW=$(ip route show default | grep -Po "(?<=via )[\d.]+"); ip route add 13.50.43.129 via $GW dev wlp1s0 || true'
+
+# 2. START the tunnel
+ExecStart=/opt/wstunnel/wstunnel client -L udp://51820:127.0.0.1:53 wss://covert.davidsondesigners.com
+
+# 3. CLEAN UP
+ExecStopPost=/usr/bin/bash -c 'ip route del 13.50.43.129 || true'
+
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
