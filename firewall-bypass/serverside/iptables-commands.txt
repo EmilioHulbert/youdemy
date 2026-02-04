@@ -1,0 +1,15 @@
+  sysctl net.ipv4.ip_forward
+sudo sysctl -w net.ipv4.ip_forward=1
+#or edit sudo nano /etc/sysctl.conf  and put net.ipv4.ip_forward = 1
+sudo sysctl -p
+
+  iptables -F
+  iptables -t nat -F
+  iptables -t nat -A POSTROUTING -o ens5 -j MASQUERADE
+  iptables -A FORWARD -i wg0 -j ACCEPT
+  iptables -A FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
+  iptables -t mangle -A FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+  iptables -L
+  iptables -A INPUT -p udp --dport 53 -j ACCEPT
+
+

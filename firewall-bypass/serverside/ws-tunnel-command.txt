@@ -1,0 +1,2 @@
+./wstunnel server --restrict-to 127.0.0.1:53 ws://127.0.0.1:8080
+

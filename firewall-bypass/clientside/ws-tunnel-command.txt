@@ -1,0 +1,8 @@
+──╼ #sudo ./wstunnel client -L udp://51820:127.0.0.1:53 wss://covert.davidsondesigners.com
+2026-02-04T10:16:08.379841Z  INFO wstunnel: Starting wstunnel client v10.5.2
+2026-02-04T10:16:08.379873Z  INFO wstunnel::protocols::udp::server: Starting UDP server listening cnx on 127.0.0.1:51820 with cnx timeout of 30s
+2026-02-04T10:16:54.276801Z  INFO wstunnel::protocols::udp::server: New UDP connection from 127.0.0.1:52691
+2026-02-04T10:16:54.277994Z  INFO wstunnel::protocols::tcp::server: Opening TCP connection to covert.davidsondesigners.com:443
+2026-02-04T10:16:54.497759Z  INFO wstunnel::protocols::tls::server: Doing TLS handshake using SNI DnsName("covert.davidsondesigners.com") with the server covert.davidsondesigners.com:443
+^C
+┌─[✗]─[root@Intel5]─[/opt/wstunne

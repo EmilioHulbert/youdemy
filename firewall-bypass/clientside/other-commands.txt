@@ -1,0 +1,32 @@
+└──╼ #wg-quick down amazon 
+[#] ip -4 rule delete table 51820
+[#] ip -4 rule delete table main suppress_prefixlength 0
+[#] ip link delete dev amazon
+[#] nft -f /dev/fd/63
+[#] nmcli general reload conf
+┌─[root@Intel5]─[/etc/wireguard]
+└──╼ #route -n
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+0.0.0.0         10.80.96.1      0.0.0.0         UG    600    0        0 wlp1s0
+10.80.96.0      0.0.0.0         255.255.224.0   U     600    0        0 wlp1s0
+13.50.43.129    10.80.96.1      255.255.255.255 UGH   0      0        0 wlp1s0
+172.17.0.0      0.0.0.0         255.255.0.0     U     0      0        0 docker0
+172.21.0.0      0.0.0.0         255.255.0.0     U     0      0        0 br-d0dedc126341
+192.168.56.0    0.0.0.0         255.255.255.0   U     0      0        0 vboxnet0
+sudo ip route add 13.50.43.129 via 10.80.96.1 dev wlp1s0
+
+┌─[root@Intel5]─[/etc/wireguard]
+└──╼ #sudo wg-quick up amazon
+[#] ip link add amazon type wireguard
+[#] wg setconf amazon /dev/fd/63
+[#] ip -4 address add 10.0.0.2/24 dev amazon
+[#] ip link set mtu 1280 up dev amazon
+[#] wg set amazon fwmark 51820
+[#] ip -4 route add 0.0.0.0/0 dev amazon table 51820
+[#] ip -4 rule add not fwmark 51820 table 51820
+[#] ip -4 rule add table main suppress_prefixlength 0
+[#] sysctl -q net.ipv4.conf.all.src_valid_mark=1
+[#] nft -f /dev/fd/63
+[#] echo "nameserver 8.8.8.8" > /etc/resolv.conf
+
