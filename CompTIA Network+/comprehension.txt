@@ -1,0 +1,8 @@
+OSL LAYERS MNEUMONIC
+People - Physical layer about cables and bits
+Do -Datalink layer
+Not - Network layer
+Throw - Transport layer
+Sausage - Session Layer
+Pizzas - Presentation layer
+Away - Application layer
