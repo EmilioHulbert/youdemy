@@ -1,6 +1,6 @@
 OSL LAYERS MNEUMONIC
 People - Physical layer about cables and bits
-Do -Datalink layer
+Do -Datalink laye NIC macaddresses fall under this categoryr
 Not - Network layer
 Throw - Transport layer
 Sausage - Session Layer
