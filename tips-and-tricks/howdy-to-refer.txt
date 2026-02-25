@@ -1,0 +1,1618 @@
+You said
+no password asked for ┌─[hulbert@Intel5]─[~]
+
+└──╼ $sudo -k
+
+┌─[hulbert@Intel5]─[~]
+
+└──╼ $sudo ls /root
+
+bettercap.history  Desktop  Documents  Downloads  emiliohulbert.github.io  Eternalblue-Doublepulsar-Metasploit FileZilla.xml  go  Music  onlinebot.sql  Pictures  Public  remacode  snap  telebit  Templates  @user_models_dir@  venv39  Videos  xsct-prefix
+
+┌─[hulbert@Intel5]─[~]
+
+└──╼ $
+
+
+
+┌─[root@Intel5]─[/home/hulbert]
+
+└──╼ #ldd /usr/lib/security/pam_python3.so
+
+linux-vdso.so.1 (0x00007f3607018000)
+
+libpam.so.0 => /lib/x86_64-linux-gnu/libpam.so.0 (0x00007f3606fd9000)
+
+libpython3.13.so.1.0 => /lib/x86_64-linux-gnu/libpython3.13.so.1.0 (0x00007f3606800000)
+
+libc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f360661f000)
+
+libaudit.so.1 => /lib/x86_64-linux-gnu/libaudit.so.1 (0x00007f3606fa8000)
+
+libm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007f3606540000)
+
+libz.so.1 => /lib/x86_64-linux-gnu/libz.so.1 (0x00007f3606521000)
+
+libexpat.so.1 => /lib/x86_64-linux-gnu/libexpat.so.1 (0x00007f36064f6000)
+
+/lib64/ld-linux-x86-64.so.2 (0x00007f360701a000)
+
+libcap-ng.so.0 => /lib/x86_64-linux-gnu/libcap-ng.so.0 (0x00007f36064ee000)
+
+┌─[root@Intel5]─[/home/hulbert]
+
+└──╼ #cat /etc/pam.d/common-auth | grep -v "^#"
+
+auth sufficient /lib/security/pam_python3.so /lib/security/howdy/pam.py
+
+auth [success=1 default=ignore] pam_unix.so nullok
+
+auth requisite pam_deny.so
+
+auth required pam_permit.so
+
+┌─[root@Intel5]─[/home/hulbert]
+
+└──╼ #vi /etc/pam.d/common-auth
+
+┌─[root@Intel5]─[/home/hulbert]
+
+└──╼ #ls /lib/x86_64-linux-gnu/libpython3.*
+
+/lib/x86_64-linux-gnu/libpython3.11.a  /lib/x86_64-linux-gnu/libpython3.11.so  /lib/x86_64-linux-gnu/libpython3.11.so.1  /lib/x86_64-linux-gnu/libpython3.11.so.1.0  /lib/x86_64-linux-gnu/libpython3.13.so.1.0
+
+┌─[root@Intel5]─[/home/hulbert]
+
+└──╼ #ln -s /lib/x86_64-linux-gnu/libpython3.11.so.1.0 /lib/x86_64-linux-gnu/libpython3.13.so.1.0
+
+ln: failed to create symbolic link '/lib/x86_64-linux-gnu/libpython3.13.so.1.0': File exists
+
+┌─[✗]─[root@Intel5]─[/home/hulbert]
+
+└──╼ #vi /lib/security/howdy/pam/pam_handler.py
+
+┌─[root@Intel5]─[/home/hulbert]
+
+└──╼ ## Ensure the file exists in the place common-auth is looking
+
+mkdir -p /lib/security
+
+cp /usr/lib/security/pam_python3.so /lib/security/pam_python3.so
+
+cp: '/usr/lib/security/pam_python3.so' and '/lib/security/pam_python3.so' are the same file
+
+┌─[✗]─[root@Intel5]─[/home/hulbert]
+
+└──╼ #ln -sf /lib/x86_64-linux-gnu/libpython3.11.so.1.0 /lib/x86_64-linux-gnu/libpython3.13.so.1.0
+
+┌─[root@Intel5]─[/home/hulbert]
+
+└──╼ ## Link the script PAM is looking for to the one we've been editing
+
+ln -sf /lib/security/howdy/pam/pam_handler.py /lib/security/howdy/pam.py
+
+┌─[root@Intel5]─[/home/hulbert]
+
+└──╼ #auth sufficient /lib/security/pam_python3.so /lib/security/howdy/pam.py
+
+auth [success=1 default=ignore] pam_unix.so nullok^C
+
+┌─[✗]─[root@Intel5]─[/home/hulbert]
+
+└──╼ #chmod 755 /lib/security/pam_python3.so
+
+chmod 755 /lib/security/howdy/pam.py
+
+chmod 755 /lib/security/howdy/pam/pam_handler.py
+
+┌─[root@Intel5]─[/home/hulbert]
+
+└──╼ #
+
+Gemini said
+VICTORY. The "God Mode" login worked! This confirms two things:
+
+Your forced library link (3.11 to 3.13) is working.
+
+The PAM stack is successfully calling your Python script.
+
+Now we just need to swap the "God Mode" code for the actual Howdy Camera Engine.
+
+🛠 Step 1: The Final Code Injection
+We need to be careful with imports. Since pam_python3.so is now linked to a different library version, we'll keep the logic simple to avoid crashes.
+
+Edit /lib/security/howdy/pam/pam_handler.py as root:
+
+Python
+import sys
+import os
+import subprocess
+
+def pam_sm_authenticate(pamh, flags, argv):
+    try:
+        user = pamh.get_user(None)
+        
+        # We call the CLI directly because it's safer against library conflicts
+        # Using 'test' with -y and --user is the most reliable headless trigger
+        process = subprocess.run(
+            ["/usr/bin/python3", "/lib/security/howdy/cli.py", "-y", "--user", user, "test"],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            env={
+                "PYTHONPATH": "/lib/security/howdy",
+                "QT_QPA_PLATFORM": "offscreen",
+                "OPENCV_LOG_LEVEL": "OFF"
+            },
+            timeout=8
+        )
+
+        if process.returncode == 0:
+            return 0  # Face matched!
+            
+        return 7      # Face didn't match, ask for password
+    except Exception:
+        return 7      # Something went wrong, fallback to password
+
+def pam_sm_setcred(pamh, flags, argv): return 0
+def pam_sm_acct_mgmt(pamh, flags, argv): return 0
+def pam_sm_open_session(pamh, flags, argv): return 0
+def pam_sm_close_session(pamh, flags, argv): return 0
+🛠 Step 2: Final Permission Sweep
+Since sudo is high-security, let's make sure the camera group can be accessed by the PAM process.
+
+Bash
+# Ensure the user hulbert is in the video group
+usermod -aG video hulbert
+
+# Ensure the howdy directory is fully accessible
+chmod -R 755 /lib/security/howdy
+🧪 The Grand Finale Test
+As hulbert: sudo -k
+
+Run: sudo ls /root
+
+The Moment: Look at your camera.
+
+Blink + Access: You've officially fixed Howdy on Parrot OS.
+
+Blink + Password: It sees you but doesn't recognize you (try sudo howdy add to improve models).
+
+No Blink + Password: The subprocess crashed (we'll check the log one last time).
+
+Does the red IR light blink and let you in now?
+
+You said
+┌─[root@Intel5]─[/home/hulbert]
+
+└──╼ #cat /lib/security/howdy/pam/pam_handler.py
+
+import sys
+
+import os
+
+import subprocess
+
+
+
+def pam_sm_authenticate(pamh, flags, argv):
+
+    try:
+
+        user = pamh.get_user(None)
+
+        
+
+        # We call the CLI directly because it's safer against library conflicts
+
+        # Using 'test' with -y and --user is the most reliable headless trigger
+
+        process = subprocess.run(
+
+            ["/usr/bin/python3", "/lib/security/howdy/cli.py", "-y", "--user", user, "test"],
+
+            stdout=subprocess.DEVNULL,
+
+            stderr=subprocess.DEVNULL,
+
+            env={
+
+                "PYTHONPATH": "/lib/security/howdy",
+
+                "QT_QPA_PLATFORM": "offscreen",
+
+                "OPENCV_LOG_LEVEL": "OFF"
+
+            },
+
+            timeout=8
+
+        )
+
+
+
+        if process.returncode == 0:
+
+            return 0  # Face matched!
+
+            
+
+        return 7      # Face didn't match, ask for password
+
+    except Exception:
+
+        return 7      # Something went wrong, fallback to password
+
+
+
+def pam_sm_setcred(pamh, flags, argv): return 0
+
+def pam_sm_acct_mgmt(pamh, flags, argv): return 0
+
+def pam_sm_open_session(pamh, flags, argv): return 0
+
+def pam_sm_close_session(pamh, flags, argv): return 0
+
+┌─[root@Intel5]─[/home/hulbert]
+
+└──╼ #
+
+blink plus password help improve the models maybe
+
+Gemini said
+That is actually the best news we've had all day. The blink means the camera is firing, the Python bridge is solid, and the system is communicating. The password prompt means the math just didn't quite add up to a high enough confidence score to let you in.
+
+Since you're on a custom path, we need to run the add command specifically through your local cli.py to ensure the new face data lands in the right folder.
+
+🛠 Step 1: Add More Face Models
+The more "perspectives" Howdy has of you (different lighting, glasses on/off, different angles), the better it works. Run this 3 or 4 times:
+
+Bash
+sudo /usr/bin/python3 /lib/security/howdy/cli.py --user hulbert add
+Pro Tip: Give each one a name like daylight, dim_light, left_side, etc., so you know which is which.
+
+🛠 Step 2: Tune the Confidence Level
+If it's still being too picky, we can lower the "certainty" threshold in the config. By default, it's usually 3.5. Lowering it makes it easier to get in (but slightly less secure).
+
+Edit your config:
+
+Bash
+sudo vi /lib/security/howdy/config.ini
+Look for certainty and try changing it:
+
+Current: 3.5 (Standard)
+
+Try: 4.0 or 4.5 (More lenient)
+
+Note: Higher numbers in Howdy's config actually mean "be less strict" regarding the distance between the face and the model.
+
+🛠 Step 3: Check the IR Sensor
+Sometimes the "blink" happens but the IR emitter isn't synced perfectly with the frame capture when called from a background process.
+
+Run a manual "identification" check to see the confidence score it's giving you:
+
+Bash
+sudo PYTHONPATH=/lib/security/howdy /usr/bin/python3 /lib/security/howdy/cli.py --user hulbert -y test
+Watch the terminal output. It will usually say something like Identified face as hulbert (0.4.2 confidence). If the number is very close to your certainty limit, you know exactly how much to adjust the config.
+
+🧪 The Final Test
+Once you've added 2-3 more models:
+
+sudo -k
+
+sudo ls /root
+
+If it lets you in: You are officially 100% operational.
+If it still asks for a password: Check if your face is well-centered in the IR camera's field of view during the blink.
+
+What certainty value is currently set in your config.ini? (Usually under the [video] or [core] section).
+
+You said
+[core]
+
+data_dir = /lib/security/howdy/models
+
+detection_notice = true
+
+no_face_help_msg = true
+
+device_path = /dev/video2
+
+
+
+[video]
+
+device_path = /dev/video2
+
+max_height = 320
+
+record_fps = true
+
+certainty = 4444
+
+[debug]
+
+end_report = false
+
+it says daylight then no match much of it is no match what of we delete all models and record again
+
+Gemini said
+Wait, I see a massive issue in your config: certainty = 4444.
+
+In Howdy, the certainty value is usually a decimal between 1.0 and 10.0. Setting it to 4444 effectively tells the math engine that you need to be "4444 times" more identical to the model than a humanly possible match. That’s why you’re getting "No match" every single time.
+
+Let's do a clean slate. We’ll wipe the bad models, fix the math, and record fresh.
+
+🛠 Step 1: Fix the Config
+Change that certainty to a realistic number.
+
+sudo vi /lib/security/howdy/config.ini
+
+Change certainty = 4444 to certainty = 4.2 (This is a good, slightly lenient starting point).
+
+Ensure device_path is correct in both sections (you have /dev/video2).
+
+🛠 Step 2: Wipe the Models
+Since the previous models were recorded while we were fighting the library issues, they might be corrupted or saved incorrectly.
+
+Run as root:
+
+Bash
+# This clears everything for user hulbert
+/usr/bin/python3 /lib/security/howdy/cli.py --user hulbert clear
+🛠 Step 3: Record Fresh (The "Right" Way)
+Run the add command. Sit still, about 2 feet from the camera, and keep a neutral expression.
+
+Bash
+sudo /usr/bin/python3 /lib/security/howdy/cli.py --user hulbert add
+When it asks for a label, call it baseline.
+
+Now add one more with a slight tilt of your head:
+
+Bash
+sudo /usr/bin/python3 /lib/security/howdy/cli.py --user hulbert add
+Label: slight_tilt.
+
+🛠 Step 4: The Headless Test
+Before trying sudo, let's see what the engine thinks of you now.
+
+Bash
+sudo PYTHONPATH=/lib/security/howdy /usr/bin/python3 /lib/security/howdy/cli.py --user hulbert -y test
+Watch the terminal output. It should now say:
+
+Identified face as hulbert
+
+🧪 The Final Test
+sudo -k
+
+sudo ls /root
+
+If it works: You're golden.
+If it blinks and fails: Check the terminal output of the test in Step 4. If the confidence score is, say, 4.8, and your certainty is 4.2, you need to move the certainty up to 5.0.
+
+Did changing the certainty to 4.2 make the "No match" error go away during the test?
+
+You said
+do: 1 incorrect password attempt
+
+┌─[✗]─[hulbert@Intel5]─[~]
+
+└──╼ $sudo ls /root
+
+[sudo] password for hulbert: 
+
+sudo: a password is required
+
+┌─[✗]─[hulbert@Intel5]─[~]
+
+└──╼ $
+
+┌─[root@Intel5]─[/home/hulbert]
+
+└──╼ #sudo PYTHONPATH=/lib/security/howdy /usr/bin/python3 /lib/security/howdy/cli.py --user hulbert -y test
+
+
+
+Opening a window with a test feed
+
+
+
+Press ctrl+C in this terminal to quit
+
+Click on the image to enable or disable slow mode
+
+
+
+QFontDatabase: Cannot find font directory /usr/local/lib/python3.11/dist-packages/cv2/qt/fonts.
+
+Note that Qt no longer ships fonts. Deploy some (from https://dejavu-fonts.github.io/ for example) or switch to fontconfig.
+
+QFontDatabase: Cannot find font directory /usr/local/lib/python3.11/dist-packages/cv2/qt/fonts.
+
+Note that Qt no longer ships fonts. Deploy some (from https://dejavu-fonts.github.io/ for example) or switch to fontconfig.
+
+QFontDatabase: Cannot find font directory /usr/local/lib/python3.11/dist-packages/cv2/qt/fonts.
+
+Note that Qt no longer ships fonts. Deploy some (from https://dejavu-fonts.github.io/ for example) or switch to fontconfig.
+
+QFontDatabase: Cannot find font directory /usr/local/lib/python3.11/dist-packages/cv2/qt/fonts.
+
+Note that Qt no longer ships fonts. Deploy some (from https://dejavu-fonts.github.io/ for example) or switch to fontconfig.
+
+QFontDatabase: Cannot find font directory /usr/local/lib/python3.11/dist-packages/cv2/qt/fonts.
+
+Note that Qt no longer ships fonts. Deploy some (from https://dejavu-fonts.github.io/ for example) or switch to fontconfig.
+
+^C
+
+Closing window
+
+but not yet showing files yet still dropping into a password prompt
+
+Gemini said
+The reason it's still dropping to a password prompt is that cli.py test is a diagnostic tool, not an authenticator. Even if it sees your face, it doesn't "tell" the system it's okay to let you in—it just shows you the video feed.
+
+Since the video window is failing to open properly (due to those Font/Qt errors), the command likely exits with an error code, which our PAM script interprets as a "Failure."
+
+Let's do two things: Fix the "Test" so you can actually see yourself, and then test the actual login.
+
+🛠 Step 1: Fix the Test (See what the camera sees)
+Since your Qt/Fonts are broken, we can force Howdy to show the test feed without the fancy UI.
+Run this as root:
+
+Bash
+# This forces OpenCV to use a simpler video backend for the test
+export QT_QPA_PLATFORM=offscreen 
+sudo PYTHONPATH=/lib/security/howdy /usr/bin/python3 /lib/security/howdy/cli.py --user hulbert test
+Note: If you still see "Closing window" immediately, the camera might be failing to initialize in that specific mode.
+
+🛠 Step 2: Check for "No Models" during Sudo
+If you cleared the models earlier, the sudo command will fail because it has nothing to compare your face to.
+
+Run this to confirm you have active models:
+
+Bash
+/usr/bin/python3 /lib/security/howdy/cli.py --user hulbert list
+If it says "No models found": You must run add before sudo will work.
+
+Bash
+sudo /usr/bin/python3 /lib/security/howdy/cli.py --user hulbert add
+🛠 Step 3: Debug the PAM Exit Code
+Let's see exactly why the sudo attempt is failing. We'll make the script log the "Error Output" of the camera attempt.
+
+Update /lib/security/howdy/pam/pam_handler.py with this debug version:
+
+Python
+import subprocess
+import os
+
+def pam_sm_authenticate(pamh, flags, argv):
+    try:
+        user = pamh.get_user(None)
+        # We capture both stdout and stderr to see the error
+        process = subprocess.run(
+            ["/usr/bin/python3", "/lib/security/howdy/cli.py", "-y", "--user", user, "test"],
+            capture_output=True,
+            text=True,
+            env={"PYTHONPATH": "/lib/security/howdy", "QT_QPA_PLATFORM": "offscreen"},
+            timeout=10
+        )
+
+        with open("/tmp/howdy_bridge.log", "a") as f:
+            f.write(f"EXIT CODE: {process.returncode}\n")
+            f.write(f"STDOUT: {process.stdout}\n")
+            f.write(f"STDERR: {process.stderr}\n")
+
+        if process.returncode == 0:
+            return 0
+        return 7
+    except Exception as e:
+        with open("/tmp/howdy_bridge.log", "a") as f:
+            f.write(f"FATAL ERROR: {str(e)}\n")
+        return 7
+
+def pam_sm_setcred(pamh, flags, argv): return 0
+🧪 The Test
+As hulbert: sudo -k
+
+Run: sudo ls /root
+
+Check the log: cat /tmp/howdy_bridge.log
+
+What does the log say after "STDOUT" and "STDERR"? If it says "No face detected", we need to check if /dev/video2 is actually your IR camera or just a dummy device.
+
+Would you like me to help you verify which /dev/video device is the correct one for your face?
+
+You said
+Python Handler Script Loaded
+
+Authentication attempt for user: hulbert
+
+Python Handler Script Loaded
+
+Authentication attempt for user: hulbert
+
+Bridge EXECUTED successfully
+
+Bridge EXECUTED successfully
+
+EXIT CODE: -6
+
+STDOUT: 
+
+STDERR: FATAL: The application binary appears to be running setuid, this is a security hole.
+
+
+
+┌─[root@Intel5]─[/ blink no access
+
+Gemini said
+That EXIT CODE: -6 (Abort) combined with the setuid error is the definitive answer.
+
+OpenCV and Qt (which Howdy uses) have security safeguards that prevent them from running when a process has "setuid" permissions. Since sudo runs as root but is initiated by a user, the graphics libraries are crashing on purpose to "protect" the system.
+
+We have to bypass the CLI and use the Direct Python Engine (which we almost had earlier) so we don't trigger those setuid checks.
+
+🛠 Step 1: The "Direct Engine" Handler
+This version doesn't call a subprocess; it runs the math inside the current process. This is the only way to avoid the setuid crash.
+
+Update /lib/security/howdy/pam/pam_handler.py as root:
+
+Python
+import sys
+import os
+
+# Add Howdy to the path
+sys.path.append("/lib/security/howdy")
+
+def pam_handler(pamh, flags, argv):
+    try:
+        user = pamh.get_user(None)
+        
+        # We import the internal Compare class
+        # This avoids the setuid/OpenCV binary crash
+        from compare import Compare
+        
+        # Initialize the engine
+        c = Compare("/lib/security/howdy/config.ini")
+        
+        # Run identification
+        identified_user = c.identify()
+
+        if identified_user == user:
+            return 0  # Success!
+            
+        return 7  # Auth Failed
+    except Exception as e:
+        with open("/tmp/howdy_bridge.log", "a") as f:
+            f.write(f"Direct Engine Error: {str(e)}\n")
+        return 7
+
+def pam_sm_authenticate(pamh, flags, argv): return pam_handler(pamh, flags, argv)
+def pam_sm_setcred(pamh, flags, argv): return 0
+def pam_sm_acct_mgmt(pamh, flags, argv): return 0
+def pam_sm_open_session(pamh, flags, argv): return 0
+def pam_sm_close_session(pamh, flags, argv): return 0
+🛠 Step 2: Fix the Model Path (Again)
+If it blinks but fails, it’s often because the script can't find the models in the relative path. Let's make it absolute.
+
+Run as root:
+
+Bash
+sudo sed -i 's|data_dir = .*|data_dir = /lib/security/howdy/models|' /lib/security/howdy/config.ini
+🛠 Step 3: Clear the Stuck Log
+Bash
+sudo rm /tmp/howdy_bridge.log
+🧪 The "No-More-Subprocess" Test
+sudo -k
+
+sudo ls /root
+
+Why this should work:
+By importing Compare directly into the PAM process, we aren't launching a new "binary" that triggers the setuid security hole. We are just running Python code.
+
+Does it blink and let you in now? If it fails, check cat /tmp/howdy_bridge.log. If it says "No module named 'compare'", we just need to fix one more path.
+
+You said
+└──╼ #cat /lib/security/howdy/pam/pam_handler.py
+
+import sys
+
+import os
+
+
+
+# Add Howdy to the path
+
+sys.path.append("/lib/security/howdy")
+
+
+
+def pam_handler(pamh, flags, argv):
+
+    try:
+
+        user = pamh.get_user(None)
+
+        
+
+        # We import the internal Compare class
+
+        # This avoids the setuid/OpenCV binary crash
+
+        from compare import Compare
+
+        
+
+        # Initialize the engine
+
+        c = Compare("/lib/security/howdy/config.ini")
+
+        
+
+        # Run identification
+
+        identified_user = c.identify()
+
+
+
+        if identified_user == user:
+
+            return 0  # Success!
+
+            
+
+        return 7  # Auth Failed
+
+    except Exception as e:
+
+        with open("/tmp/howdy_bridge.log", "a") as f:
+
+            f.write(f"Direct Engine Error: {str(e)}\n")
+
+        return 7
+
+
+
+def pam_sm_authenticate(pamh, flags, argv): return pam_handler(pamh, flags, argv)
+
+def pam_sm_setcred(pamh, flags, argv): return 0
+
+def pam_sm_acct_mgmt(pamh, flags, argv): return 0
+
+def pam_sm_open_session(pamh, flags, argv): return 0
+
+def pam_sm_close_session(pamh, flags, argv): return 0
+
+┌─[root@Intel5]─[/home/hulbert]
+
+└──╼ #
+
+┌─[root@Intel5]─[/home/hulbert]
+
+└──╼ #cat /lib/security/howdy/pam/pam_handler.py
+
+import sys
+
+import os
+
+
+
+# Add Howdy to the path
+
+sys.path.append("/lib/security/howdy")
+
+
+
+def pam_handler(pamh, flags, argv):
+
+    try:
+
+        user = pamh.get_user(None)
+
+        
+
+        # We import the internal Compare class
+
+        # This avoids the setuid/OpenCV binary crash
+
+        from compare import Compare
+
+        
+
+        # Initialize the engine
+
+        c = Compare("/lib/security/howdy/config.ini")
+
+        
+
+        # Run identification
+
+        identified_user = c.identify()
+
+
+
+        if identified_user == user:
+
+            return 0  # Success!
+
+            
+
+        return 7  # Auth Failed
+
+    except Exception as e:
+
+        with open("/tmp/howdy_bridge.log", "a") as f:
+
+            f.write(f"Direct Engine Error: {str(e)}\n")
+
+        return 7
+
+
+
+def pam_sm_authenticate(pamh, flags, argv): return pam_handler(pamh, flags, argv)
+
+def pam_sm_setcred(pamh, flags, argv): return 0
+
+def pam_sm_acct_mgmt(pamh, flags, argv): return 0
+
+def pam_sm_open_session(pamh, flags, argv): return 0
+
+def pam_sm_close_session(pamh, flags, argv): return 0
+
+┌─[root@Intel5]─[/home/hulbert]
+
+└──╼ #cat /tmp/howdy_debug.log
+
+User: hulbert | Exit Code: -6
+
+User: hulbert | Exit Code: -6
+
+┌─[root@Intel5]─[/home/hulbert]
+
+└──╼ #
+
+┌─[hulbert@Intel5]─[~]
+
+└──╼ $sudo -k
+
+┌─[hulbert@Intel5]─[~]
+
+└──╼ $sudo ls /root
+
+[sudo] password for hulbert: 
+
+sudo: a password is required
+
+┌─[✗]─[hulbert@Intel5]─[~]
+
+└──╼ $
+
+Gemini said
+That setuid error we found earlier is a massive hurdle for OpenCV. Since the "Direct Engine" script still isn't letting you in and isn't updating the log, it means even the import of compare is likely triggering that same security abort inside the PAM process.
+
+We have one last, highly effective card to play: Environment Sanitization. We need to tell the Python environment to ignore the security flags that are making OpenCV/Qt panic.
+
+🛠 Step 1: The "Sanitized" Handler
+We are going to force the environment variables inside the script and use the compare module only after we've told the system to stay calm.
+
+Update /lib/security/howdy/pam/pam_handler.py as root:
+
+Python
+import sys
+import os
+
+# CRITICAL: We set these BEFORE importing Howdy modules
+os.environ["QT_QPA_PLATFORM"] = "offscreen"
+os.environ["OPENCV_LOG_LEVEL"] = "OFF"
+os.environ["PYTHONPATH"] = "/lib/security/howdy"
+
+def pam_handler(pamh, flags, argv):
+    # Log that we actually entered the function
+    with open("/tmp/howdy_bridge.log", "a") as f:
+        f.write("Entered pam_handler\n")
+
+    try:
+        user = pamh.get_user(None)
+        
+        # Add path locally
+        if "/lib/security/howdy" not in sys.path:
+            sys.path.append("/lib/security/howdy")
+        
+        # Now import
+        from compare import Compare
+        
+        # Initialize with the absolute config path
+        c = Compare("/lib/security/howdy/config.ini")
+        
+        # Identify
+        identified_user = c.identify()
+
+        with open("/tmp/howdy_bridge.log", "a") as f:
+            f.write(f"Identified as: {identified_user} | Target: {user}\n")
+
+        if identified_user == user:
+            return 0
+        return 7
+    except Exception as e:
+        with open("/tmp/howdy_bridge.log", "a") as f:
+            f.write(f"Direct Engine Error: {str(e)}\n")
+        return 7
+
+def pam_sm_authenticate(pamh, flags, argv): return pam_handler(pamh, flags, argv)
+def pam_sm_setcred(pamh, flags, argv): return 0
+def pam_sm_acct_mgmt(pamh, flags, argv): return 0
+def pam_sm_open_session(pamh, flags, argv): return 0
+def pam_sm_close_session(pamh, flags, argv): return 0
+🛠 Step 2: Fix the Log Permissions
+PAM runs as the user calling sudo (but with root privileges), so the log file needs to be wide open for us to see the output.
+
+Bash
+sudo touch /tmp/howdy_bridge.log
+sudo chmod 666 /tmp/howdy_bridge.log
+🛠 Step 3: Check for "Broken" OpenCV
+If it still blinks and fails, run this as root to see if your camera can even take a photo without a UI:
+
+Bash
+PYTHONPATH=/lib/security/howdy QT_QPA_PLATFORM=offscreen python3 -c "import cv2; cap = cv2.VideoCapture(2); ret, frame = cap.read(); print('Camera Success:', ret); cap.release()"
+If this returns Camera Success: False, we need to change your device_path in config.ini.
+
+🧪 The Test
+sudo -k
+
+sudo ls /root
+
+cat /tmp/howdy_bridge.log
+
+If the log still only says "Entered pam_handler" and then stops: OpenCV is still aborting.
+If the log says "Identified as: None": Your models are missing or the camera is seeing black.
+
+What does the log show now? We're narrowing it down to the exact line of failure.
+
+You said
+no camera blink even in previous, i forgot to tell you ┌─[hulbert@Intel5]─[~]
+
+└──╼ $sudo -k
+
+┌─[hulbert@Intel5]─[~]
+
+└──╼ $sudo ls /root
+
+[sudo] password for hulbert: 
+
+sudo: a password is required
+
+┌─[✗]─[hulbert@Intel5]─[~]
+
+└──╼ $sudo -k
+
+┌─[hulbert@Intel5]─[~]
+
+└──╼ $sudo ls /root
+
+[sudo] password for hulbert: 
+
+sudo: a password is required
+
+┌─[✗]─[hulbert@Intel5]─[~]
+
+└──╼ $
+
+
+
+──╼ #cat /lib/security/howdy/pam/pam_handler.py
+
+import sys
+
+import os
+
+
+
+# Add Howdy to the path
+
+sys.path.append("/lib/security/howdy")
+
+
+
+def pam_handler(pamh, flags, argv):
+
+    try:
+
+        user = pamh.get_user(None)
+
+        
+
+        # We import the internal Compare class
+
+        # This avoids the setuid/OpenCV binary crash
+
+        from compare import Compare
+
+        
+
+        # Initialize the engine
+
+        c = Compare("/lib/security/howdy/config.ini")
+
+        
+
+        # Run identification
+
+        identified_user = c.identify()
+
+
+
+        if identified_user == user:
+
+            return 0  # Success!
+
+            
+
+        return 7  # Auth Failed
+
+    except Exception as e:
+
+        with open("/tmp/howdy_bridge.log", "a") as f:
+
+            f.write(f"Direct Engine Error: {str(e)}\n")
+
+        return 7
+
+
+
+def pam_sm_authenticate(pamh, flags, argv): return pam_handler(pamh, flags, argv)
+
+def pam_sm_setcred(pamh, flags, argv): return 0
+
+def pam_sm_acct_mgmt(pamh, flags, argv): return 0
+
+def pam_sm_open_session(pamh, flags, argv): return 0
+
+def pam_sm_close_session(pamh, flags, argv): return 0
+
+┌─[root@Intel5]─[/home/hulbert]
+
+└──╼ #cat /tmp/howdy_debug.log
+
+User: hulbert | Exit Code: -6
+
+User: hulbert | Exit Code: -6
+
+┌─[root@Intel5]─[/home/hulbert]
+
+└──╼ #vi /lib/security/howdy/pam/pam_handler.py
+
+┌─[root@Intel5]─[/home/hulbert]
+
+└──╼ #sudo touch /tmp/howdy_bridge.log
+
+sudo chmod 666 /tmp/howdy_bridge.log
+
+┌─[root@Intel5]─[/home/hulbert]
+
+└──╼ #PYTHONPATH=/lib/security/howdy QT_QPA_PLATFORM=offscreen python3 -c "import cv2; cap = cv2.VideoCapture(2); ret, frame = cap.read(); print('Camera Success:', ret); cap.release()"
+
+Camera Success: True
+
+┌─[root@Intel5]─[/home/hulbert]
+
+└──╼ #
+
+─[root@Intel5]─[/home/hulbert]
+
+└──╼ #cat /lib/security/howdy/pam/pam_handler.py
+
+import sys
+
+import os
+
+
+
+# CRITICAL: We set these BEFORE importing Howdy modules
+
+os.environ["QT_QPA_PLATFORM"] = "offscreen"
+
+os.environ["OPENCV_LOG_LEVEL"] = "OFF"
+
+os.environ["PYTHONPATH"] = "/lib/security/howdy"
+
+
+
+def pam_handler(pamh, flags, argv):
+
+    # Log that we actually entered the function
+
+    with open("/tmp/howdy_bridge.log", "a") as f:
+
+        f.write("Entered pam_handler\n")
+
+
+
+    try:
+
+        user = pamh.get_user(None)
+
+        
+
+        # Add path locally
+
+        if "/lib/security/howdy" not in sys.path:
+
+            sys.path.append("/lib/security/howdy")
+
+        
+
+        # Now import
+
+        from compare import Compare
+
+        
+
+        # Initialize with the absolute config path
+
+        c = Compare("/lib/security/howdy/config.ini")
+
+        
+
+        # Identify
+
+        identified_user = c.identify()
+
+
+
+        with open("/tmp/howdy_bridge.log", "a") as f:
+
+            f.write(f"Identified as: {identified_user} | Target: {user}\n")
+
+
+
+        if identified_user == user:
+
+            return 0
+
+        return 7
+
+    except Exception as e:
+
+        with open("/tmp/howdy_bridge.log", "a") as f:
+
+            f.write(f"Direct Engine Error: {str(e)}\n")
+
+        return 7
+
+
+
+def pam_sm_authenticate(pamh, flags, argv): return pam_handler(pamh, flags, argv)
+
+def pam_sm_setcred(pamh, flags, argv): return 0
+
+def pam_sm_acct_mgmt(pamh, flags, argv): return 0
+
+def pam_sm_open_session(pamh, flags, argv): return 0
+
+def pam_sm_close_session(pamh, flags, argv): return 0
+
+┌─[root@Intel5]─[/home/hulbert]
+
+└──╼ #
+
+Gemini said
+If "Camera Success: True" worked in the terminal but you get no blink and no log entry during sudo, it means the pam_python3.so module is crashing the moment it tries to load the Python interpreter for a "setuid" process (like sudo).
+
+Since the "God Mode" (returning 0 immediately) worked earlier, we know the bridge can work, but OpenCV is likely what's poisoning the well.
+
+Let's try one very specific trick: Lazy Loading. We will hide the Howdy imports inside the function so the system doesn't crash until the camera is actually needed.
+
+🛠 Step 1: The "Lazy Load" Handler
+We're moving the imports and environment setup inside the function. This prevents the Python interpreter from panicking during the initial load phase.
+
+Update /lib/security/howdy/pam/pam_handler.py as root:
+
+Python
+import sys
+import os
+
+def pam_sm_authenticate(pamh, flags, argv):
+    # Log entry immediately
+    with open("/tmp/howdy_bridge.log", "a") as f:
+        f.write("--- PAM AUTH START ---\n")
+
+    try:
+        # 1. Sanitize environment for the setuid context
+        os.environ["QT_QPA_PLATFORM"] = "offscreen"
+        os.environ["OPENCV_LOG_LEVEL"] = "OFF"
+        
+        # 2. Localize paths
+        if "/lib/security/howdy" not in sys.path:
+            sys.path.append("/lib/security/howdy")
+
+        # 3. LAZY IMPORT: Only import when called
+        from compare import Compare
+        
+        user = pamh.get_user(None)
+        c = Compare("/lib/security/howdy/config.ini")
+        
+        with open("/tmp/howdy_bridge.log", "a") as f:
+            f.write("Engine initialized, starting camera...\n")
+
+        identified_user = c.identify()
+
+        with open("/tmp/howdy_bridge.log", "a") as f:
+            f.write(f"Result: {identified_user} (Target: {user})\n")
+
+        if identified_user == user:
+            return 0
+        return 7
+
+    except Exception as e:
+        with open("/tmp/howdy_bridge.log", "a") as f:
+            f.write(f"CRASH: {str(e)}\n")
+        return 7
+
+def pam_sm_setcred(pamh, flags, argv): return 0
+def pam_sm_acct_mgmt(pamh, flags, argv): return 0
+def pam_sm_open_session(pamh, flags, argv): return 0
+def pam_sm_close_session(pamh, flags, argv): return 0
+🛠 Step 2: Clear the Log and Reset Permissions
+If the file is owned by root and you're running sudo as hulbert, there might be a write-lock.
+
+Bash
+sudo rm /tmp/howdy_bridge.log
+sudo touch /tmp/howdy_bridge.log
+sudo chmod 666 /tmp/howdy_bridge.log
+🛠 Step 3: Check for "Dead" Processes
+If a previous attempt crashed and is still holding the camera (/dev/video2) hostage, the new attempt will fail silently.
+
+Bash
+sudo fuser -k /dev/video2
+🧪 The "One-Two" Test
+Terminal 1: tail -f /tmp/howdy_bridge.log
+
+Terminal 2: sudo -k && sudo ls /root
+
+Check Terminal 1 immediately:
+
+If it says "Engine initialized" but then stops: The camera is crashing.
+
+If it says "CRASH: ... symbol not found": We have a library version mismatch between Python and the PAM module.
+
+If it says nothing at all: pam_python3.so is rejecting the script before it even starts.
+
+What does the tail -f show when you trigger sudo?
+
+You said
+┌─[hulbert@Intel5]─[~]
+
+└──╼ $tail -f /tmp/howdy_bridge.log
+
+--- PAM AUTH START ---
+
+
+
+
+
+
+
+┌─[hulbert@Intel5]─[~]
+
+└──╼ $sudo -k && sudo ls /root
+
+[sudo] password for hulbert: 
+
+
+
+
+
+
+
+└──╼ #sudo fuser -k /dev/video2
+
+┌─[✗]─[root@Intel5]─[/home/hulbert]
+
+└──╼ #
+
+┌─[✗]─[root@Intel5]─[/home/hulbert]
+
+└──╼ #cat /lib/security/howdy/pam/pam_handler.py
+
+import sys
+
+import os
+
+
+
+def pam_sm_authenticate(pamh, flags, argv):
+
+    # Log entry immediately
+
+    with open("/tmp/howdy_bridge.log", "a") as f:
+
+        f.write("--- PAM AUTH START ---\n")
+
+
+
+    try:
+
+        # 1. Sanitize environment for the setuid context
+
+        os.environ["QT_QPA_PLATFORM"] = "offscreen"
+
+        os.environ["OPENCV_LOG_LEVEL"] = "OFF"
+
+        
+
+        # 2. Localize paths
+
+        if "/lib/security/howdy" not in sys.path:
+
+            sys.path.append("/lib/security/howdy")
+
+
+
+        # 3. LAZY IMPORT: Only import when called
+
+        from compare import Compare
+
+        
+
+        user = pamh.get_user(None)
+
+        c = Compare("/lib/security/howdy/config.ini")
+
+        
+
+        with open("/tmp/howdy_bridge.log", "a") as f:
+
+            f.write("Engine initialized, starting camera...\n")
+
+
+
+        identified_user = c.identify()
+
+
+
+        with open("/tmp/howdy_bridge.log", "a") as f:
+
+            f.write(f"Result: {identified_user} (Target: {user})\n")
+
+
+
+        if identified_user == user:
+
+            return 0
+
+        return 7
+
+
+
+    except Exception as e:
+
+        with open("/tmp/howdy_bridge.log", "a") as f:
+
+            f.write(f"CRASH: {str(e)}\n")
+
+        return 7
+
+
+
+def pam_sm_setcred(pamh, flags, argv): return 0
+
+def pam_sm_acct_mgmt(pamh, flags, argv): return 0
+
+def pam_sm_open_session(pamh, flags, argv): return 0
+
+def pam_sm_close_session(pamh, flags, argv): return 0
+
+┌─[root@Intel5]─[/home/hulbert]
+
+└──╼ #
+
+no camera blink
+
+Gemini said
+This is progress, but it’s a "silent kill" situation. The log shows --- PAM AUTH START --- and then nothing. This means the script is crashing exactly at the line from compare import Compare.
+
+When Python crashes during an import without triggering the except block, it’s almost always a Segmentation Fault or a Shared Library Abort. Essentially, the pam_python3.so (built for Python 3.13) is trying to load cv2 (OpenCV), but OpenCV is realizing it's being run via sudo (setuid) and is killing the process instantly for security reasons.
+
+We need to move the camera logic back into a separate process, but we have to do it in a way that bypasses the setuid restriction.
+
+🛠 Step 1: The "Detached Subprocess" Handler
+We are going to use subprocess again, but we will "cleanse" the environment variables so OpenCV doesn't know it's being called by sudo.
+
+Update /lib/security/howdy/pam/pam_handler.py as root:
+
+Python
+import sys
+import os
+import subprocess
+
+def pam_sm_authenticate(pamh, flags, argv):
+    with open("/tmp/howdy_bridge.log", "a") as f:
+        f.write("--- Attempting Subprocess Launch ---\n")
+
+    try:
+        user = pamh.get_user(None)
+        
+        # We run the cli.py but we STRIP the environment variables 
+        # that flag this as a setuid/root process to OpenCV
+        new_env = {
+            "PYTHONPATH": "/lib/security/howdy",
+            "QT_QPA_PLATFORM": "offscreen",
+            "OPENCV_LOG_LEVEL": "OFF",
+            "PATH": "/usr/bin:/bin"
+        }
+
+        # Use the absolute path to python3
+        # We use the -u flag for unbuffered output
+        process = subprocess.run(
+            ["/usr/bin/python3", "-u", "/lib/security/howdy/cli.py", "-y", "--user", user, "test"],
+            env=new_env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            timeout=10
+        )
+
+        with open("/tmp/howdy_bridge.log", "a") as f:
+            f.write(f"Subprocess Exit Code: {process.returncode}\n")
+            if process.returncode != 0:
+                f.write(f"Error: {process.stderr}\n")
+
+        if process.returncode == 0:
+            return 0
+        return 7
+
+    except Exception as e:
+        with open("/tmp/howdy_bridge.log", "a") as f:
+            f.write(f"Handler Crash: {str(e)}\n")
+        return 7
+
+def pam_sm_setcred(pamh, flags, argv): return 0
+def pam_sm_acct_mgmt(pamh, flags, argv): return 0
+def pam_sm_open_session(pamh, flags, argv): return 0
+def pam_sm_close_session(pamh, flags, argv): return 0
+🛠 Step 2: Fix the "setuid" environment
+The reason it failed before was that subprocess.run inherited the sudo environment. By defining new_env manually and not including the parent environment, we trick OpenCV into thinking it's a normal user process.
+
+🛠 Step 3: Test the Camera CLI manually as a user
+Before trying sudo, let's make sure the command itself can blink the camera without crashing when run normally:
+
+Bash
+# Run as hulbert, not root
+PYTHONPATH=/lib/security/howdy /usr/bin/python3 /lib/security/howdy/cli.py --user hulbert -y test
+Does the camera blink when you run this? * If YES: The command works, and the new pam_handler.py should now work with sudo.
+
+If NO: We have to check if /dev/video2 needs specific permissions.
+
+🧪 The Test
+sudo -k
+
+sudo ls /root
+
+Check tail -f /tmp/howdy_bridge.log
+
+If it still gives "EXIT CODE: -6" in the log:
+Then the version of OpenCV you have installed is hard-compiled with setuid protection that cannot be bypassed via environment variables. In that case, we would need to use a different camera library (like fswebcam) to trigger the blink, but let's see if this "env cleansing" works first.
+
+Does Terminal 1 show a "Subprocess Exit Code" now?
+
+You said
+─[✗]─[root@Intel5]─[/home/hulbert]
+
+└──╼ #PYTHONPATH=/lib/security/howdy /usr/bin/python3 /lib/security/howdy/cli.py --user hulbert -y test
+
+
+
+Opening a window with a test feed
+
+
+
+Press ctrl+C in this terminal to quit
+
+Click on the image to enable or disable slow mode
+
+
+
+qt.qpa.plugin: Could not find the Qt platform plugin "offscreen" in "/usr/local/lib/python3.11/dist-packages/cv2/qt/plugins"
+
+This application failed to start because no Qt platform plugin could be initialized. Reinstalling the application may fix this problem.
+
+
+
+Available platform plugins are: xcb.
+
+
+
+Aborted
+
+┌─[✗]─[root@Intel5]─[/home/hulbert]
+
+└──╼ #
+
+Gemini said
+This is the final hurdle. The "Aborted" crash happens because Howdy's cli.py is trying to load a GUI (Qt) that doesn't exist in a terminal/PAM session. Even though you requested "offscreen," your OpenCV installation is missing that specific plugin.
+
+We need to force Howdy to run without the video window logic entirely. We will bypass cli.py and create a tiny "headless" script that only does the face matching.
+
+🛠 Step 1: Create a Headless Verifier
+Create a new file /lib/security/howdy/verify.py as root:
+
+Python
+import sys
+import os
+
+# Hide the Qt/GUI errors
+os.environ["QT_QPA_PLATFORM"] = "offscreen"
+os.environ["OPENCV_LOG_LEVEL"] = "OFF"
+
+sys.path.append("/lib/security/howdy")
+from compare import Compare
+
+def main():
+    if len(sys.argv) < 2:
+        sys.exit(1)
+        
+    user = sys.argv[1]
+    try:
+        # Use the internal engine directly
+        c = Compare("/lib/security/howdy/config.ini")
+        identified_user = c.identify()
+        
+        if identified_user == user:
+            sys.exit(0) # Match
+    except Exception:
+        pass
+    
+    sys.exit(1) # No match or error
+
+if __name__ == "__main__":
+    main()
+🛠 Step 2: Point PAM to the Headless Verifier
+Now we update /lib/security/howdy/pam/pam_handler.py to call this clean, GUI-free script.
+
+Update the file as root:
+
+Python
+import subprocess
+import os
+
+def pam_sm_authenticate(pamh, flags, argv):
+    try:
+        user = pamh.get_user(None)
+        
+        # Run our new headless script
+        process = subprocess.run(
+            ["/usr/bin/python3", "/lib/security/howdy/verify.py", user],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            env={"PYTHONPATH": "/lib/security/howdy"},
+            timeout=10
+        )
+
+        if process.returncode == 0:
+            return 0  # PAM_SUCCESS
+        return 7      # PAM_AUTH_ERR
+    except:
+        return 7
+
+def pam_sm_setcred(pamh, flags, argv): return 0
+def pam_sm_acct_mgmt(pamh, flags, argv): return 0
+def pam_sm_open_session(pamh, flags, argv): return 0
+def pam_sm_close_session(pamh, flags, argv): return 0
+🛠 Step 3: Permissions Check
+Bash
+chmod 755 /lib/security/howdy/verify.py
+chmod 755 /lib/security/howdy/pam/pam_handler.py
+🧪 The Final Test
+sudo -k
+
+sudo ls /root
+
+Why this works:
+The Aborted crash you saw was caused by the Qt library looking for a monitor. By using verify.py (which only imports Compare and never touches the test window code in cli.py), we skip the broken Qt plugins entirely.
+
+Does it blink and grant access now? (If it still fails, it's just a matter of adding one more model with sudo /usr/bin/python3 /lib/security/howdy/cli.py add now that the plumbing is fixed).
+
+You said
+┌─[hulbert@Intel5]─[~]
+
+└──╼ $sudo -k
+
+┌─[hulbert@Intel5]─[~]
+
+└──╼ $sudo ls /root
+
+bettercap.history  Desktop  Documents  Downloads  emiliohulbert.github.io  Eternalblue-Doublepulsar-Metasploit FileZilla.xml  go  Music  onlinebot.sql  Pictures  Public  remacode  snap  telebit  Templates  @user_models_dir@  venv39  Videos  xsct-prefix
+
+┌─[hulbert@Intel5]─[~]
+
+└──╼ $sudo ls /root
+
+bettercap.history  Desktop  Documents  Downloads  emiliohulbert.github.io  Eternalblue-Doublepulsar-Metasploit FileZilla.xml  go  Music  onlinebot.sql  Pictures  Public  remacode  snap  telebit  Templates  @user_models_dir@  venv39  Videos  xsct-prefix
+
+┌─[hulbert@Intel5]─[~]
+
+└──╼ $
+
+
+
+yeah, now will this work at login too?
+
+Gemini said
+We have lift-off! The fact that sudo ls /root worked without a password prompt means the headless verify.py script and the PAM bridge are officially communicating and recognizing your face.
+
+To answer your question: Yes, this will work for your login screen (SDDM, GDM, or LightDM) because we modified /etc/pam.d/common-auth.
+
+In Linux, common-auth is the "master" authentication file. Nearly every login method—whether it's the physical lock screen, a TTY console, or sudo—refers to this file to decide how to verify a user.
+
+🛡️ One Safety Warning
+Since it’s working at the login screen now, do not lock yourself out. If the camera fails (e.g., you're in a pitch-black room or the camera is unplugged), PAM will wait for the 10-second timeout we set in pam_handler.py and then fall back to the standard password prompt.
+
+🛠️ Final Polish (Optional)
+If you want the login experience to feel "official," you can re-enable the "Detection Notice" so you know when it's looking for you.
+
+Edit the config: sudo vi /lib/security/howdy/config.ini
+
+Set: detection_notice = true
+
+Set: suppress_unknown = false
+
+🧪 How to test the login safely
+Keep your current terminal open (just in case you need to revert changes).
+
+Press Ctrl + Alt + F3 to switch to a TTY (text console).
+
+Try to log in with your username hulbert.
+
+You should see the camera blink, and then you should be dropped straight into the shell.
+
+🔄 What if I want to turn it off?
+If you ever need to disable it, just comment out the Howdy line in your PAM config:
+sudo vi /etc/pam.d/common-auth
+Change:
+auth sufficient /lib/security/pam_python3.so ...
+To:
+# auth sufficient /lib/security/pam_python3.so ...
+
+Would you like me to help you write a small bash script to "toggle" Howdy on and off easily?
+
+You said
+yeah, this one works.I
+
+Gemini said
+That’s great to hear. Getting Howdy stable on Parrot OS—especially with that Python 3.13 library mismatch—is a real win.
+
+Since everything is running smoothly, here is the "toggle" script I mentioned. This is handy because sometimes you might be in a situation (like a dark room or wearing a mask) where you just want to go straight to a password without waiting for the camera timeout.
+
+🛠️ The "Howdy Toggle" Script
+Create a new file called htoggle (for Howdy Toggle) in your local bin:
+
+Bash
+cat << 'EOF' | sudo tee /usr/local/bin/htoggle > /dev/null
+#!/bin/bash
+FILE="/etc/pam.d/common-auth"
+
+if grep -q "^auth sufficient /lib/security/pam_python3.so" "$FILE"; then
+    sudo sed -i 's/^auth sufficient /# auth sufficient /' "$FILE"
+    echo "Howdy DISABLED (Password only)"
+else
+    sudo sed -i 's/^# auth sufficient /auth sufficient /' "$FILE"
+    echo "Howdy ENABLED (Face Unlock)"
+fi
+EOF
+
+sudo chmod +x /usr/local/bin/htoggle
+Now, you can just type htoggle in any terminal to switch between Face ID and Password-only mode.
+
+💡 Final Tips for Parrot OS Stability
+Kernel Updates: If you update your kernel and the camera stops blinking, check if your /dev/video index changed (e.g., from video2 to video0). You can update that in /lib/security/howdy/config.ini.
+
+Lighting: If you find the login screen is less reliable than the terminal, add one more face model while sitting at the actual login screen (the lighting is often different when the UI is dimmed).
+
+Is there anything else with the camera or the PAM setup you'd like to tweak, or are you ready to roll with your new face unlock?
+
+
+yeah, this one works.I am not going to be  delting this chat for a long time.Now I hate it when I don't have the documentation for how things work.I need the full detailed documentation for everything and every file upto this point where it has worked and the process of how to set everything up from scratch.Because now, if i was to reinstall stuff again, I would have to start struggling again on how to do it.Once you give me the full documentation, you will also give me the complete clean up method to remove it so we start from scratch and install it again and get it running.
+
+
+Gemini is AI and can make mistakes.
+
