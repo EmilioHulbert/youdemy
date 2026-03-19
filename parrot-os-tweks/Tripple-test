@@ -1,0 +1,30 @@
+The "Triple-Threat" Test
+We are going to try three different ways to name the destination. One of these must match what GRUB has in its internal menu list.
+
+Option A: The Long ID (The most likely)
+
+Bash
+sudo grub-editenv /boot/efi/grubenv set next_entry="osprober-efi-93A7-2981" && sudo rtcwake -m disk -s 30
+Option B: The "Friendly" Name (In quotes)
+
+Bash
+sudo grub-editenv /boot/efi/grubenv set next_entry="Windows Boot Manager (on /dev/nvme0n1p1)" && sudo rtcwake -m disk -s 30
+Option C: The Short ID
+
+Bash
+sudo grub-editenv /boot/efi/grubenv set next_entry="93A7-2981" && sudo rtcwake -m disk -s 30
+🔍 Why it's being stubborn
+Since your debug message confirmed set default="${next_entry}" executed, the "Jump" logic is 100% active. If it fails to jump, it's because GRUB looked at its menu list and said: "I have Parrot, I have Advanced Options, but I don't see anything called [Your String]."
+
+One last check for a "Double Override"
+Look at the very end of your 00_header paste. You have the make_timeout function and then:
+
+Bash
+make_timeout "${GRUB_HIDDEN_TIMEOUT}" "${GRUB_TIMEOUT}" "${GRUB_TIMEOUT_STYLE}"
+In some versions of Parrot/Debian, the 10_linux script (which runs right after 00_header) explicitly sets default=0 again if it thinks it's a fresh boot.
+
+Let's try this: Move your entire custom cat << 'EOF' block from 00_header and paste it at the very bottom of /etc/grub.d/40_custom instead. Then remove it from 00_header. This ensures your "Jump" logic is the absolute last thing GRUB hears before it shows the menu.
+
+Would you like me to show you exactly how to move it to 40_custom to ensure it's the final word?
+grep "efi_device" /boot/grub/grub.cfg
+

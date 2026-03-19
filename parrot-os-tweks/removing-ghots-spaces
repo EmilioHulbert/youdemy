@@ -1,0 +1,36 @@
+sudo sed -i 's/\xc2\xa0/ /g' /etc/grub.d/00_header
+Verification (The Litmus Test)
+Run this command to see if the generated code is actually clean:
+
+Bash
+grep "save_env" /boot/grub/grub.cfg | cat -A
+Good result: You see ^I (a tab) or standard spaces followed by the command.
+
+Bad result: You see M-BM-  or other strange symbols.
+
+Gemini said
+Look at the first line of your grep output. Those leading spaces are still not standard spaces or tabs. In a clean cat -A output, a standard space looks like a literal space, and a tab looks like ^I.
+
+The fact that your output shows that specific indentation without ^I markers—combined with the fact that it isn't executing—means those non-breaking spaces (M-BM- ) are still haunting the file. GRUB is likely hitting those characters and stopping the script before it can set the Windows default.
+
+🛠️ The "Force Clean" Strategy
+Since sed didn't catch them, we’ll use tr to strip everything that isn't a standard ASCII character. This is the most reliable way to kill "ghost" characters in a configuration file.
+
+Run this command to purge the file:
+
+Bash
+sudo tr -cd '\11\12\15\40-\176' < /etc/grub.d/00_header > /etc/grub.d/00_header.clean
+sudo mv /etc/grub.d/00_header.clean /etc/grub.d/00_header
+sudo chmod +x /etc/grub.d/00_header
+sudo update-grub
+🔍 The Final Verification
+After running the commands above, check the grep again. This time, we want to see if the command actually exists in the final config without the "invisible" wall.
+
+Run this:
+
+Bash
+grep "save_env -f" /boot/grub/grub.cfg | cat -A
+If the ghost is gone, you should see something like:
+   save_env -f ($efi_device)/grubenv next_entry$
+
+

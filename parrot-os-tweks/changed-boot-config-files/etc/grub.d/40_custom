@@ -1,0 +1,21 @@
+#!/bin/sh
+exec tail -n +3 $0
+# This file provides an easy way to add custom menu entries.
+
+insmod fat
+search --no-floppy --fs-uuid --set=efi_device 93A7-2981
+
+if [ -n "${efi_device}" ]; then
+    echo "Found EFI partition at ${efi_device}"
+    load_env -f (${efi_device})/grubenv
+    if [ -n "${next_entry}" ]; then
+        echo "Next entry is set to: ${next_entry}"
+        set default="${next_entry}"
+        set next_entry=
+        save_env -f (${efi_device})/grubenv next_entry
+        sleep 2
+    fi
+else
+    echo "EFI partition NOT found. Booting default."
+    sleep 2
+fi

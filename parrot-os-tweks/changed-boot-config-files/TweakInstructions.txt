@@ -1,0 +1,98 @@
+Step 1: Mount the EFI Partition
+Ensure your EFI partition is mounted (usually at /boot/efi):
+
+Bash
+ls /boot/efi
+
+Step 2: Relocate the grubenv
+We will move the actual file to the EFI partition and then tell GRUB to look there.
+
+Bash
+# Move the current environment file to EFI
+sudo mv /boot/grub/grubenv /boot/efi/grubenv
+#or create the file properly
+The "Red Team" Recovery (Fixing the Block)
+You don't need to find a backup; you can generate a brand-new, perfectly sized 1024-byte block right now.
+
+Run these commands in order:
+
+Delete the broken file (the one on the EFI partition):
+
+Bash
+sudo rm /boot/efi/grubenv
+Create a fresh 1024-byte block:
+
+Bash
+sudo grub-editenv /boot/efi/grubenv create
+Verify the size (It MUST say 1024):
+
+Bash
+ls -l /boot/efi/grubenv
+Set your jump variable again:
+
+Bash
+sudo grub-editenv /boot/efi/grubenv set next_entry="osprober-efi-93A7-2981"
+This is a common "gotcha" in GRUB management. Add this to your troubleshooting section:
+
+Error: Environment block too small
+This happens if the grubenv file size is not exactly 1024 bytes. Fix it by running grub-editenv /path/to/file create to regenerate the padding and structure.
+# Create a symbolic link so Linux tools still find it in the old spot
+sudo ln -s /boot/efi/grubenv /boot/grub/grubenv
+
+Step 3: Tell GRUB where to find it at Boot
+Now we need to edit your GRUB configuration so the bootloader knows the environment is on the EFI disk, not the Btrfs disk.
+
+Use provided GRUB template: sudo nano /etc/grub.d/00_header
+Use provided GRUB template: sudo nano /etc/grub.d/40_custom
+Use provided GRUB template: sudo nano /etc/default/grub
+cp etc/grub.d/00_header /etc/grub.d/00_header
+cp etc/grub.d/40_custom /etc/grub.d/40_custom 
+cp etc/default/grub /etc/default/grub
+
+
+3. Update and Test
+Bash
+sudo update-grub
+Now use 
+grub-editenv /boot/efi/grubenv set next_entry="osprober-efi-93A7-2981" && sudo rtcwake -m disk -s 30
+or use the below script for winjump
+─[root@Intel5]─[/opt/scripts/winjump.sh]
+└──╼ #cat winjump.sh 
+#!/bin/bash
+
+TARGET="osprober-efi-93A7-2981"
+EFI_GRUBENV="/boot/efi/grubenv"
+
+echo "[*] Granting RTC Wakeup Permission..."
+echo "enabled" | sudo tee /sys/class/rtc/rtc0/device/power/wakeup
+
+echo "[*] Setting Jump Target to Windows..."
+sudo grub-editenv "$EFI_GRUBENV" set next_entry="$TARGET"
+
+echo "[*] Syncing filesystems..."
+sync
+
+# The -u flag is critical if you dual-boot with Windows
+echo "[*] Triggering Hibernate (S4) with 32s UTC Wakeup..."
+sudo rtcwake -m disk -s 32 -v -u
+┌─[root@Intel5]─[/opt/scripts/winjump.sh]
+└──╼ #
+
+Why this is the ultimate fix
+By moving the grubenv to the EFI partition:
+
+4. The "Bake" (The "Verification")
+Run the update and check the output:
+
+Bash
+sudo update-grub
+grep "efi_device" /boot/grub/grub.cfg
+If that grep shows your UUID, you have successfully bypassed the Btrfs write-lock. Your "Windows loop" should be dead for good because GRUB now has the "permission" (via the FAT32 driver) to delete the next_entry flag the second it starts the boot process.
+
+GRUB has Write Access: Unlike Btrfs, GRUB has a stable driver for FAT32. It can now successfully "unset" the next_entry the moment it starts loading Windows.
+
+No more "Swapfile" errors: GRUB won't get confused trying to find a environment file inside a complex Btrfs subvolume or a "sparse" area.
+
+Persistence: Even if you hibernate both, the EFI partition is a simple, non-CoW area that both systems respect as the "handshake" zone.
+
+

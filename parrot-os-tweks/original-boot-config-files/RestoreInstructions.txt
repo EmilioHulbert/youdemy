@@ -1,0 +1,60 @@
+To address your question about the `vmlinuz` and `initrd` files: those are the **actual Linux kernel and its initial ramdisk**. We discussed those earlier because some people use symlinks to manage different kernels. However, if you didn't manually rename them to `.orig`, you don't need to worry about them for this specific `grubenv` fix.
+
+Since your goal is to have clean, professional documentation in `RestoreInstructions.txt` for the `grubenv` tweak specifically, here is exactly what you should put in that file.
+
+---
+
+## `RestoreInstructions.txt`
+
+### **Step 1: Undo the Symbolic Link**
+The first thing to do is remove the "shortcut" we created in the old location so we can move the real file back.
+
+```bash
+# Remove the symbolic link pointing to EFI
+sudo rm /boot/grub/grubenv
+```
+
+### **Step 2: Move the Environment Block Back to Btrfs**
+Now, move the actual `grubenv` file from the EFI partition back to the standard Parrot OS directory.
+
+```bash
+# Move the real file back to its original home
+sudo mv /boot/efi/grubenv /boot/grub/grubenv
+```
+#grubenv should be blank or use from resources
+
+### **Step 3: Revert Configuration Files**
+You must remove the custom "Search and Jump" logic from your GRUB scripts so they don't look for the EFI partition anymore.
+
+1.  **Revert `40_custom`:**
+    Open `/etc/grub.d/40_custom` and delete everything after the first three lines (the `exec tail` part). It should look like a blank custom file again.
+2.  **Revert `00_header`:**
+    If you made changes there, restore them using your backup in `original-boot-config-files/etc/grub.d/00_header`.
+
+### **Step 4: Update the System**
+Finalize the changes so the `grub.cfg` is rebuilt without the EFI search paths.
+
+```bash
+sudo update-grub
+```
+
+---
+
+### **Important Notes for your Documentation**
+
+* **Why we revert:** We do this if we want to stop the "Jump to Windows" behavior or if we decide to manage the bootloader entirely through the standard Btrfs subvolumes again.
+* **The "vmlinuz" confusion:** The `vmlinuz` and `initrd` files are the "engine" of your OS. Unless you specifically renamed them during a kernel troubleshooting step, they stay exactly where they are. The `grubenv` is just the "notebook" GRUB uses to remember which OS to boot next.
+* **Verification:** After restoring, run `ls -l /boot/grub/grubenv`. It should show up as a regular file (not a link starting with `l`) and should be exactly 1024 bytes in size.
+
+---
+
+### **Summary Table for your Records**
+
+| Component | Tweak State (Current) | Restore State (Original) |
+| :--- | :--- | :--- |
+| **`grubenv` Location** | `/boot/efi/grubenv` | `/boot/grub/grubenv` |
+| **`/boot/grub/grubenv`** | Symbolic Link (`->`) | Regular File |
+| **`40_custom`** | Contains `search` & `load_env` | Empty (Standard) |
+| **`00_header`** | Cleaned of ghost spaces | Standard Parrot version |
+
+Would you like me to help you double-check the content of your `original-boot-config-files/etc` to make sure your backups are 100% complete?

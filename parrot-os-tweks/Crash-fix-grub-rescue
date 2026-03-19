@@ -1,0 +1,58 @@
+Your setup is now primed for this. Because you have the `resume=UUID=...` in your `GRUB_CMDLINE_LINUX_DEFAULT`, the kernel knows where to look for your Parrot session, and because of our `00_header` surgery, GRUB can now successfully clear the `next_entry` flag even while Parrot is technically "asleep" on the swap partition.
+
+### The Logic Check
+When you run your command:
+1. `grub-editenv` sets the flag to boot Windows **once**.
+2. `rtcwake -m disk` hibernates Parrot to `/dev/nvme0n1p6`.
+3. You boot into Windows.
+4. **The Critical Moment:** When you restart Windows, GRUB will:
+    * Find the EFI partition.
+    * See `next_entry="Windows..."`.
+    * **Execute `save_env -f ($efi_device)/grubenv next_entry=`** (This clears the flag).
+    * Boot Windows again.
+5. **Next Restart:** Since the flag is now empty, it defaults to Parrot and triggers the `resume` logic to wake up your session.
+
+---
+
+### 🛠️ The "Safety Net" (Rescue Commands)
+If things go sideways and you land in a `grub>` or `grub rescue>` prompt, don't panic. Here is your manual recovery manual:
+
+#### If you are in `grub rescue>` (The "Basic" Prompt)
+This usually means GRUB can't find its filesystem modules.
+```bash
+# 1. List partitions to find Parrot
+ls
+
+# 2. Set the prefix and root (Assuming hd0,nvme0n1p3 or wherever Parrot lives)
+set prefix=(hd0,gpt3)/boot/grub
+set root=(hd0,gpt3)
+
+# 3. Load the normal module
+insmod normal
+normal
+```
+
+#### If you are in `grub>` (The "Normal" Prompt)
+If you see the menu but Parrot won't boot, or you need to manually trigger the wake-up:
+```bash
+# 1. Manually load the kernel with the resume flag
+linux /boot/vmlinuz-6.10.11-amd64 root=/dev/nvme0n1p3 rw quiet splash resume=UUID=1fdb4317-7925-4369-8060-933dbf2f6f34
+
+# 2. Load the initrd
+initrd /boot/initrd.img-6.10.11-amd64
+
+# 3. Boot
+boot
+```
+
+---
+
+### ⚠️ One Quick Warning
+In your `grep` output, I see you have two lines for `GRUB_CMDLINE_LINUX_DEFAULT`. The one with `acpi=off` is commented out, which is good. `acpi=off` usually kills hibernation entirely. Ensure your active line is the one with `loglevel=3`.
+
+### The Next Step
+You are ready for the test. 
+
+**Wait! Before you run the `rtcwake` command:** Make sure you've run `sudo update-grub` one last time to ensure the `00_header` changes are actually compiled into the `/boot/grub/grub.cfg`.
+
+Would you like to run the jump command now, or should we double-check the exact "Menu Entry" string for your Windows partition first? (If the name in `grub-editenv` doesn't match the `menuentry` in `grub.cfg` exactly, it won't jump).
