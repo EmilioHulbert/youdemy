@@ -1,0 +1,240 @@
+Since your local `apt` repositories are currently giving you trouble, we can bypass the standard installation and grab the **Static Binary** directly from the official developers (CGI Security). This version doesn't need to be "installed"—it runs directly from the folder.
+
+### Step 1: Download the Static Version
+We'll use `wget` to pull the 64-bit Linux version.
+
+```bash
+cd /home/hulbert
+wget https://www.cgsecurity.org/testdisk-7.2.linux_static.tar.bz2
+```
+
+### Step 2: Extract the Files
+The file is compressed. We need to unpack it:
+```bash
+tar -xvjf testdisk-7.2.linux_static.tar.bz2
+```
+
+### Step 3: Run TestDisk as Root
+Move into the new folder and launch the program.
+```bash
+cd testdisk-7.2
+sudo ./testdisk_static -nolog
+```
+
+---
+
+### Step 4: The Recovery Walkthrough (The "Guru" Path)
+Once the black screen opens, follow these steps to fix the MFT:
+
+1.  **[Create]**: Select "Create a new log file."
+2.  **Select Drive**: Pick `/dev/sda` (your 465GB WD disk).
+3.  **Partition Table**: Select **[Intel]** (it usually detects this automatically).
+4.  **Advanced**: Go to **[Advanced]** (Filesystem Utils).
+5.  **Select Partition**: You should see your 465GB NTFS partition. Highlight it.
+6.  **Boot**: Select **[Boot]** at the bottom.
+
+**What you are looking for:**
+* If it says **"Boot sector: Bad"** and **"Backup boot sector: OK"**, select **[Backup BS]**.
+* If both are bad, select **[Rebuild BS]**. This will search the drive for the MFT and "re-stitch" the header.
+
+
+
+---
+
+### Why this is better than Apt right now
+The static binary includes all the libraries it needs inside the folder. It doesn't care if your system's `dpkg` database is locked or if your `sources.list` is broken. It speaks directly to the hardware.
+
+**Did the download finish? Once you get into the [Boot] menu, tell me what the "Status" of the Boot Sector and Backup Boot Sector says.**
+
+
+Since you are in the **[Boot]** menu, you are looking at the "heart" of the NTFS partition. The fact that you see **[Org. BS]** means TestDisk has detected that your **Backup Boot Sector** is healthy, but your **Primary Boot Sector** (the one the BIOS/Linux uses) is broken or mismatched.
+
+### The "Guru" Choice: [Org. BS]
+You should select **[Org. BS]** (Original Boot Sector).
+
+* **What it does:** It takes the "Original" (the backup copy stored at the end of the disk) and overwrites the "Primary" (the broken one at the start).
+* **Why this works:** When we resized the partition, the primary header got confused about the disk size. The backup still has the correct "Map" of where your $MFT (files) is located.
+
+---
+
+### Step-by-Step Execution:
+
+1.  **Select [Org. BS]** and press **Enter**.
+2.  **Confirm the Write:** It will ask "Copy backup boot sector over boot sector, confirm? (Y/N)". **Type `Y`**.
+3.  **The List Check:** After it writes, look at the menu again. It should now say **"Sectors are identical."**
+4.  **See your files:** Now select **[List]** at the bottom.
+    * If you see your Windows folders (`Users`, `Windows`, etc.), **congratulations**, your data is back!
+    * Press **`q`** to exit the list.
+5.  **Finalize:** Select **[Quit]** and restart your computer (or try to mount it again).
+
+
+
+---
+
+### What if [List] shows nothing?
+If **[Org. BS]** makes the sectors identical but **[List]** still says "Can't open filesystem," then the MFT itself is shifted. In that case:
+1.  Go back to the **[Boot]** menu.
+2.  Select **[Rebuild BS]**.
+3.  This will do a "Deep Scan" to find the $MFT and recreate the boot sector from scratch based on where the files actually are.
+
+**Try [Org. BS] first. Does it say "Sectors are identical" now? And more importantly, does [List] show your files?**
+
+This is the right move. When **[List]** fails even after the sectors are identical, it means the "pointer" to the **MFT** inside the boot sector is wrong. By choosing **[Rebuild BS]**, TestDisk is manually scanning every block of the 465GB drive to find the physical start of your file index.
+
+### What to Expect During the MFT Search:
+1.  **The "Find":** TestDisk will eventually say something like `MFT at [Number]` and `MFT Mirror at [Number]`.
+2.  **The Compare:** It will check if they match.
+3.  **The "List" Test:** Once the search finishes, it will give you a new **[List]** option. 
+    * **CRITICAL:** Do not write anything yet. Press **`L`** (or select **[List]**) first. 
+    * If you see your files (REMAC, Windows, Users, etc.), then the rebuild was successful.
+
+
+
+---
+
+### If the Search Finishes and Shows Your Files:
+1.  Press **`q`** to exit the file list.
+2.  Select **[Write]** to save this newly calculated boot sector to the disk.
+3.  It will ask you to **Reboot** or **Re-read** the partition table.
+
+### Why this is happening (The "Guru" Insight):
+When we were messing with the partition sizes earlier, the internal NTFS "offset" got shifted. Even though the partition *container* is now 465GB again, the NTFS *header* inside was still pointing to an MFT location that didn't exist. **Rebuild BS** is like a search party finding the lost "Address Book" on the disk and updating the front door (Boot Sector) with the correct directions.
+
+---
+
+### Pro-Tip while you wait:
+Don't unplug the drive or let your laptop go to sleep! This scan is reading raw sectors, and an interruption now could make things messy.
+
+**Is the search percentage moving? Once it finishes, let me know if [List] finally shows your folders.**
+
+If the **Rebuild BS** scan finishes and **[List]** still shows nothing, it means the filesystem's "Index" (the MFT) is too fragmented or corrupted for a simple boot sector repair to find. 
+
+Don't panic—this doesn't mean the data is gone; it just means we have to stop trying to "fix" the drive and start **"extracting"** from it. Here is the hierarchy of what we do next:
+
+### 1. The "Deep Search" (TestDisk)
+If the Advanced menu failed, we go back to the main TestDisk menu:
+* Select **[Analyse]** -> **[Quick Search]**.
+* If it finds a partition, it will show it in **green**. Press **`P`** to list files.
+* If it doesn't find it, select **[Deeper Search]**. This is the "Nuclear" option. It scans every single cylinder of the 500GB drive. It takes a few hours, but it is famous for finding "lost" NTFS partitions that other tools miss.
+
+### 2. PhotoRec (The "File Carver")
+Inside the `testdisk-7.2` folder you downloaded, there is another tool called `photorec_static`.
+* **How it works:** It ignores the partition table, the boot sector, and the MFT entirely. It looks at the raw data "signatures" (e.g., "This looks like a JPEG header," "This looks like a Word Doc").
+* **Pros:** It finds almost everything.
+* **Cons:** It loses the filenames (it will name files like `f12345.jpg`). You'll have to sort through them later.
+
+### 3. The "Manual Offset" Hail Mary
+Sometimes, the MFT isn't lost; it’s just shifted by a few sectors. We can try to mount the drive by manually telling Linux to "skip" a certain amount of space at the beginning. 
+* We would use `mft-find` (part of the `ntfs-3g` tools) to locate the MFT's physical address and then mount with a specific offset.
+
+---
+
+### Why "Rebuild BS" is the Best Chance
+The MFT is usually stored at roughly **12.5%** into the partition. If your scan is past the 15% mark and hasn't "found" it yet, it's likely searching the data area now.
+
+
+
+**How far along is the "Searching MFT" percentage?** If it hits 100% and says **"MFT and MFT mirror are bad,"** do not write anything. Just exit TestDisk, and we will move to **PhotoRec** to start pulling your actual files (like your cybersecurity labs or nurse lists) onto your internal drive. 
+
+**Is it showing any "MFT found at..." messages on the screen yet?**
+
+I apologize—I should have warned you about the **Log File**. 
+
+When TestDisk runs a "Rebuild BS" or a "Deep Scan," it writes every single sector it analyzes into a file called `testdisk.log` in the folder where you started it (`/home/hulbert/testdisk-7.2/`). Since it is scanning nearly **1 billion sectors**, that log file can grow to several gigabytes very quickly, which is eating your remaining `nvme0n1p2` (root) space.
+
+### 1. Stop the Storage Bleed (Right Now)
+You don't need to stop the scan, but you need to delete the log or move it. Open a **new terminal tab** and run:
+
+```bash
+# Check how big the log is
+ls -lh /home/hulbert/testdisk-7.2/testdisk.log
+
+# Empty the log file without stopping the program
+sudo truncate -s 0 /home/hulbert/testdisk-7.2/testdisk.log
+```
+*This will "zero out" the file and give you your GBs back immediately without crashing TestDisk.*
+
+---
+
+### 2. Why the Search is so slow (and what the numbers mean)
+Your scan says `8531447648 / 976771120`. 
+* **The Problem:** The first number (8.5 billion) is **larger** than the total sectors on the disk (976 million). 
+* **The Cause:** This usually happens when the "Disk Geometry" in TestDisk is set incorrectly (e.g., it's looking for 8 heads per cylinder instead of 255). 
+
+**If the scan is still running and the first number is already billions past the second number, it is "looping" and won't find the MFT.**
+
+---
+
+### 3. The "Quick" Recovery (PhotoRec)
+Since the MFT search is struggling and eating your disk space, let's use the tool that doesn't care about "maps" or "log files": **PhotoRec**. It is included in that same folder.
+
+1.  **Close the current TestDisk.**
+2.  **Launch PhotoRec:**
+    ```bash
+    sudo /home/hulbert/testdisk-7.2/photorec_static
+    ```
+3.  **Select /dev/sda** (The 465GB drive).
+4.  **Select the NTFS partition.**
+5.  **File Opt:** Press **`s`** to unselect all, then find and select the ones you actually need (e.g., `doc`, `xls`, `jpg`, `pdf`, `zip`). This saves space!
+6.  **Destination:** Pick a folder on your **internal** drive (e.g., `/home/hulbert/recovered_files`).
+
+
+
+---
+
+### Summary of the "Storage" issue:
+* **The Culprit:** `testdisk.log` in your home folder.
+* **The Solution:** Run `sudo rm /home/hulbert/testdisk-7.2/testdisk.log` frequently, or start TestDisk with the `-nolog` flag next time.
+
+**How much space do you have left on `nvme0n1p2` now?** If you run `df -h`, it will tell you. If it's still full, we should clear the `testdisk.log` immediately.
+I apologize—I should have warned you about the **Log File**. 
+
+When TestDisk runs a "Rebuild BS" or a "Deep Scan," it writes every single sector it analyzes into a file called `testdisk.log` in the folder where you started it (`/home/hulbert/testdisk-7.2/`). Since it is scanning nearly **1 billion sectors**, that log file can grow to several gigabytes very quickly, which is eating your remaining `nvme0n1p2` (root) space.
+
+### 1. Stop the Storage Bleed (Right Now)
+You don't need to stop the scan, but you need to delete the log or move it. Open a **new terminal tab** and run:
+
+```bash
+# Check how big the log is
+ls -lh /home/hulbert/testdisk-7.2/testdisk.log
+
+# Empty the log file without stopping the program
+sudo truncate -s 0 /home/hulbert/testdisk-7.2/testdisk.log
+```
+*This will "zero out" the file and give you your GBs back immediately without crashing TestDisk.*
+
+---
+
+### 2. Why the Search is so slow (and what the numbers mean)
+Your scan says `8531447648 / 976771120`. 
+* **The Problem:** The first number (8.5 billion) is **larger** than the total sectors on the disk (976 million). 
+* **The Cause:** This usually happens when the "Disk Geometry" in TestDisk is set incorrectly (e.g., it's looking for 8 heads per cylinder instead of 255). 
+
+**If the scan is still running and the first number is already billions past the second number, it is "looping" and won't find the MFT.**
+
+---
+
+### 3. The "Quick" Recovery (PhotoRec)
+Since the MFT search is struggling and eating your disk space, let's use the tool that doesn't care about "maps" or "log files": **PhotoRec**. It is included in that same folder.
+
+1.  **Close the current TestDisk.**
+2.  **Launch PhotoRec:**
+    ```bash
+    sudo /home/hulbert/testdisk-7.2/photorec_static
+    ```
+3.  **Select /dev/sda** (The 465GB drive).
+4.  **Select the NTFS partition.**
+5.  **File Opt:** Press **`s`** to unselect all, then find and select the ones you actually need (e.g., `doc`, `xls`, `jpg`, `pdf`, `zip`). This saves space!
+6.  **Destination:** Pick a folder on your **internal** drive (e.g., `/home/hulbert/recovered_files`).
+
+
+
+---
+
+### Summary of the "Storage" issue:
+* **The Culprit:** `testdisk.log` in your home folder.
+* **The Solution:** Run `sudo rm /home/hulbert/testdisk-7.2/testdisk.log` frequently, or start TestDisk with the `-nolog` flag next time.
+
+**How much space do you have left on `nvme0n1p2` now?** If you run `df -h`, it will tell you. If it's still full, we should clear the `testdisk.log` immediately.
+
+
