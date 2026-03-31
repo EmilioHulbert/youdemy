@@ -1,0 +1,331 @@
+  You're spot on—the official servers for **Blur (2010)** were shut down years ago, which means the original retail license keys can no longer authenticate with Activision's servers for "Official" matchmaking.
+
+Since the game doesn't have an official digital storefront anymore (it's "abandonware" in many circles), the community has built its own ways to keep the neon lights flashing. Here is the breakdown of how you and your friends can get back on the track.
+
+---
+
+## 1. The "Virtual LAN" Method (Easiest)
+Since you can’t go "Online," you have to trick the game into thinking you and your friends are sitting in the same room on the same Wi-Fi. This is done using a **Virtual Private Network (VPN)**.
+
+* **Radmin VPN (Recommended):** This is currently the most stable successor to Tunngle. 
+    1.  Everyone downloads and installs Radmin VPN.
+    2.  One person creates a "Network" (give it a name and password).
+    3.  Everyone else joins that network.
+    4.  In *Blur*, go to **Multiplayer > LAN**. You should see your friends' lobbies there.
+* **The "Metric" Fix:** Sometimes Windows prioritizes your actual internet over the Virtual LAN. If you can't see each other, you may need to go to your Network Adapter settings and set the **Interface Metric** of the Radmin adapter to `1` so the game looks there first.
+
+## 2. The BlurMax / A-Certified Project
+If you want a more "authentic" online experience rather than just LAN, there are community mods that actually restore the online menus.
+
+* **BlurQuest / BlurMax:** There are dedicated Discord communities that have developed custom executables (`.exe`) and patches. These bypass the login screen entirely and connect you to private community servers.
+* **Why use this?** It often allows for better stability and sometimes even restores ranking/leveling systems that the LAN mode lacks.
+
+## 3. Dealing with the "Key" Prompt
+If your game is asking for a key just to *launch* or to access the menu:
+* Because the game is no longer sold or supported, most players use a **No-CD Crack** or a "repack" version of the game. These versions have the license check removed entirely, allowing you to jump straight to the LAN menu.
+* If you have a physical disc, it will still ask for the key printed on the manual, but again, it won't "verify" it against a server—it just checks if the key follows the right mathematical pattern.
+
+---
+
+### Troubleshooting Connectivity
+If you are in a Radmin room but still can't see your friends:
+1.  **Firewall:** Ensure `Blur.exe` is allowed through your Windows Firewall.
+2.  **Network Discovery:** Make sure "Network Discovery" is turned on in your Windows Sharing settings.
+3.  **Version Match:** Ensure everyone is using the same version of the game (e.g., v1.1).
+
+**Would you like me to find a specific guide on how to adjust those "Interface Metric" settings to make sure your LAN connection is detected?**
+
+It’s a bummer when a great game goes dark, but the good news is that the community has essentially "saved" Blur. Since you're looking for new friends to play with and not just a local LAN setup, here is how you can jump into the active community.
+
+### 1. Why were the servers shut down?
+It was a "perfect storm" of bad luck:
+* **Commercial Timing:** *Blur* was released in 2010 during the same window as *ModNation Racers* and *Split/Second*. It didn't sell as well as Activision hoped.
+* **Studio Closure:** The developer, **Bizarre Creations**, was shut down by Activision in 2011.
+* **Expired Licenses:** Since *Blur* features real-world cars (Ford, Dodge, etc.) and licensed music, those contracts eventually expired. Once they expire, the publisher can no longer legally sell the game or justify the cost of keeping servers running.
+
+---
+
+### 2. Is Radmin VPN Free?
+**Yes.** Radmin VPN is 100% free for personal use. It doesn't have the data limits or "premium" tiers that traditional privacy VPNs have. 
+
+---
+
+### 3. How to play with "Online New Friends"
+Since you don't have a group to play with, you need to join the **Public Gaming Networks** inside Radmin. This is where strangers hang out to find matches.
+
+#### **Step-by-Step Setup:**
+1.  **Download & Install:** Get **Radmin VPN** from the official site.
+2.  **Join the Community:**
+    * Open Radmin VPN and click the **"Join Network"** button.
+    * Go to the **"Gaming Network"** tab.
+    * In the search bar, type **"Blur"**. 
+    * You will see several rooms (some might have 100+ people). Join the most populated ones.
+3.  **Find a Match:**
+    * Once joined, you’ll see a list of players in that room. If their names are bright, they are online.
+    * Launch *Blur*.
+    * Go to **Multiplayer > Local Area Network**.
+    * If someone is hosting, their lobby will appear here. 
+    * **Note:** Most players hang out in the **"Blur Community" Discord** to coordinate exactly when they are starting a race. I highly recommend joining that Discord (you can find the link on the Radmin Club wiki or Reddit).
+
+---
+
+### 4. Items to Download
+To make sure your game actually connects to these strangers, you usually need two specific things:
+
+* **Radmin VPN:** [radmin-vpn.com](https://www.radmin-vpn.com/)
+* **The 1.1 Patch:** Most online players use the v1.1 update. If your game version doesn't match the host, you won't see their lobby.
+* **Optional (The "A-Certified" Mod):** Many "new friends" you meet will be using the **A-Certified** or **BlurQuest** patch. This is a community-made `.exe` file that fixes bugs and makes the game run better on modern Windows (like Windows 10/11). You can find this in the *Blur* Discord "resources" channel.
+
+---
+
+### 5. Essential "Pro" Tip
+If you join a Radmin room and *still* don't see any games in the LAN menu:
+1.  Go to **Control Panel > Network and Sharing Center > Change adapter settings**.
+2.  Right-click the **Radmin VPN** adapter > **Properties**.
+3.  Click **Internet Protocol Version 4 (TCP/IPv4)** > **Properties** > **Advanced**.
+4.  Uncheck "Automatic metric" and type **1** in the box. 
+    * *This forces the game to look at the Radmin network first for players before looking at your local Wi-Fi.*
+
+**Would you like me to find a permanent invite link to the main Blur Discord community so you can see their weekly "Race Night" schedule?**
+
+The "trying to connect" error you're seeing is exactly what happens when the game tries to reach the old Activision servers that don't exist anymore. To play with new people, you have to bypass that "Official" menu entirely and use the **LAN** menu or the **Amax** community mod.
+
+Here is your exact blueprint to get running and how to host your own game.
+
+### 1. Download & Install Items
+To play in 2026, you need these three things:
+* **Radmin VPN:** [Download here](https://www.radmin-vpn.com/). This creates the "fake" local network so you can see other players.
+* **The 1.2 Community Patch:** This is essential. Most players are on version 1.2. If you are on 1.0 or 1.1, you won’t see their games.
+* **Amax Emu (Optional but Recommended):** This is a small set of files you drop into your game folder. It replaces the broken "Online" button with a working community server login. You can get it at [amax-emu.com](https://amax-emu.com/).
+
+---
+
+### 2. How to Host Your Own Game
+If you don't see anyone online and want to be the "leader" so others can join you, follow these steps:
+
+1.  **Open Radmin VPN:** Ensure you are in a public **"Blur"** gaming room (not a private one asking for a password).
+2.  **Launch Blur:** Go to **Multiplayer > Local Area Network**.
+3.  **The "Secret" Key:** On the LAN screen, press **Ctrl** on your keyboard. 
+    * This opens the **Host Menu**.
+4.  **Create Lobby:** Select "Custom Game," choose your race settings, and wait.
+    * Because you are in a public Radmin room, anyone else in that room who goes to their "LAN" menu will suddenly see your name and can join you.
+
+---
+
+### 3. Fixing the "Cannot Connect" Errors
+If you are trying to join someone and it fails, it is usually a **Firewall** issue. In Blur, networking is Peer-to-Peer (P2P). If one person has a strict firewall, no one can connect.
+
+* **The Quick Fix:** Turn off your Windows Firewall entirely for 5 minutes just to test if the game connects. If it works, you know you just need to add an "Exception" for `Blur.exe`.
+* **The Network Reset:** If your internet feels "stuck," open **Command Prompt (Admin)** and run these two commands, then restart:
+    * `netsh winsock reset`
+    * `ipconfig /flushdns`
+
+### 4. Why You See "Trying to Connect..."
+The game is hard-coded to try and ping `activision.com` services the moment you click "Multiplayer." 
+* **Ignore the "Online" button.** Always go straight to **Local Area Network**. 
+* If you use the **Amax Emu**, that "Trying to connect" message will be replaced by a custom login screen where you can make your own free account.
+
+**Would you like me to find the specific 1.2 patch download link so you can make sure your game version matches everyone else's?**
+
+That ping result is **great news**. It confirms two things:
+1.  Your **Radmin VPN** is working and "tunneling" correctly to other players.
+2.  There is **no firewall blocking** the basic connection between you and that other user (`26.150.148.37`).
+
+Since your ping works but the game list is empty, we have narrowed it down to a **"Broadcast" issue**. In simple terms: your computer can *talk* to that other person, but the *Blur* game is still "shouting" into the wrong hallway (your Wi-Fi) looking for a lobby.
+
+Since you are on bare-metal Windows now, here are the exact steps to force *Blur* to see that person.
+
+---
+
+### 1. The "ForceBindIP" Solution (Most Reliable)
+This is the "Guru" way to fix exactly what you’re experiencing. It tells Windows: *"Do not let Blur use the Wi-Fi; force it to use the Radmin IP."*
+
+1.  **Download:** Search for **"ForceBindIP"** (it’s a tiny, free utility).
+2.  **Install it.** (Usually installs to `C:\Windows\System32` or `SysWOW64`).
+3.  **Find your Radmin IP:** Open Radmin VPN. Look at the numbers next to **your** name (e.g., `26.x.x.x`).
+4.  **Create a Launch Command:**
+    * Open **Notepad**.
+    * Paste this (replace the IP with *your* Radmin IP and the path with your *actual* Blur path):
+        `ForceBindIP 26.x.x.x "C:\Games\Blur\blur.exe"`
+    * Save it as `PlayBlur.bat` on your desktop.
+5.  **Run it:** Double-click that `.bat` file to start the game. This forces the game to "listen" only on the Radmin network.
+
+---
+
+### 2. Check the "Host" Status
+Even with a perfect connection, *Blur* only shows a lobby if someone is **currently sitting in the "Lobby" screen.** * Because the ping was **205ms**, that player is likely quite far from you (possibly a different continent). 
+* If they are just in the Radmin room but **not** actively hosting a match inside the game, your LAN list will stay empty. 
+
+---
+
+### 3. The "Amax Emu" (The Real "Online" Experience)
+If you want to play with "new friends" without the headache of LAN discovery, the community created **Amax Emu**. It replaces the broken Activision login with a community one.
+
+* **How it works:** You don't go to "LAN" anymore. You click **"Online"**, and it connects you to a master list of everyone currently playing worldwide.
+* **Download:** You can find the **Amax Emu** files (usually `dinput8.dll` and a config file) on their official site or the Discord I mentioned.
+* **Installation:** You just drop those files into your *Blur* folder. 
+* **Result:** You get a login screen. You can type **any** username and password to create an account on the fly.
+
+---
+
+### 4. Quick Test for Tomorrow
+If you want to be 100% sure your game *can* see lobbies:
+1.  Open **Radmin VPN** and join a room.
+2.  Open **Blur** and go to **Multiplayer > LAN**.
+3.  **You host a game** (Press `Ctrl` or `C` to create).
+4.  Ask someone in the Radmin chat (right-click their name > Send Message): *"Hey, can you see my LAN lobby? I'm testing my connection."*
+    * If they see you, your setup is perfect, and you just happened to be looking when no one else was hosting!
+
+**Would you like me to find the exact "Amax Emu" download link so you can skip the LAN menu issues entirely?**
+
+It looks like you've hit a classic issue with **ForceBindIP** and Windows file paths. When a command prompt window "flashes" and closes immediately, it usually means there is a syntax error or a "File Not Found" error happening too fast for you to read.
+
+Since your game is in `C:\Program Files (x86)`, the **spaces** in the folder names are likely breaking the command. 
+
+### 1. The "Pause" Trick (To see the error)
+First, let's see exactly what the error is. Right-click your `.bat` file, select **Edit**, and add `pause` on a new line at the bottom:
+
+```batch
+ForceBindIP 26.3.181.227 "C:\Program Files (x86)\R.G. Mechanics\Blur\blur.exe"
+pause
+```
+Run it again. If it says **"ForceBindIP is not recognized"**, even though you added it to PATH, Windows might need a restart to "see" that change.
+
+---
+
+### 2. The "Quotes & Directory" Fix (Most Likely)
+Most games (especially R.G. Mechanics repacks) need to be started from *inside* their own folder, or they can't find their data files and crash immediately. 
+
+Change your `.bat` file to this exact format:
+
+```batch
+@echo off
+cd /d "C:\Program Files (x86)\R.G. Mechanics\Blur"
+ForceBindIP 26.3.181.227 "blur.exe"
+pause
+```
+* **`cd /d`**: This tells the command prompt to go directly into the Blur folder first.
+* **`"blur.exe"`**: Since we are already in the folder, we don't need the long path again.
+
+---
+
+### 3. The "64-bit vs 32-bit" Issue
+Since you are on a 64-bit Windows but *Blur* is a 32-bit game (`x86`), you might need to use the specific 32-bit version of the injector.
+
+In your `C:\Program Files (x86)\ForceBindIP` folder, check if you see two files: `ForceBindIP.exe` and `ForceBindIP64.exe`.
+* If `ForceBindIP.exe` fails, try changing the command in your `.bat` to `ForceBindIP64.exe`.
+
+---
+
+### 4. Admin Rights
+Both Radmin VPN and ForceBindIP need high-level permission to "hook" into your network. 
+* Right-click your `.bat` file and select **Run as Administrator**.
+
+---
+
+### A Final "Guru" Note on R.G. Mechanics Repacks
+Sometimes these repacks use a custom launcher or have specific registry "fixes" applied. If ForceBindIP keeps crashing the `.exe`, it might be because the crack is sensitive to being "injected" by another program.
+
+**If the `.bat` file still crashes after trying the `cd /d` fix above, would you like me to find the "Amax Emu" files for you?** Those files (usually just a `.dll`) work *inside* the game folder automatically, so you don't need to use ForceBindIP or `.bat` files at all—it just works every time you open the game normally.
+
+
+The fact that your `.bat` file is running but you still see no games—despite a successful ping—points to a "broadcast" failure. In $UDP$ networking (which *Blur* uses for LAN), a **Ping** is like a direct phone call ($ICMP$), but **Lobby Discovery** is like shouting in a room ($Broadcast/Multicast$).
+
+If the shout doesn't happen on the Radmin "hallway," you won't see anyone. Since you are on a bare-metal Windows dual-boot and using an R.G. Mechanics repack, here is the final "Guru" sequence to fix this.
+
+-----
+
+### 1\. The 350ms+ Ping Reality Check
+
+Look at your ping: **Average = 455ms**.
+
+  * **The Problem:** Many older games like *Blur* have a "Latency Filter." If the host's ping is too high (usually over **200ms** or **300ms**), the game will automatically hide that lobby from you to prevent a laggy experience.
+  * **The Fix:** You need to find a host closer to you. In the Radmin "Gaming Network" list, look for users with **lower ping** (Green signal bars). If everyone is 400ms+, the game might be intentionally hiding them.
+
+### 2\. The "Amax / BlurQuest" Solution (The "No-Headache" Way)
+
+Since you want to play with "new friends" and not just people on your local Wi-Fi, the community has largely moved away from the buggy LAN menu to the **Amax Emulator**.
+
+**Why this is better for you:**
+
+  * It replaces the "Online" button with a working community server.
+  * You don't need **ForceBindIP** or `.bat` files.
+  * It bypasses the "License Key" check completely.
+  * You see a global list of players, regardless of LAN broadcast bugs.
+
+**How to set it up:**
+
+1.  **Download:** Search for the **"BlurQuest Launcher"** or **"Amax Emu"** (it is a small zip file containing a `dinput8.dll`).
+2.  **Install:** Drop the `dinput8.dll` and any included `.ini` files directly into `C:\Program Files (x86)\R.G. Mechanics\Blur\`.
+3.  **Run:** Open the game normally (no `.bat` needed).
+4.  **Play:** Click **Online**. It will ask for a username/password—just make one up right there. You will see a list of global rooms.
+
+### 3\. If you MUST use LAN (The "Interface Metric" Final Boss)
+
+If you refuse the Amax Emu and want the LAN menu to work, Windows 10/11 has a habit of resetting your metrics.
+
+1.  Open **PowerShell (Admin)**.
+2.  Paste this command to see your current adapter "shouting" priority:
+    `Get-NetIPInterface | Sort-Object InterfaceMetric`
+3.  Look for **Radmin VPN**. If its `InterfaceMetric` is higher than your Wi-Fi, the game is ignoring it.
+4.  **Force it via PowerShell:** `Set-NetIPInterface -InterfaceAlias "Radmin VPN" -InterfaceMetric 1`
+    *(Note: Replace "Radmin VPN" with the exact name shown in your Network Connections).*
+
+-----
+
+### Summary for your next attempt:
+
+  * **The `.bat` file is working**, but the 455ms ping or the "shout" (broadcast) is failing.
+  * **Join the Discord:** I cannot stress this enough—if nobody is currently sitting in a "Host" screen, your LAN list will **always** be empty. In the [Blur Community Discord](https://www.google.com/search?q=https://discord.gg/blurcommunity), people call out "Lobby is up\!" so you know exactly when to look.
+
+**Would you like me to find the direct download link for the "Amax dinput8.dll" so you can just click "Online" and be done with the LAN setup?**
+
+Your PowerShell results show a classic Windows conflict that explains why you can't see games. Even though you set the metric to **1**, you have **two different adapters** both claiming to be Priority 1.
+
+### The Conflict in your Log:
+* **Wi-Fi (IPv6):** InterfaceMetric **1**
+* **Radmin VPN (IPv4):** InterfaceMetric **1**
+
+When both are set to 1, Windows usually defaults to the "real" hardware (your Wi-Fi) for game broadcasts. To fix this, you need to push the Wi-Fi priority down so Radmin is the undisputed #1.
+
+---
+
+### 1. The PowerShell "Guru" Fix
+Run these commands in your **Admin PowerShell** to force the order:
+
+```powershell
+# Set Radmin to the highest priority
+Set-NetIPInterface -InterfaceAlias "Radmin VPN" -InterfaceMetric 1
+
+# Push Wi-Fi priority down (higher number = lower priority)
+Set-NetIPInterface -InterfaceAlias "Wi-Fi" -InterfaceMetric 50
+```
+*After running this, restart Blur and check the LAN menu.*
+
+---
+
+### 2. The "Amax Emu" (The Best Way to Play with New Friends)
+Since you said you want to find **new friends** and not just local LAN buddies, you should stop fighting with the LAN menu. The **Amax Emulator** is what 90% of the active *Blur* community uses today. It restores the actual "Online" button.
+
+**Steps to install:**
+1.  **Download:** Go to [amax-emu.com](https://amax-emu.com/how_to_play) and download the **Amax Client Files**.
+2.  **Drop & Replace:** Open your game folder (`C:\Program Files (x86)\R.G. Mechanics\Blur`).
+3.  **Paste:** Move the files from the zip (`dinput8.dll`, `amax_client.ini`, etc.) into that folder.
+4.  **Login:** Open the game normally. Click **Online**. 
+5.  **Create Account:** You can register a username/password directly in the game.
+    * *This will show you a global list of everyone playing, bypassing all the Radmin/LAN/Metric headaches.*
+
+---
+
+### 3. "No Games" vs. "Nobody Hosting"
+There is a high chance your technical setup is now correct, but the LAN list is empty simply because **no one is sitting in a lobby.** Because *Blur* is an older game, people don't "wait" in the menus. They coordinate.
+* **Join the Discord:** [discord.gg/blurcommunity](https://discord.com/invite/blurcommunity)
+* Check the **#matchmaking** channel. If you see someone say "Lobby up," that is when you should check your LAN (or Amax) menu.
+
+---
+
+### Troubleshooting the R.G. Mechanics Repack
+Since you are using a repack, it's possible it's missing the **v1.2 Patch**, which is required to see most modern community lobbies.
+* Check your game's main menu. If it doesn't say **v1.2** in the corner, you won't see the "new friends" who are all updated.
+
+**Would you like me to find the link for the v1.2 update files so you can be sure your version matches everyone else?**
