@@ -1,0 +1,65 @@
+It sounds like the game is launching in **Windowed Mode** or a "Borderless Window" rather than true Fullscreen, which is why it feels like an "app" and allows you to see the desktop or taskbar more easily. Since you’ve been tweaking registry scaling and Intel Graphics settings to get older games like Road Rash to work, those changes are likely conflicting with how Blur initializes its display.
+
+Here is how to get it back to a proper fullscreen state and ensure your LAN issues don't return:
+
+### 1. Reset the Registry Scaling
+If you changed `Configuration` scaling in the registry to **3**, you forced the system to handle scaling in a way that often breaks Fullscreen Exclusive mode for older DirectX 9 games like Blur.
+* Navigate back to: `HKEY_LOCAL_MACHINE\SYSTEM\ControlSet001\Control\GraphicsDrivers\Configuration`
+* Look for the `Scaling` value in the subfolders and set it back to **4** (which is usually the default for "Maintain Aspect Ratio") or **255** (for "Full Screen").
+* **Restart your computer** after making this change.
+
+---
+
+### 2. Force Fullscreen via Config File
+Since this is a different repack (RG Mechanics), it may have default settings stored in a configuration file that differ from your previous install.
+* Go to: `C:\Users\YourUserName\AppData\Roaming\Bizarre Creations\Blur` (You may need to enable "Hidden Items" in File Explorer).
+* Open `settings.xml` or `config.ini` with Notepad.
+* Look for a line like `<Fullscreen>0</Fullscreen>` or `Fullscreen=0`.
+* Change the **0** to a **1**. Save and exit.
+
+---
+
+### 3. Intel Graphics Command Center Fix
+Since you set it to "Stretched," the GPU is trying to upscale the image before it hits the monitor.
+* Open the **Intel Graphics Command Center**.
+* Go to **Display** > **General**.
+* Ensure the resolution matches your monitor's native resolution (e.g., 1920x1080).
+* Set **Scale** to **Maintain Aspect Ratio**. Blur has a specific internal widescreen engine; forcing "Stretch" at the driver level can sometimes cause the game window to "pop" out of fullscreen.
+
+---
+
+### 4. High DPI Compatibility
+Windows might be trying to "help" with the scaling because of your previous registry tweaks.
+1.  Right-click the `Blur.exe` in your game folder.
+2.  Go to **Properties** > **Compatibility**.
+3.  Click **Change high DPI settings**.
+4.  Check **Override high DPI scaling behavior** and select **Application** in the dropdown.
+5.  Check **Disable fullscreen optimizations**.
+
+### A Note on the LAN Issues
+The RG Mechanics version is generally stable, but if the LAN issues persist, it’s rarely a "game engine" problem and usually a **Network Priority** issue. Ensure that your Primary Network Adapter (the one connected to your friend) is at the top of the interface metric list in your Advanced Network Settings.
+
+**Would you like me to walk you through how to manually set the Interface Metric so your friend's PC shows up in the lobby every time?**
+
+That XML snippet confirms exactly why it's opening like an "app"—the configuration file is explicitly telling the game to run in a window. 
+
+The `windowed="1"` flag is the culprit, and your resolution is currently set to `1914 x 1051`, which is slightly smaller than a standard 1080p screen to allow room for the taskbar and window borders.
+
+### The Fix
+1. Close the game completely.
+2. Open that same configuration file (likely `settings.xml` in your AppData folder) with Notepad.
+3. Change `windowed="1"` to **`windowed="0"`**.
+4. Change the `width` and `height` to your monitor's native resolution (e.g., `width="1920" height="1080"`).
+5. **Save the file** and relaunch the game.
+
+---
+
+### Why this happened
+When you changed the scaling in the **Intel Command Center** and the registry to get Road Rash working, Windows likely "snapped" Blur into a windowed mode because it couldn't resolve the conflict between the game's requested resolution and your new global scaling rules.
+
+### A Quick Tip for the "RG Mechanics" Version
+Since this is a different repack, keep an eye on your **Firewall** settings. Sometimes new installations create a fresh entry in the Windows Firewall. If you and your friend still can't see each other in the LAN lobby:
+* Go to **Windows Defender Firewall** > **Allow an app or feature**.
+* Find the entry for this specific `blur.exe` and ensure both **Private** and **Public** are checked.
+
+**Would you like me to help you write a quick batch script that clears the game's network cache if the LAN lobby still acts up?**
