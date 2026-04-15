@@ -1,0 +1,155 @@
+It is highly likely that this behavior is caused by a conflict between `xscreensaver` (which manages your screen blanking/locking) and the system-level power management (handled by `systemd` or your desktop environment). When you wake the laptop, if the screen locker tries to engage at the exact moment the system is attempting to resume, it can trigger a "race condition" that forces the system back into a low-power state.
+
+Here is how to troubleshoot and resolve this on Parrot OS.
+
+---
+
+### 1. Adjust XScreenSaver Settings
+First, ensure that `xscreensaver` is not aggressively trying to control display power management in a way that conflicts with your system.
+
+1.  Open the **XScreenSaver Demo** application from your menu.
+2.  Go to the **Display Modes** tab.
+3.  Look for the **Power Management** section.
+4.  Uncheck **Power Management Enabled** to see if that resolves the issue. This tells `xscreensaver` to stop trying to force the monitor into standby, suspend, or off modes, leaving that control strictly to your desktop environment’s native power manager.
+
+### 2. Check for Power Management Conflicts
+Parrot OS typically uses the XFCE or MATE desktop environments, both of which have their own power management tools (like `xfce4-power-manager`). Having both `xscreensaver` and the desktop power manager trying to control the same hardware events often causes the "double-hibernate" or "hibernate-on-wake" issue.
+
+* **Disable DPMS:** Run the following command to disable X-server-level power management, which often clashes with external power managers:
+    ```bash
+    xset -dpms
+    ```
+* **Check Power Manager:** Open your desktop's "Power Management" or "Power Manager" settings. Ensure that actions like "When lid is closed" or "System idle" are configured to your liking and are not set to "Hibernate" by default.
+
+### 3. Debugging Systemd Logs
+If the behavior persists, your system is likely recording the exact reason for the hibernate request. You can check the logs immediately after the laptop wakes up and fails:
+
+```bash
+journalctl -b 0 -n 50 --no-pager
+```
+Look for lines mentioning `suspend`, `hibernate`, or `systemd-logind`. If a specific service or application is triggering the event, it will usually be listed near the time-stamped entries.
+
+### 4. Masking Suspend/Hibernate (Temporary Test)
+If you need to confirm that `systemd` is the culprit, you can temporarily disable the system's ability to enter these states to see if the random hibernation stops. 
+
+> **Warning:** This will prevent the laptop from hibernating/sleeping entirely until you undo the command.
+
+```bash
+sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
+```
+If the laptop stays on, you know the issue is a software service triggering these targets. To revert this later:
+```bash
+sudo systemctl unmask sleep.target suspend.target hibernate.target hybrid-sleep.target
+```
+
+---
+
+### Summary Checklist
+* **Disable DPMS:** Use `xset -dpms` to stop the X server from meddling with power.
+* **Check Settings:** Uncheck "Power Management Enabled" in the `xscreensaver` settings.
+* **Prioritize One:** Ensure your desktop's native power settings (e.g., XFCE Power Manager) are not configured to "Hibernate" when idle, as this often overrides the screensaver's logic.
+
+Are you using a specific desktop environment like XFCE or MATE, or are you running a custom window manager setup on your Parrot installation?
+
+
+
+
+It is highly likely that this behavior is caused by a conflict between `xscreensaver` (which manages your screen blanking/locking) and the system-level power management (handled by `systemd` or your desktop environment). When you wake the laptop, if the screen locker tries to engage at the exact moment the system is attempting to resume, it can trigger a "race condition" that forces the system back into a low-power state.
+
+Here is how to troubleshoot and resolve this on Parrot OS.
+
+---
+
+### 1. Adjust XScreenSaver Settings
+First, ensure that `xscreensaver` is not aggressively trying to control display power management in a way that conflicts with your system.
+
+1.  Open the **XScreenSaver Demo** application from your menu.
+2.  Go to the **Display Modes** tab.
+3.  Look for the **Power Management** section.
+4.  Uncheck **Power Management Enabled** to see if that resolves the issue. This tells `xscreensaver` to stop trying to force the monitor into standby, suspend, or off modes, leaving that control strictly to your desktop environment’s native power manager.
+
+### 2. Check for Power Management Conflicts
+Parrot OS typically uses the XFCE or MATE desktop environments, both of which have their own power management tools (like `xfce4-power-manager`). Having both `xscreensaver` and the desktop power manager trying to control the same hardware events often causes the "double-hibernate" or "hibernate-on-wake" issue.
+
+* **Disable DPMS:** Run the following command to disable X-server-level power management, which often clashes with external power managers:
+    ```bash
+    xset -dpms
+    ```
+* **Check Power Manager:** Open your desktop's "Power Management" or "Power Manager" settings. Ensure that actions like "When lid is closed" or "System idle" are configured to your liking and are not set to "Hibernate" by default.
+
+### 3. Debugging Systemd Logs
+If the behavior persists, your system is likely recording the exact reason for the hibernate request. You can check the logs immediately after the laptop wakes up and fails:
+
+```bash
+journalctl -b 0 -n 50 --no-pager
+```
+Look for lines mentioning `suspend`, `hibernate`, or `systemd-logind`. If a specific service or application is triggering the event, it will usually be listed near the time-stamped entries.
+
+### 4. Masking Suspend/Hibernate (Temporary Test)
+If you need to confirm that `systemd` is the culprit, you can temporarily disable the system's ability to enter these states to see if the random hibernation stops. 
+
+> **Warning:** This will prevent the laptop from hibernating/sleeping entirely until you undo the command.
+
+```bash
+sudo systemctl mask sleep.target suspend.target hibernate.target hybrid-sleep.target
+```
+If the laptop stays on, you know the issue is a software service triggering these targets. To revert this later:
+```bash
+sudo systemctl unmask sleep.target suspend.target hibernate.target hybrid-sleep.target
+```
+
+---
+
+### Summary Checklist
+* **Disable DPMS:** Use `xset -dpms` to stop the X server from meddling with power.
+* **Check Settings:** Uncheck "Power Management Enabled" in the `xscreensaver` settings.
+* **Prioritize One:** Ensure your desktop's native power settings (e.g., XFCE Power Manager) are not configured to "Hibernate" when idle, as this often overrides the screensaver's logic.
+
+Are you using a specific desktop environment like XFCE or MATE, or are you running a custom window manager setup on your Parrot installation?
+
+The logs point to a significant power management configuration issue that likely explains the erratic behavior. Specifically, the line `mate-power-pref[11765]: Failed to get session for pid 11765: The name org.freedesktop.ConsoleKit was not provided` indicates that your MATE desktop environment (which Parrot OS uses) is struggling to communicate with the system power management layer because it is looking for `ConsoleKit` instead of `systemd-logind`.
+
+When this communication fails, the desktop environment often reverts to "dumb" defaults, or conflicting power managers (like `xscreensaver` vs. `mate-power-manager`) trigger conflicting signals, causing the system to hibernate immediately upon waking.
+
+### 1. Fix the Power Manager Communication
+Since you are on a modern systemd-based distro, you need to ensure the MATE power manager is looking at the right service.
+
+* **Reinstall/Verify `upower` and `systemd` integration:**
+  Run these commands to ensure the power management stack is complete:
+  ```bash
+  sudo apt update
+  sudo apt install --reinstall upower mate-power-manager
+  ```
+* **Verify `logind` is handling power events:**
+  Open `/etc/systemd/logind.conf` in a text editor (e.g., `sudo nano /etc/systemd/logind.conf`) and ensure these lines are **not** commented out (remove the `#` at the start) and are set correctly:
+  ```ini
+  HandleLidSwitch=suspend
+  HandleLidSwitchExternalPower=suspend
+  HandleLidSwitchDocked=ignore
+  ```
+  After saving, restart the logind service:
+  ```bash
+  sudo systemctl restart systemd-logind
+  ```
+
+### 2. The "Netbird" Interference
+I noticed in your logs that `netbird.service` is in a constant crash-loop (`status=209/STDOUT`). While this might not directly hibernate your machine, it is forcing `systemd` to constantly spawn/restart processes, which can cause instability in system bus events.
+* **Fix the Service:** You have a broken file path for `netbird`. Check your unit file:
+  ```bash
+  systemctl cat netbird.service
+  ```
+  Ensure the `ExecStart` path points to the correct binary location (run `which netbird` to find it). If you don't need it right now, **stop and disable it** to clean up your logs:
+  ```bash
+  sudo systemctl stop netbird.service
+  sudo systemctl disable netbird.service
+  ```
+
+### 3. Simplify the Power Stack
+You effectively have two competing "captains" of your power settings: `mate-power-manager` and `xscreensaver`.
+
+1.  **Open "Power Management"** in your MATE menu.
+2.  Set **"Put computer to sleep when inactive for"** to a very high time (or "Never") specifically to test if the hibernation stops.
+3.  If the random hibernation stops, you know the conflict is definitely between the two managers.
+4.  If you prefer `xscreensaver`, go to its settings, and under **Advanced**, make sure **"Fade to black when blanking"** and **"Lock screen after"** are set exactly to the thresholds you want, and ensure it is the *only* thing managing your screen sleep.
+
+**Immediate Question:** After you disable the `netbird.service` and restart your session, does the random "hibernate on wake" still occur, or does the system now remain stable when you resume?
