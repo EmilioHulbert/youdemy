@@ -1,0 +1,46 @@
+If the **"Enroll EFI Image"** option is missing, your HP firmware is likely in a "Strict" mode where it only trusts factory-signed keys (Microsoft). Since you are a Linux power user, you are hitting the classic "locked-down" corporate firmware barrier.
+
+Regarding your BIOS appearance and overclocking, here is the breakdown for your EliteBook 840 G5.
+
+### 1. Restoring the "Big Logo" (The Appearance Fix)
+There isn't a separate `.exe` to change the logo size because that logo is actually a bitmap file embedded inside the BIOS chip itself. To get it back to the high-resolution "Big Logo" without the text at the bottom, you need to toggle these specific settings in the BIOS:
+
+* **Boot Mode:** Ensure it is set to **"UEFI Only"** (not "UEFI with CSM" or "Legacy").
+* **Fast Boot:** **Enable** this. When Fast Boot is off, the BIOS performs a "Verbose" POST, which shrinks the logo to fit the "Press ESC" text at the bottom.
+* **Video OpROM:** Set this to **"UEFI Only."** If it’s on "Legacy," the BIOS uses a low-resolution video driver during boot, which makes the logo look small and pixelated.
+
+### 2. The "HP BIOS Configuration Utility" (The Power User Tool)
+Since you mentioned using an `.exe`, HP has a professional tool called the **HP BIOS Configuration Utility (BCU)**. 
+* **What it does:** It allows you to export your entire BIOS configuration to a text file, edit it, and "flash" the settings back without rebooting.
+* **Why use it:** It often reveals "hidden" settings that the F10 menu hides.
+* **How to get it:** Search for "HP BIOS Configuration Utility" on the HP Support site.
+* **The Command:** `ConfigMgr.exe /getconfig:myconfig.txt`. You can then look for a line like `Logo Size` or `Post Messages` and change them manually.
+
+---
+
+### 3. CPU Overclocking on the 840 G5
+I'll be direct with you: **You cannot overclock the CPU on an EliteBook 840 G5.** Here is why:
+* **Hardware Lock:** You likely have an i5-8250U or i7-8550U. These are "U" series (Ultra-low power) processors. Intel physically locks the "Multiplier" on these chips. Only "K" series processors (like an i9-13900K) can be overclocked.
+* **Firmware Lock:** HP business motherboards (EliteBooks/ProBooks) are designed for stability and "Sure Start" security. They do not include the voltage regulators (VRMs) or the BIOS menus required to push more power to the CPU.
+
+**The "Guru" Alternative (Undervolting):**
+Instead of overclocking, most Linux users on this hardware use **Undervolting**. 
+* On Parrot/Linux, you can use a tool called `intel-undervolt`. 
+* By lowering the voltage slightly (e.g., $-50mV$), the CPU runs cooler. Because it’s cooler, it can maintain its **Turbo Boost** frequency for much longer without "Thermal Throttling." This makes the laptop feel faster under load without actually overclocking.
+
+---
+
+### 4. Secure Boot + GRUB (The Final Word)
+Since your BIOS doesn't have "Enroll EFI Image," you have two choices:
+1.  **Keep Secure Boot OFF:** This is the path of least resistance for a Parrot/Linux lab environment. It allows your `winjump` script to work without the "Signature Failure" loop.
+2.  **Use the "Shim" signed by Microsoft:** If you must use Secure Boot, you need to ensure Parrot is using the `shim-signed` package.
+    * `sudo apt update && sudo apt install shim-signed`
+    * `sudo grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=parrot --recheck --sbat /usr/lib/sbat.csv`
+    * This uses a small piece of code that *is* signed by Microsoft to "vouch" for GRUB.
+
+### Summary for your next move:
+* **To fix the Logo:** Turn on **Fast Boot** and set Video to **UEFI Only**.
+* **To fix the Timer:** Keep **Secure Boot OFF** and **Fast Startup (Windows) OFF**.
+* **To "Overclock":** Don't try to raise the frequency; instead, install `intel-undervolt` to stop the CPU from slowing down when it gets hot.
+
+If you run the BIOS `.exe` update again, it will just verify your current version. It won't "reset" the logo unless you choose the "Restore Factory Defaults" option during the process.
