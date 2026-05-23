@@ -1,0 +1,225 @@
+That persistent "dangling" Azure AD / Microsoft 365 work account is a classic Windows annoyance. Because the account was disabled or deleted on the organization's end, the standard Settings GUI often gets stuck in a loop trying to authenticate you just to let you remove it.
+
+Since the GUI is failing you, we can force it out using **PowerShell** to target the underlying Windows Account Manager (WAM) tokens, or use a quick control panel trick if it's tied to an old workplace enrollment.
+
+Here is how to clear it out once and for all.
+
+---
+
+### Method 1: The PowerShell Force Fix (Recommended)
+
+When an account is deleted from an organization, Windows keeps a cached entry in its `User Device Registration` or native identity providers. We can use PowerShell to force the system to unjoin or forget it.
+
+1. Right-click the **Start Menu** and select **Windows PowerShell (Admin)** or **Terminal (Admin)**.
+2. Run the following command to check if the machine is registered or joined to that workplace:
+```powershell
+dsregcmd /status
+
+```
+
+
+3. Scroll down to the **Workplace Join Status** section. If `WorkplaceJoined` says **YES**, you can force a disconnection by running:
+```powershell
+dsregcmd /leave
+
+```
+
+
+*Note: If the machine is Azure AD Joined (under Device Details), do not use this command unless you intend to completely unjoin the device from the domain.*
+
+If it is just a cached app token (which is highly likely given it's under "Accounts used by other apps"), we need to clear the specific identity provider folder where Windows stores these stale tokens.
+
+4. Close the Settings app completely.
+5. Open a standard PowerShell window and run the following command to navigate to the local packages repository (this safely clears the Microsoft Azure/Office account broker cache for your local profile):
+```powershell
+Get-AppxPackage -Name "Microsoft.AAD.BrokerPlugin" | Reset-AppxPackage
+
+```
+
+
+*If you are on an older build of Windows 10 where `Reset-AppxPackage` isn't supported, run this instead:*
+```powershell
+Add-AppxPackage -Register "C:\Windows\SystemApps\Microsoft.AAD.BrokerPlugin_cw5n1h2txyewy\AppxManifest.xml" -DisableDevelopmentMode -ForceApplicationShutdown
+
+```
+
+
+6. Restart your computer and check the **Email & accounts** page again.
+
+---
+
+### Method 2: The "Access Work or School" Disconnect
+
+Often, Windows won't let you delete the account from the *Email & accounts* tab, but it *will* let you sever the tie from the **Access work or school** tab right below it.
+
+1. In that same Settings window, look at the left-hand sidebar and click on **Access work or school**.
+2. Look for the `emilio.w@m365connect.com` account or the "m365connect" MDM enrollment there.
+3. Click on it to expand the options, and click **Disconnect**.
+4. Follow the prompts (you may need to confirm you want to remove the organization's management policies).
+5. Once disconnected from this tab, it will automatically vanish from the *Email & accounts* tab.
+
+---
+
+### Method 3: Nuking it via the Registry (If it still won't budge)
+
+If the token is completely corrupted, we can manually strip the registry key where Windows maps this account to your local user profile.
+
+1. Press `Win + R`, type `regedit`, and hit Enter.
+2. Navigate to the following path:
+`HKEY_CURRENT_USER\Software\Microsoft\IdentityCRL\UserExtendedProperties`
+3. In the left folder tree under `UserExtendedProperties`, look for a subfolder named `emilio.w@m365connect.com`.
+4. Right-click that email folder and select **Delete**.
+5. Next, navigate to:
+`HKEY_USERS\.DEFAULT\Software\Microsoft\IdentityCRL\StoredIdentities`
+6. Check for any mention of that specific email address or the associated unique identifier, and delete the corresponding key.
+7. Reboot the machine.
+
+Give Method 1 or 2 a shot first, as they are the cleanest way to tell Windows to drop the stale token. Let me know if it fights back on any of these steps!
+
+Windows 10 Enterprise handles Azure AD (Microsoft Entra ID) accounts a bit differently than Pro or Home editions. Instead of standard Live/IdentityCRL keys, Enterprise stores modern workplace accounts under the **Workplace Join** and **System Settings** registry hives.
+
+Since it survived Method 2, the identity is still deeply cached in the local system profile. Here is how we track it down and force-delete it on Enterprise.
+
+---
+
+### Step 1: The Modern Enterprise Registry Path
+
+Since it wasn't in `IdentityCRL`, the account registration details are likely stored under the hardware enrollment or current user cloud-association keys.
+
+1. Press `Win + R`, type `regedit`, and hit **Enter**.
+2. Navigate to this path:
+```text
+HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\GroupHub
+
+```
+
+
+3. Look for any subfolders here. If you see one that references your old organization or account, delete it.
+4. Next, navigate to this key (this is where Windows 10 Enterprise caches modern Work/School accounts):
+```text
+HKEY_CURRENT_USER\Software\Microsoft\WindowsNT\CurrentVersion\WorkplaceJoin\TenantInfo
+
+```
+
+
+5. Inside `TenantInfo`, you will see one or more folders with long alphanumeric IDs (GUIDs). Click on each one and look at the values on the right. If you see `emilio.w@m365connect.com` or the tenant name anywhere, **delete that entire GUID folder**.
+
+---
+
+### Step 2: Clear the Local Account Broker State
+
+Windows Enterprise uses an isolated background process to hold onto Enterprise credentials. Let's completely wipe the cache folder for that specific plugin.
+
+1. Open your administrator command prompt or PowerShell window (which you already have open in the screenshot!).
+2. Stop the token broker service temporarily so we can drop its files:
+```cmd
+taskkill /F /IM BackgroundTaskHost.exe
+
+```
+
+
+3. Run the following command to navigate to your local AppData folder and delete the token broker's cache directly:
+```cmd
+rmdir /s /q "%LOCALAPPDATA%\Packages\Microsoft.AAD.BrokerPlugin_cw5n1h2txyewy"
+
+```
+
+
+*Note: Don't worry if it says some files are locked; it will still clear the core identity tokens.*
+
+---
+
+### Step 3: Check `netplwiz` for Hidden Mapped Accounts
+
+Sometimes Windows maps a Work account to a local profile shadow copy.
+
+1. Press `Win + R`, type `netplwiz`, and press **Enter**.
+2. Look at the list of users. Do you see `emilio.w@m365connect.com` listed there?
+3. If it appears in this legacy menu, select it and click **Remove**.
+
+---
+
+### Step 4: The Ultimate "Nuclear" Option (System Account Hijack)
+
+If Windows is *still* showing it, the account registry key isn't owned by your user profile—it is owned by the `NT AUTHORITY\SYSTEM` account, which is why it's invisible to your standard administrator account registry searches.
+
+To see and delete it, we need to view the registry as the SYSTEM user using Microsoft's **Sysinternals PsExec** tool.
+
+1. Download **PsExec** from Microsoft's official site (it's part of the Sysinternals suite).
+2. Extract `psexec.exe` to a folder (e.g., `C:\Tools`).
+3. Open your Admin Command Prompt and navigate to that folder:
+```cmd
+cd C:\Tools
+
+```
+
+
+4. Run this command to open a Registry Editor running with absolute SYSTEM privileges:
+```cmd
+psexec.exe -i -s regedit.exe
+
+```
+
+
+5. In this new Registry Editor window, navigate to:
+```text
+HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\CloudDomainJoin\JoinInfo
+
+```
+
+
+6. Expand `JoinInfo`. You will see GUID folders. Look through them for your old work email/tenant info and **delete** the folder.
+
+Once done, close everything down and give the machine one final reboot. That account won't have a leg left to stand on!
+
+Ah, good catch. Windows 10 Enterprise often strips out or renames components like `GroupHub` depending on the exact feature update or provisioning package used.
+
+Since it isn't there, let's look at the actual locations where **Windows 10 Enterprise** natively locks down these Azure AD / M365 identities.
+
+Because `GroupHub` was a bust, skip straight to the other paths under your current user profile, or use the alternative paths below:
+
+### 1. Check the Enterprise Workplace Join Key
+
+Did you check this specific path from the previous step yet?
+
+```text
+HKEY_CURRENT_USER\Software\Microsoft\WindowsNT\CurrentVersion\WorkplaceJoin\TenantInfo
+
+```
+
+If `WorkplaceJoin` exists there, look for those long alphanumeric GUID folders inside `TenantInfo`. Click through them to see if `emilio.w@m365connect.com` is listed in the values on the right, and delete the folder if found.
+
+### 2. The Native Cloud Identity Key (Alternative to IdentityCRL)
+
+Since it wasn't under `IdentityCRL`, modern versions of Enterprise often map organizational accounts here instead:
+
+```text
+HKEY_CURRENT_USER\Software\Microsoft\IdentityCRL\UserExtendedProperties
+
+```
+
+*(Wait, if that whole `IdentityCRL` structure was missing or empty for you, try this corporate alternative instead):*
+
+```text
+HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\CloudExperienceHost\AccountAssociations
+
+```
+
+Look inside the folders here to see if your old work email is explicitly named, and delete its key.
+
+---
+
+### If those are missing: Try Step 2 (The Cache Wipe)
+
+If the registry paths are completely clean under your current user, it means the identity isn't a hard registry key—it's a lingering **live token** sitting in your profile's AppData cache.
+
+Go ahead and run those two lines from **Step 2** in your open Administrator Command Prompt to wipe out the broker plugin folder:
+
+```cmd
+taskkill /F /IM BackgroundTaskHost.exe
+rmdir /s /q "%LOCALAPPDATA%\Packages\Microsoft.AAD.BrokerPlugin_cw5n1h2txyewy"
+
+```
+
+Let me know if `WorkplaceJoin` is visible on your machine, or if dropping the BrokerPlugin cache forces it to disappear!
+
