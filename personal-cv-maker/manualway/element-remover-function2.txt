@@ -1,0 +1,86 @@
+(function() {
+    // 1. Target every single UI container including the new flexbox layout blocks
+    const absoluteJunkList = [
+        'div.tab-panel',                         // NEW: Tab panel grid spacer
+        'div[data-testid="embd-70WfaMp"]',      // NEW: Right side layout action block
+        '.finalize-action-right',               // NEW: Alternative class for the right block
+        '#scrollPanelBody',
+        'div[data-testid="embd-67ScGvd"]',
+        '.panel-header',
+        'div[data-testid="embd-69R5sVn4"]',     // Blank score container box
+        '.cv-score-wrapperV2',
+        'nav.left-navbar',
+        'ul.finalize-btn-wrap',
+        'footer[data-testid="embd-629D8zTF"]',
+        '#footer',
+        '.footer',
+        'nav[data-testid="embd-63ZeVMJ"]',      // Top primary header band
+        'div[data-testid="embd-32TRaeqb"]',     // Top sub-tools layer
+        'div[data-testid="embd-70AbE0Gv"]',     // Score tracker widget
+        '.social-proof-banner',
+        '.skip-content-link'
+    ];
+
+    // Obliterate them completely from the DOM session
+    absoluteJunkList.forEach(selector => {
+        document.querySelectorAll(selector).forEach(el => el.remove());
+    });
+
+    // 2. Normalize core application wrappers to ensure 0px offset spacing
+    const masterAppWrapper = document.querySelector('.main-content') || 
+                             document.querySelector('main') || 
+                             document.querySelector('[class*="workspace"]');
+    if (masterAppWrapper) {
+        masterAppWrapper.style.setProperty('margin', '0px', 'important');
+        masterAppWrapper.style.setProperty('padding', '0px', 'important');
+        masterAppWrapper.style.setProperty('display', 'block', 'important');
+    }
+
+    // 3. Inject our ultimate print formatting override style block
+    const layoutCorrectionStyle = document.createElement('style');
+    layoutCorrectionStyle.type = 'text/css';
+    layoutCorrectionStyle.innerHTML = `
+        @media print {
+            /* Fix the page scale so Portrait functions exactly like Landscape */
+            html, body {
+                width: 100% !important;
+                zoom: 92% !important; /* Slightly scales the document down to fit Portrait width boundaries */
+            }
+
+            /* Keep all sidebar controls, grids, and action frames explicitly unrendered */
+            .tab-panel, .finalize-action-right, #scrollPanelBody, .panel-header, 
+            .cv-score-wrapperV2, nav, .left-navbar, .finalize-btn-wrap, 
+            #editIcons, [class*="overlay"], [class*="tool"] {
+                display: none !important;
+                visibility: hidden !important;
+                width: 0px !important;
+                height: 0px !important;
+                margin: 0px !important;
+                padding: 0px !important;
+            }
+
+            /* Isolate and center the actual resume document canvas cleanly */
+            .document.doc-root, div[data-testid="embd-95CA90b"] {
+                margin: 0px auto !important;
+                padding: 0px !important;
+                top: 0px !important;
+                position: relative !important;
+                display: block !important;
+                page-break-before: avoid !important;
+                break-before: avoid !important;
+                page-break-inside: auto !important;
+                break-inside: auto !important;
+            }
+
+            /* Prevent list items or experience chunks from clipping or splitting text lines */
+            li, p, .experience-item, [class*="item"] {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                overflow: visible !important; /* Forces clipped text to show cleanly */
+            }
+        }
+    `;
+    document.head.appendChild(layoutCorrectionStyle);
+
+    console.log("✓ Ultimate clean-print architecture initialized. Scaling patch applied.");
+})();

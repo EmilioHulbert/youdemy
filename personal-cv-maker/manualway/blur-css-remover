@@ -1,0 +1,29 @@
+// Remove CSS blur filters from all elements
+const allElements = document.querySelectorAll('*');
+allElements.forEach(el => {
+    const style = window.getComputedStyle(el);
+    if (style.filter.includes('blur') || style.backdropFilter.includes('blur')) {
+        el.style.filter = 'none !important';
+        el.style.backdropFilter = 'none !important';
+    }
+});
+
+// Force global style override to kill any active or future blur classes
+const clearStyle = document.createElement('style');
+clearStyle.innerHTML = `
+  *, .doc-overlay, .para-overlay, [class*="blur"], [class*="overlay"] {
+    filter: none !important;
+    backdrop-filter: none !important;
+    opacity: 1 !important;
+  }
+  /* Hide the annoying edit icons so they don't print */
+  #editIcons, .document-tool, .sec-tool, .para-tool {
+    display: none !important;
+  }
+`;
+document.head.appendChild(clearStyle);
+console.log("Blur mechanics successfully disabled.");
+
+
+
+
