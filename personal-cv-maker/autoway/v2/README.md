@@ -1,6 +1,7 @@
 #Usage commands
 google-chrome --remote-debugging-port=9222 --user-data-dir="/tmp/chrome-debug" --no-first-run --new-window
-
+or
+google-chrome --remote-debugging-port=9222 --user-data-dir="$HOME/.config/chrome-debug" --no-first-run --new-window
 npm install -g puppeteer-cli
 3. In this newly opened window, navigate back to your Zety builder dashboard if it doesn't open automatically: `[https://builder.zety.com/resume/final-resume](https://builder.zety.com/resume/final-resume)`. Keep this window open.
 
