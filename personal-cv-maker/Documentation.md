@@ -269,3 +269,123 @@ const puppeteer = require('puppeteer');
 ---
 
 Have an awesome weekend, my guy! You've got a fantastic, perfectly polished resume format completely ready to roll. Let me know whenever you're ready to spin up the next automation project.
+
+
+##Using an already existing chrome profile for testing purposes
+To make Chrome or VS Code/Selenium use your exact student profile without forcing you to log in every time, you need to point your debugging or automation tool directly to your existing user data directory and tell it which profile folder to load.
+
+Based on your terminal output, your Chrome profile directory is `Profile 7`. Here is how you can use it depending on how you are debugging.
+
+---
+
+## Method 1: Launching Chrome for Debugging via Terminal
+
+If you want to manually launch your exact student Chrome profile with remote debugging enabled (which allows VS Code or other tools to attach to it), run this command in your terminal:
+
+```bash
+google-chrome --remote-debugging-port=9222 --user-data-dir="/home/hulbert/.config/google-chrome" --profile-directory="Profile 7"
+
+```
+
+> ⚠️ **Important:** Close all open instances of your student Chrome profile before running this command, otherwise Chrome will just open a new regular window without turning on the debugging port.
+
+---
+
+## Method 2: Configuring VS Code (`launch.json`)
+
+If you are using VS Code to debug a web application and want it to open your student profile automatically, add the `userDataDir` and `runtimeArgs` parameters to your configuration:
+
+```json
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Launch Chrome with Student Profile",
+            "url": "http://localhost:3000", 
+            "userDataDir": "/home/hulbert/.config/google-chrome",
+            "runtimeArgs": [
+                "--profile-directory=Profile 7"
+            ]
+        }
+    ]
+}
+
+```
+
+---
+
+## Method 3: Using Selenium Python (If Automating)
+
+Since I noticed a `SeleniumProfile` folder in your directory, if your goal is automation via Selenium, you can attach it to your existing profile like this:
+
+```python
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+
+options = Options()
+# Point to the root Chrome configuration folder
+options.add_argument(r"--user-data-dir=/home/hulbert/.config/google-chrome")
+# Point to your specific student profile folder
+options.add_argument(r"--profile-directory=Profile 7")
+
+driver = webdriver.Chrome(options=options)
+driver.get("https://google.com")
+
+```
+
+---
+
+## How to confirm "Profile 7" is definitely the right one?
+
+If you ever want to verify which folder belongs to which email account down the road without guessing, you can run a quick command to pull the registered email string directly out of Chrome's preference file:
+
+```bash
+grep -o '"email":"[^"]*' ~/.config/google-chrome/Profile\ 7/Preferences
+
+```
+
+If it prints out `"email":"muriuki.emilio.h.21@students.dkut.ac.ke"`, you have a perfect match!
+
+
+The reason you are seeing **"Person 1"** (or a clean, fresh profile) instead of your student profile is due to a subtle but important detail in how the `--user-data-dir` flag works in Chrome.
+
+When you ran this command:
+
+```bash
+--user-data-dir="$HOME/.config/google-chrome/Profile 4"
+
+```
+
+You accidentally pointed the **root** user data directory directly *into* the subfolder of Profile 4.
+
+### What went wrong under the hood?
+
+Chrome expects `--user-data-dir` to point to the master folder (`~/.config/google-chrome`). Inside that master folder, Chrome looks for profile folders like `Default`, `Profile 1`, `Profile 4`, etc.
+
+Because you pointed it directly to `Profile 4`, Chrome treated `Profile 4` as the *master configuration folder*. It looked inside it, didn't see a subfolder named `Default`, so it automatically created a brand new, empty default profile right there—which it named **"Person 1"**.
+
+---
+
+### The Fix
+
+To open your actual student profile (`Profile 4`), you need to split the path. Point `--user-data-dir` to the main directory, and use the `--profile-directory` flag to target Profile 4:
+
+```bash
+google-chrome --remote-debugging-port=9222 --user-data-dir="$HOME/.config/google-chrome" --profile-directory="Profile 4" --no-first-run --new-window
+
+```
+
+### Clean up note
+
+Because of that previous command, Chrome likely generated a few stray files and a folder named `Default` *inside* your actual `Profile 4` directory.
+
+If you want to clean up that clutter so it doesn't cause issues later, you can check what was created inside it by running:
+
+```bash
+ls "$HOME/.config/google-chrome/Profile 4/Default"
+
+```
+
+If it looks like a freshly generated, empty profile folder, you can safely delete that nested `Default` folder so your student profile stays clean!
