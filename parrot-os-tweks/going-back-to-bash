@@ -1,0 +1,125 @@
+You bet. Sometimes going back to a pristine, lightweight classic is the absolute best move. Getting rid of all the background daemons, subshells, loops, and custom traps lets Bash do exactly what it does best: stay blazing fast, completely predictable, and 100% stable.
+
+I took your original good configuration and ran a fine-tooth comb through the formatting strings. There was a tiny typo in the bracket alignment near the username `]\u` instead of `][\u`, and the window title code needed to match your `[ZERODIUM]` branding.
+
+Here is your pristine, fully optimized, zero-clock, rock-solid `.bashrc` file.
+
+### Complete Pristine `~/.bashrc` Blueprint
+
+```bash
+# ~/.bashrc: executed by bash(1) for non-login shells.
+
+case $- in
+    *i*) ;;
+      *) return;;
+esac
+
+HISTCONTROL=ignoreboth
+shopt -s histappend
+HISTSIZE=1000
+HISTFILESIZE=2000
+shopt -s checkwinsize
+
+if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
+    debian_chroot=$(cat /etc/debian_chroot)
+fi
+
+force_color_prompt=yes
+if [ -n "$force_color_prompt" ]; then
+    if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+        color_prompt=yes
+    else
+        color_prompt=
+    fi
+fi
+
+# ==============================================================================
+# PRISTINE STATIC PROMPT (ZERO CLOCK / PERFECT BRACKET ALIGNMENT)
+# ==============================================================================
+if [ "$color_prompt" = yes ]; then
+    # Standard Bash-native date evaluation \D{format} updates cleanly on every fresh command execution line
+    PS1='\[\033[0;31m\]┌──[\[\033[01;33m\]\D{%a %b %d %r}\[\033[01;31m\]][\[\033[01;39m\]\u\[\033[01;33m\]@\[\033[01;96m\]\h\[\033[01;31m\]]─[\[\033[01;32m\]\w\[\033[01;31m\]]\n└──╼\[\033[01;96m\][ZERODIUM]\[\033[01;33m\]\$\[\033[0m\] '
+else
+    PS1='┌──[\D{%a %b %d %r}][\u@\h]─[\w]\n└──╼ [ZERODIUM] \$ '
+fi
+
+# Set the Window title bar natively to match your theme profiles
+case "$TERM" in
+xterm*|rxvt*)
+    PS1="\[\e]0;[ZERODIUM] | \u@\h: \w\a\]$PS1"
+    ;;
+*)
+    ;;
+esac
+# ==============================================================================
+
+if [ -x /usr/bin/dircolors ]; then
+    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    alias ls='ls --color=auto'
+    alias dir='dir --color=auto'
+    alias vdir='vdir --color=auto'
+    alias grep='grep --color=auto'
+    alias fgrep='fgrep --color=auto'
+    alias egrep='egrep --color=auto'
+fi
+
+alias ll='ls -lh'
+alias la='ls -lha'
+alias l='ls -CF'
+alias em='emacs -nw'
+alias _='sudo'
+alias _i='sudo -i'
+alias fucking='sudo'
+alias please='sudo'
+
+if [ "$color_prompt" = yes ]; then
+    man() {
+    env \
+    LESS_TERMCAP_mb=$'\e[01;31m' \
+    LESS_TERMCAP_md=$'\e[01;31m' \
+    LESS_TERMCAP_me=$'\e[0m' \
+    LESS_TERMCAP_se=$'\e[0m' \
+    LESS_TERMCAP_so=$'\e[01;44;33m' \
+    LESS_TERMCAP_ue=$'\e[0m' \
+    LESS_TERMCAP_us=$'\e[01;32m' \
+    man "$@"
+    }
+fi
+
+function hex-encode() { echo "$@" | xxd -p; }
+function hex-decode() { echo "$@" | xxd -p -r; }
+function rot13() { echo "$@" | tr 'A-Za-z' 'N-ZA-Mn-za-m'; }
+
+if [ -f ~/.bash_aliases ]; then
+    . ~/.bash_aliases
+fi
+
+if ! shopt -oq posix; then
+  if [ -f /usr/share/bash-completion/bash_completion ]; then
+    . /usr/share/bash-completion/bash_completion
+  elif [ -f /etc/bash_completion ]; then
+    . /etc/bash_completion
+  fi
+fi
+
+alias venv='source /home/user/Desktop/venv/bin/activate'
+alias cleanpaste="xclip -o | tr -d '\n' | xclip -selection clipboard"
+[ -f ~/.fzf.bash ] && source ~/.fzf.bash
+
+```
+
+---
+
+### Back to True Stability
+
+1. Copy and paste this script directly into your `~/.bashrc`.
+2. Make sure you switch back to native Bash as your system binary execution layer if you were running zsh earlier:
+```bash
+exec bash
+
+```
+
+
+3. Type `exit` or close your window out, and pop open a completely fresh **Terminator** window.
+
+The styling text is flawlessly aligned, the colors are back to their original depth, and your input line is completely insulated from glitches!
