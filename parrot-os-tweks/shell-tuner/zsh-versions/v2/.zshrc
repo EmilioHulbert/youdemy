@@ -1,0 +1,66 @@
+# Enable core color features natively
+autoload -U colors && colors
+setopt PROMPT_SUBST
+
+# ==============================================================================
+# BASH HISTORY ACCELERATOR & INTEGRATION
+# ==============================================================================
+HISTFILE=~/.bash_history
+SAVEHIST=10000
+HISTSIZE=10000
+
+setopt append_history
+setopt extended_history
+setopt hist_expire_dups_first
+setopt hist_ignore_dups
+setopt hist_ignore_space
+setopt share_history
+
+# FORCE HINTS: Make the standard 'history' command show the whole file from item 1
+alias history='fc -l 1'
+
+# ==============================================================================
+# PERFECT ASYNC ZSH TICKER ENGINE
+# ==============================================================================
+_zsh_live_clock_ticker() {
+    if [[ "$PENDING" -eq 0 ]]; then
+        zle reset-prompt
+    fi
+}
+zle -N _zsh_live_clock_ticker
+TMOUT=1
+trap '_zsh_live_clock_ticker' ALRM
+
+# PROMPT TUNING: Using '%#' means root gets '#', standard user automatically gets '$'
+PROMPT=$'%F{red}┌──[%F{yellow}%D{%a %b %d} %D{%L:%M:%S %p}%F{red}][%F{white}%n%F{yellow}@%F{cyan}%m%F{red}]─[%F{green}%~%F{red}]\n└──╼%F{cyan}[ZERODIUM]%F{yellow}\$ %f'
+# ==============================================================================
+
+if [ -x /usr/bin/dircolors ]; then
+    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    alias ls='ls --color=auto'
+    alias dir='dir --color=auto'
+    alias vdir='vdir --color=auto'
+    alias grep='grep --color=auto'
+    alias fgrep='fgrep --color=auto'
+    alias egrep='egrep --color=auto'
+fi
+
+alias ll='ls -lh'
+alias la='ls -lha'
+alias l='ls -CF'
+alias em='emacs -nw'
+
+alias _='sudo'
+alias _i='sudo -i'
+alias fucking='sudo'
+alias please='sudo'
+
+function hex-encode() { echo "$@" | xxd -p; }
+function hex-decode() { echo "$@" | xxd -p -r; }
+function rot13() { echo "$@" | tr 'A-Za-z' 'N-ZA-Mn-za-m'; }
+
+alias venv='source /home/user/Desktop/venv/bin/activate'
+alias cleanpaste="xclip -o | tr -d '\n' | xclip -selection clipboard"
+
+autoload -Uz compinit
+compinit
