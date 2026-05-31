@@ -58,6 +58,9 @@ alias please='sudo'
 function hex-encode() { echo "$@" | xxd -p; }
 function hex-decode() { echo "$@" | xxd -p -r; }
 function rot13() { echo "$@" | tr 'A-Za-z' 'N-ZA-Mn-za-m'; }
+if [ -f ~/.bash_aliases ]; then
+    . ~/.bash_aliases
+fi
 
 alias venv='source /home/user/Desktop/venv/bin/activate'
 alias cleanpaste="xclip -o | tr -d '\n' | xclip -selection clipboard"
