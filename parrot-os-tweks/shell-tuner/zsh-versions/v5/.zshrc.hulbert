@@ -86,6 +86,11 @@ bindkey "^[[1;5C" forward-word
 bindkey ';5D' backward-word
 bindkey ';5C' forward-word
 
+# === ADD THESE TWO LINES HERE ===
+# Bind Ctrl + Delete to delete a whole word forward
+bindkey "^[[3;5~" kill-word
+bindkey ';5~' kill-word
+
 # Make Alt+Backspace respect slashes and punctuation boundaries
 autoload -U select-word-style
 select-word-style bash
