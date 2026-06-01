@@ -20,10 +20,17 @@ setopt share_history
 alias history='fc -l 1'
 
 # ==============================================================================
-# PERFECT ASYNC ZSH TICKER ENGINE
+# PERFECT ASYNC ZSH TICKER ENGINE (COMPLETION-ISOLATED)
 # ==============================================================================
 _zsh_live_clock_ticker() {
-    if [[ "$PENDING" -eq 0 ]]; then
+    # Protect layout: If a completion menu is active or ZLE is busy, 
+    # do NOT force a prompt reset (prevents breaking the Tab memory state)
+    if [[ -n "$COMP_ACTIVE" || "$PENDING" -gt 0 || "$ZLE_STATE" == *completing* ]]; then
+        return
+    fi
+
+    # Only reset prompt natively if the editor interface is completely idle
+    if zle; then
         zle reset-prompt
     fi
 }
@@ -32,7 +39,7 @@ TMOUT=1
 trap '_zsh_live_clock_ticker' ALRM
 
 # PROMPT TUNING: Using '%#' means root gets '#', standard user automatically gets '$'
-PROMPT=$'%F{red}┌──[%F{yellow}%D{%a %b %d} %D{%L:%M:%S %p}%F{red}][%F{white}%n%F{yellow}@%F{cyan}%m%F{red}]─[%F{green}%~%F{red}]\n└──╼%F{cyan}[REMAC]%F{yellow}\$ %f'
+PROMPT=$'%F{red}┌──[%F{yellow}%D{%a %b %d} %D{%L:%M:%S %p}%F{red}][%F{white}%n%F{yellow}@%F{cyan}%m%F{red}]─[%F{green}%~%F{red}]\n└──╼%F{cyan}[REMAC]%F{yellow}\# %f'
 # ==============================================================================
 
 if [ -x /usr/bin/dircolors ]; then
@@ -67,6 +74,8 @@ alias cleanpaste="xclip -o | tr -d '\n' | xclip -selection clipboard"
 
 autoload -Uz compinit
 compinit
+fastfetch --structure OS:Kernel:Uptime:CPU:Memory
+
 # Bind Ctrl + Left Arrow to move back one word
 bindkey "^[[1;5D" backward-word
 
@@ -82,53 +91,56 @@ autoload -U select-word-style
 select-word-style bash
 
 # ==============================================================================
-# ULTRASONIC BASH-STYLE MID-WORD EXPANSION ENGINE (TAIL-PRESERVING)
+# ULTRASONIC CONTEXT-LOCKED INLINE CYCLING ENGINE
 # ==============================================================================
+# 1. Instruct core Zsh to cycle matches cleanly inline without spawning grids
 setopt COMPLETE_IN_WORD
 unsetopt ALWAYS_TO_END
+setopt MENU_COMPLETE
+unsetopt AUTO_MENU
 
-# Menu selection behavior
-zstyle ':completion:*' menu select=1
-zstyle ':completion:*' current-selection 'standout'
+# Disable the visual menu selection grid that hides RBUFFER
+zstyle ':completion:*' menu false
 
 bash_style_tab_complete() {
-    # If cursor is at the end of the line or next to a space, fall back safely
+    # If the right buffer is empty or begins with a space, match natively
     if [[ -z "$RBUFFER" || "$RBUFFER" == " "* ]]; then
         zle expand-or-complete
         return
     fi
 
-    # 1. Temporarily pause the async clock signal to stop ticker race conditions
+    # 1. Total blackout for the live clock ticker to protect line positioning
     local saved_tmout=$TMOUT
     TMOUT=0
     trap '' ALRM
 
-    # 2. Capture line states
-    local left_side="$LBUFFER"
-    local right_side="$RBUFFER"
+    # 2. Extract the exact segment up to the next space character
+    local right_word="${RBUFFER%% *}"
+    local line_tail="${RBUFFER#$right_word}"
 
-    # 3. Isolation Surgery: Split the right buffer into immediate suffix and the rest of line
-    # immediate_suffix handles "virtualbox.desktop"
-    # line_tail handles " ~/.local/share/applications/"
-    local immediate_suffix="${right_side%% *}"
-    local line_tail="${right_side#$immediate_suffix}"
+    # 3. Capture the current prefix under the cursor to track filtering state
+    local initial_lbuffer="$LBUFFER"
 
-    # 4. The Suffix Blinder: Wipe out ONLY the immediate suffix while cycling
+    # 4. Hide the right-hand side text block from Zsh's completion engine
     RBUFFER=""
 
-    # 5. Invoke native completion strictly on the isolated left chunk
-    zle expand-or-complete
+    # 5. Execute native inline cycling state
+    zle menu-complete
 
-    # 6. Stitch BOTH parts back together behind the current cursor position
-    RBUFFER="${immediate_suffix}${line_tail}"
+    # 6. Injection Guard: Clean up trailing spaces added by core autocomplete loops
+    if [[ "$LBUFFER" == *" " ]]; then
+        LBUFFER="${LBUFFER% }"
+    fi
 
-    # 7. Re-enable the async clock ticker safely
+    # 7. Snap the right-hand string block back onto the terminal interface seamlessly
+    RBUFFER="${right_word}${line_tail}"
+
+    # 8. Re-awaken the live clock engine and refresh the prompt layout
     TMOUT=$saved_tmout
     trap '_zsh_live_clock_ticker' ALRM
     zle redisplay
 }
 
-# Register the widget and bind the key
+# Register the widget and bind it exclusively to the Tab key
 zle -N bash_style_tab_complete
 bindkey '^I' bash_style_tab_complete
-sudo su
