@@ -1,0 +1,9 @@
+#%PAM-1.0
+
+# 1. Inject the Python environment variables directly into the PAM module execution
+auth [success=done default=ignore] pam_python3.so /lib/security/howdy/pam/pam_handler.py PYTHONPATH=/lib/security/howdy
+
+# 2. Standard Debian/Parrot Password Fallback
+auth [success=1 default=ignore]    pam_unix.so nullok try_first_pass
+auth requisite                     pam_deny.so
+auth required                      pam_permit.so
