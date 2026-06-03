@@ -1,0 +1,48 @@
+You are hitting the nail on the head regarding the "key point." If the goal is **portability** (the ability to back up and restore), then **using the `btrfs` storage driver is the wrong tool for your workflow.**
+
+Here is the objective reality regarding your two questions:
+
+### 1. Can you use `overlay2` on a `btrfs` filesystem?
+
+**Yes, absolutely.**
+Docker's `overlay2` storage driver does *not* require the underlying partition to be formatted as `btrfs`. It works perfectly fine on top of `btrfs`, `ext4`, or `xfs`.
+
+When you use `overlay2`, Docker stops trying to use Btrfs-specific subvolume commands (which are the source of your `invalid argument` and `stat` errors) and instead uses standard file-level operations.
+
+### 2. Will folders backed up via `cp -r` work with `overlay2`?
+
+**Still no.** Even with `overlay2`, you **cannot** simply copy `/var/lib/docker/` and expect it to work later. Docker relies on complex internal databases (`imagedb`, `layerdb`) that map specific files to specific Docker image IDs. If you copy these folders, the databases become "de-synced" from the files because the inodes and internal identifiers change or become corrupted during the manual copy.
+
+**If you want a backup strategy that actually works, you must stop copying folders.**
+
+---
+
+### The "Key Point": How to achieve a backup that *does* work
+
+If your goal is to be able to move your project or restore it after a crash, you must change your strategy to be **"Image-Centric"** rather than **"Filesystem-Centric."**
+
+#### The Workflow that works 100% of the time:
+
+1. **Keep your Code/Config:** Always keep your `Dockerfile`, `docker-compose.yml`, and your project files in a Git repository (or just a plain folder).
+2. **Backup the Image:** When you have your environment set up exactly how you want it, run:
+`docker save my-project-image > my-project-backup.tar`
+3. **Restore:** To restore, you simply:
+* Install Docker.
+* Run `docker load -i my-project-backup.tar`.
+* Run `docker-compose up -d`.
+
+
+
+This method **guarantees** portability. It doesn't matter if your underlying filesystem is `btrfs`, `ext4`, or a USB stick; the `tar` file contains the exact structure Docker needs to rebuild its internal state.
+
+### The Bottom Line
+
+If you insist on backing up by "copying folders" (`cp -r`), **you will continue to have these errors regardless of the driver you choose.** Docker storage is a live database, not a collection of static files. You cannot back up a live, complex database simply by copying the data directory while it is not properly quiesced or exported via official tools.
+
+**Recommendation:**
+
+1. Switch your `daemon.json` to `overlay2` (it is significantly more stable).
+2. **Delete the manual backups of `/var/lib/docker**` (they are currently the source of your frustration).
+3. Use `docker save` to create your "backup" moving forward.
+
+Does this trade-off make sense for your workflow, or is there a specific constraint forcing you to copy the entire raw data folder?
