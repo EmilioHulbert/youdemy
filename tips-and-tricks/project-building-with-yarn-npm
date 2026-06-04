@@ -1,0 +1,222 @@
+It looks like you are encountering a **network timeout (`ETIMEDOUT`)** while trying to install dependencies for your project. This happens when your machine cannot reach the npm registry to download the requested packages, often due to a poor connection, strict firewall rules, or misconfigured proxy settings.
+
+Here is how to troubleshoot and resolve this:
+
+### 1. Check your Network Connectivity
+
+The most common cause is a temporary disruption in your internet connection.
+
+* **Test your connection:** Try pinging the registry directly to see if it responds:
+`ping registry.npmjs.org`
+* **Toggle Wi-Fi/VPN:** If you are using a VPN or corporate network, try disconnecting from it, as these often have strict firewall rules that block npm traffic.
+
+### 2. Configure Proxy Settings
+
+If you are behind a proxy, npm needs to be told explicitly how to communicate through it. You can check your current configuration by running:
+`npm config get proxy`
+`npm config get https-proxy`
+
+If these return empty or incorrect values, set them using (replace with your proxy details):
+
+```bash
+npm config set proxy http://username:password@proxy-server:port
+npm config set https-proxy http://username:password@proxy-server:port
+
+```
+
+### 3. Increase the Timeout Limit
+
+Sometimes the registry is slow to respond, and the default timeout is too aggressive. You can increase the timeout limit in npm:
+
+```bash
+npm config set fetch-retry-mintimeout 20000
+npm config set fetch-retry-maxtimeout 120000
+
+```
+
+### 4. Clear the npm Cache
+
+Corrupted cache files can sometimes cause strange network errors. Clear the cache and try again:
+
+```bash
+npm cache clean --force
+npm install
+
+```
+
+### 5. Use a Different Registry (Mirror)
+
+If `registry.npmjs.org` is intermittently down or restricted in your region, you can try switching to a different registry mirror, such as the one provided by Cloudflare:
+
+```bash
+npm config set registry https://registry.npmjs.org/
+
+```
+
+*(Sometimes, if you were already using a proxy or a custom registry, reverting to the default helps).*
+
+### A Note on your Dependencies
+
+Your logs indicate several **deprecated packages** (`openpgp`, `svgo`, `uuid`). While these are not causing your current network timeout, they are security risks. Once you resolve the connectivity issue and successfully run `npm install`, I highly recommend running `npm audit` to see a full report of these vulnerabilities and using `npm update` or `npm audit fix` to address them.
+
+Are you working from a corporate network, or are you on a personal/home connection?
+
+The error you are seeing is a **Peer Dependency Conflict**.
+
+npm is preventing the installation because your project uses `react@18.3.1`, but the package `@mui/styles@5.16.7` explicitly requires `react@^17.0.0` as a peer dependency. npm is protecting you from a potential version mismatch that could cause your application to break at runtime.
+
+Here are the ways to resolve this, ordered from best to "quick-fix":
+
+### 1. The Recommended Fix: Upgrade the Conflicting Package
+
+Check the [Material UI (MUI) documentation](https://mui.com/material-ui/migration/migration-v5/) to see if there is a newer version of `@mui/styles` that supports React 18.
+
+* **Action:** Try updating your dependencies to see if a newer version of `@mui/styles` resolves the requirement:
+```bash
+npm install @mui/styles@latest
+
+```
+
+
+* *Note:* `@mui/styles` is often considered legacy in the MUI ecosystem. You might consider migrating to `styled-components` or the `sx` prop/`styled()` utility provided by `@mui/material` if your project goals allow for it.
+
+### 2. The "Acceptance" Fix: `--legacy-peer-deps`
+
+If you are confident that `@mui/styles` will work with React 18 despite the version mismatch (which is common, as React 18 maintains backward compatibility for most features), you can tell npm to ignore the peer dependency check.
+
+* **Action:** Run the command with the legacy flag:
+```bash
+npm install --legacy-peer-deps
+
+```
+
+
+
+This instructs npm to ignore `peerDependencies` listed in your `node_modules` and proceed with the installation anyway. This is the most common way to resolve these conflicts in existing projects.
+
+### 3. The Forced Fix: `--force`
+
+If `--legacy-peer-deps` does not work, you can use `--force`.
+
+* **Action:** ```bash
+npm install --force
+```
+
+```
+
+
+* **Warning:** This is more aggressive than `--legacy-peer-deps` because it will force npm to fetch remote resources even if there are dependency conflicts, which might result in an unstable environment. Use this only if the other methods fail.
+
+---
+
+### Summary Table of Options
+
+| Method | Safety | Best Use Case |
+| --- | --- | --- |
+| **Upgrade Package** | High | When you want a stable, supported dependency tree. |
+| **`--legacy-peer-deps`** | Medium | When you know the package is compatible with your version of React. |
+| **`--force`** | Low | When you have no other choice to get the build running. |
+
+Once you successfully install your packages using one of these methods, verify that your application runs correctly by starting your development server (`npm start` or `npm run dev`). If you see "Module not found" errors after using these flags, you may need to delete your `node_modules` folder and `package-lock.json` file and try installing again.
+
+**Are you planning to actively maintain this project, or are you just trying to get it running for a one-time build?**
+
+Installing React 17 alongside your existing React 18 will **not fix the issue** and will likely create more problems.
+
+Here is why you should **not** downgrade or attempt to install multiple versions:
+
+### 1. You cannot easily have two versions of React
+
+React relies on a global state and specific context providers. If you install version 17 and 18 in the same project, your application will likely crash because:
+
+* **Duplicate instances:** You will have two separate instances of the React library running in memory.
+* **Context breakage:** Components wrapped in a React 18 Provider cannot pass data down to components rendered by a React 17 instance.
+* **Hooks errors:** React hooks (like `useState` or `useEffect`) will fail because they cannot "talk" to each other across different library versions.
+
+### 2. The Root Cause is the Package, not Your React Version
+
+The error message you received is an **"opinion"** held by the `@mui/styles` package. It is stating: *"I was built when React 17 was the standard, and I haven't been tested against React 18."*
+
+In 99% of cases, `@mui/styles` works perfectly fine with React 18. The package maintainers simply never updated the `package.json` file to reflect that it supports version 18.
+
+### What you should do instead
+
+Rather than downgrading your entire project to React 17, use the flag that tells npm to ignore that "opinion":
+
+```bash
+npm install --legacy-peer-deps
+
+```
+
+**Why this is safe:**
+
+* It allows the installation to proceed.
+* It keeps your project on the modern, secure version of React (18.3.1).
+* It allows `@mui/styles` to use the version of React already present in your `node_modules`.
+
+### How to verify if it worked
+
+After running the command above, try running your project:
+
+1. Run `npm start` (or `npm run dev`).
+2. Open your browser and navigate to your local development site.
+3. If the application loads and your UI components (buttons, menus, styling) appear correctly, the "conflict" was purely a warning and not a technical incompatibility.
+
+**If you find that the UI is breaking or you see console errors, are you seeing any specific error messages in the browser console when the app tries to load?**
+Since you are moving from Docker to bare metal, you essentially need to replicate the **Build** step (preparing the static files) and the **Serve** step (running the web server to host those files).
+
+Here is the equivalent workflow to run your project on bare metal.
+
+### 1. Prerequisites
+
+Ensure you have **Node.js** (v20 matches your Dockerfile) and **Yarn** installed on your server.
+
+* **Check Node:** `node -v`
+* **Check Yarn:** `yarn -v` (If not installed: `npm install -g yarn`)
+
+### 2. The Bare Metal Commands
+
+Run these commands in your project directory (`~/projects/zerxis.com`) to replicate the Docker container's lifecycle.
+
+| Step | Docker Action | Bare Metal Equivalent Command |
+| --- | --- | --- |
+| **Install** | `RUN yarn install` | `yarn install` |
+| **Build** | `RUN yarn build` | `yarn build` |
+| **Serve** | `CMD ["npx", "serve"...]` | `npx serve -s build -l 3000` |
+
+### 3. Making it "Production Ready" (Process Management)
+
+On Docker, the container engine handles restarting the app if it crashes. On bare metal, if you just run `npx serve`, the process will die as soon as you close your terminal or if the server crashes.
+
+To keep your app running continuously on bare metal, use **PM2** (a production process manager for Node.js).
+
+1. **Install PM2 globally:**
+```bash
+sudo npm install -g pm2
+
+```
+
+
+2. **Start your app with PM2:**
+```bash
+pm2 start npx --name "zerxis-frontend" -- serve -s build -l 3000
+
+```
+
+
+3. **Ensure it starts on system reboot:**
+```bash
+pm2 save
+pm2 startup
+
+```
+
+
+
+### 4. Important Considerations for Bare Metal
+
+* **Permissions:** Unlike a container, which runs in its own isolated environment, your app on bare metal will run as the user `hulbert`. Ensure this user has read permissions for the `build` folder.
+* **Security:** `npx serve` is a great static file server, but it is not intended to sit directly on the public internet as a robust web server. If this is a production site, you should ideally put an Nginx reverse proxy in front of it to handle SSL (HTTPS) and load balancing.
+* **Storage:** Since you mentioned storage issues, note that `node_modules` can grow quite large. If storage remains a concern, you can safely delete `node_modules` after the `yarn build` is finished, as the production server (`serve`) only needs the static files located in the `build` directory to function.
+
+**Would you like me to provide a basic Nginx configuration to point to your `build` directory, or is `npx serve` sufficient for your needs?**

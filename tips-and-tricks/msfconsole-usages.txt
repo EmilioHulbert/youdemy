@@ -1,0 +1,149 @@
+Choosing the right process for injection is a balancing act between **stability** (the process won't crash) and **privilege** (the level of access you gain).
+
+When you inject into a process, you are essentially "piggybacking" on its thread. If the process is highly volatile or performs sensitive integrity checks (like `lsass.exe` on modern, patched systems), it will crash, resulting in a Blue Screen of Death (BSOD) or a system hang.
+
+### Recommended Processes for Injection
+
+| Target OS Architecture | Recommended Process | Why? |
+| --- | --- | --- |
+| **x86 (32-bit)** | `spoolsv.exe` | Stable, always runs as SYSTEM, handles printing (low risk). |
+| **x86 (32-bit)** | `svchost.exe` | Very common, but identify the one running services, not network tasks. |
+| **x64 (64-bit)** | `spoolsv.exe` | Still the gold standard for stability on x64 systems. |
+| **x64 (64-bit)** | `lsass.exe` | High risk, high reward. It holds credentials but triggers EDR/AV alerts. |
+| **x64 (64-bit)** | `wmiapsrv.exe` | WMI Provider Host. Stable and runs with elevated privileges. |
+
+---
+
+### Critical Selection Criteria
+
+#### 1. Avoid `explorer.exe`
+
+While commonly recommended in tutorials, `explorer.exe` is a user-mode process. If you inject a payload that terminates or hangs, the user's taskbar and windows will disappear, which is a major indicator of compromise (IOC) and causes significant system instability.
+
+#### 2. Match the Architecture (Mandatory)
+
+You **cannot** inject 32-bit shellcode into a 64-bit process, nor can you inject 64-bit shellcode into a 32-bit process.
+
+* If your `TARGETARCHITECTURE` is `x64`, ensure the process you choose is also 64-bit.
+* Use `tasklist /m` or Process Hacker to verify the architecture of your target process.
+
+#### 3. The "SYSTEM" Privilege Factor
+
+You want to inject into a process that is already running as `NT AUTHORITY\SYSTEM`.
+
+* Processes like `spoolsv.exe`, `lsass.exe`, and `services.exe` almost always run as `SYSTEM`.
+* If you inject into a process running as a standard user (like `chrome.exe` or `notepad.exe`), you will only have that user's permissions, even if your exploit succeeds.
+
+### Best Practice for Stability
+
+If you are worried about crashing the system, **avoid kernel-level injection**. Instead of trying to find the "perfect" process to inject into using `PROCESSINJECT`, use **Reflective DLL Injection** or a **Stageless payload**. These methods load the payload into a newly created thread or a memory-mapped section that is detached from a critical system process.
+
+* **Pro Tip:** Before committing to a process, check if it has the necessary access rights. For example, `lsass.exe` is protected by **PPL (Protected Process Light)** on newer Windows versions. Attempting to inject into it will be blocked by the kernel and will likely trigger an immediate alert.
+
+**Given your current setup, I strongly recommend sticking to `spoolsv.exe` for both x86 and x64 environments.** It provides the best balance of SYSTEM-level privileges and crash-resistance.
+
+Would you like to know how to identify which `svchost.exe` instance is safest to target?
+
+
+
+
+For a 32-bit (x86) Windows environment—especially the aging Windows 7 or Windows XP systems often used in labs—process stability is critical because older kernels handle memory corruption and thread injection less gracefully than modern Windows 10/11.
+
+For **x86**, here are the most stable processes to target, ranked by reliability:
+
+### 1. `spoolsv.exe` (Print Spooler) - The Gold Standard
+
+This is widely considered the most stable process for injection in both lab and real-world penetration testing.
+
+* **Why it's stable:** It runs as a persistent service, it is essentially always active, and it performs routine tasks that aren't critical to the immediate responsiveness of the GUI.
+* **Privilege:** It almost always runs as `NT AUTHORITY\SYSTEM`.
+* **Stability:** If the thread crashes, the Print Spooler service might restart, but the system itself rarely BSODs.
+
+### 2. `svchost.exe` (Service Host)
+
+This is a shared service process. You will see many instances of `svchost.exe` in `tasklist`.
+
+* **The Catch:** You must target the correct instance. Some `svchost` processes handle network-facing services (like DNS or RPC), while others handle background tasks.
+* **How to choose:** Target an instance running under the `SYSTEM` account, not `LOCAL SERVICE` or `NETWORK SERVICE`.
+* **Stability:** Moderate. If you hit a critical network service instance, you might drop your own connection to the target before the payload even finishes, causing a "session died" error.
+
+### 3. `lsass.exe` (Local Security Authority Subsystem Service)
+
+* **Privilege:** Highest possible (`SYSTEM`).
+* **Stability:** **High Risk.** While extremely powerful, modern Windows patches (since Windows 7 SP1) have introduced protections for `lsass.exe`. If the system has any decent security posture, trying to inject here will trigger an immediate alert or a hard system freeze. **Use this as a last resort.**
+
+---
+
+### How to verify your target is x86
+
+Before injecting, you can quickly verify if the process you are targeting is actually 32-bit. In the target command prompt:
+
+```cmd
+:: This lists all tasks and their session/memory usage
+tasklist /v /fi "imagename eq spoolsv.exe"
+
+```
+
+If you are unsure which processes are running on your target, use this command in your `Meterpreter` shell (once you land a basic, unstable shell):
+
+```bash
+# This will show you all running processes and their architecture
+ps
+
+```
+
+### Pro-Tip for Stability: The "Dummy" Process
+
+If you are repeatedly crashing the system, stop injecting into system processes entirely.
+
+Instead of `PROCESSINJECT`, you can use the **Reflective DLL Injection** feature of Metasploit. This creates a new, hidden process or allocates a private block of memory inside the target's memory space, which avoids the need to hijack an existing, fragile system process.
+
+**Summary for your next run:**
+
+1. **Set:** `set PROCESSINJECT spoolsv.exe`
+2. **Ensure:** `set TARGETARCHITECTURE x86`
+3. **Ensure:** You are running `windows/meterpreter_reverse_tcp` (stageless).
+4. **Important:** If you get a "Backdoor Installed" message but the session crashes, the issue is almost certainly a version mismatch in the `trch.dll` or `trfo.dll` files in your `deps/` folder.
+
+**After switching to `spoolsv.exe` and verifying you are using the stageless payload, does the listener capture the callback?**
+
+In Metasploit, the `keyscan_stop` command does not automatically save your captured keystrokes to a file on your local machine. Instead, it stops the background process on the target.
+
+To retrieve the keystrokes you captured, you must use the **`keyscan_dump`** command *before* you stop the service.
+
+### The Correct Workflow
+
+If you have already run `keyscan_stop`, **your captured keystrokes are lost** because the volatile memory on the target containing the buffer has been cleared. To do this correctly, follow this sequence:
+
+1. **Start capturing:**
+`keyscan_start`
+2. **Wait for the user to type:** (Let the victim work for a while).
+3. **Retrieve the data:**
+`keyscan_dump`
+* This command will display the captured keystrokes directly in your Metasploit console.
+
+
+4. **Stop capturing:**
+`keyscan_stop`
+
+### How to Save the Keystrokes to a File
+
+Since `keyscan_dump` only prints the text to your terminal, you have two ways to save them:
+
+* **Console Logging:** Before you start the session, you can enable logging in `msfconsole` to capture all output to a file:
+```bash
+# Before starting your listener/session:
+spool /root/keystrokes_log.txt
+
+```
+
+
+Every command you run and every output (including `keyscan_dump`) will be saved to that text file.
+* **Manual Copy-Paste:** If you have already dumped the keys, simply highlight the output in your terminal and copy it to a text file on your local machine.
+
+### Important Note on Stability
+
+The `keyscan` feature injects a thread into the target process. If you run `keyscan_dump` frequently, it is relatively stable. However, if you leave it running for an extended period, it can increase the likelihood of the process crashing.
+
+**Did you run `keyscan_dump` before you ran `keyscan_stop`, or did you run `keyscan_stop` first?** If you stopped it first, I recommend starting the process over, letting it run, and using `keyscan_dump` to see the data in your console.
+
