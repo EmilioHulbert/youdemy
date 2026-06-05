@@ -1,0 +1,17 @@
+└──╼[REMAC]# ddrescue -d -r3 /dev/sdb /media/hulbert/WINDOWS_DATA/dead-memcard/recovery.img /media/hulbert/WINDOWS_DATA/dead-memcard/recovery.map
+GNU ddrescue 1.27
+Press Ctrl-C to interrupt
+     ipos:   15646 MB, non-trimmed:        0 B,  current rate:   1900 kB/s
+     opos:   15646 MB, non-scraped:        0 B,  average rate:   7878 kB/s
+non-tried:        0 B,  bad-sector:        0 B,    error rate:       0 B/s
+  rescued:   15646 MB,   bad areas:        0,        run time:     33m  5s
+pct rescued:  100.00%, read errors:        0,  remaining time:         n/a
+                              time since last successful read:         n/a
+Copying non-tried blocks... Pass 1 (forwards)X
+Finished                                    
+┌──[Wed Jun 03 9:02:01 PM][root@Intel5]─[/media/hulbert/WINDOWS_DATA/dead-memcard]
+└──╼[REMAC]# 
+
+
+
+

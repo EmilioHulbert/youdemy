@@ -1,0 +1,134 @@
+---> e92112dc510b
+Step 4/7 : RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"  && php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+ ---> Running in 056eb7880418
+All settings correct for using Composer
+Downloading...
+
+Composer (version 2.10.0) successfully installed to: /usr/local/bin/composer
+Use it: php /usr/local/bin/composer
+
+Removing intermediate container 056eb7880418
+ ---> 96fa0b5e0783
+Step 5/7 : COPY . .
+ ---> 70d9b05906c9
+Step 6/7 : RUN composer install --no-interaction --prefer-dist --no-dev
+ ---> Running in f2e22f5ef1eb
+Installing dependencies from lock file
+Verifying lock file contents can be installed on current platform.
+Package operations: 0 installs, 0 updates, 36 removals
+  - Removing webmozart/assert (1.10.0)
+  - Removing theseer/tokenizer (1.2.1)
+  - Removing sebastian/version (2.0.1a)
+  - Removing sebastian/type (1.1.4)
+  - Removing sebastian/resource-operations (2.0.2)
+  - Removing sebastian/recursion-context (3.0.1)
+  - Removing sebastian/object-reflector (1.1.2)
+  - Removing sebastian/object-enumerator (3.0.4)
+  - Removing sebastian/global-state (3.0.2)
+  - Removing sebastian/exporter (3.1.4)
+  - Removing sebastian/environment (4.2.4)
+  - Removing sebastian/diff (3.0.3)
+  - Removing sebastian/comparator (3.0.3)
+  - Removing sebastian/code-unit-reverse-lookup (1.0.2)
+  - Removing phpunit/phpunit (8.5.23)
+  - Removing phpunit/php-token-stream (4.0.4)
+  - Removing phpunit/php-timer (2.1.3)
+  - Removing phpunit/php-text-template (1.2.1)
+  - Removing phpunit/php-file-iterator (2.0.5)
+  - Removing phpunit/php-code-coverage (7.0.15)
+  - Removing phpspec/prophecy (v1.15.0)
+  - Removing phpdocumentor/type-resolver (1.6.0)
+  - Removing phpdocumentor/reflection-docblock (5.3.0)
+  - Removing phpdocumentor/reflection-common (2.2.0)
+  - Removing phar-io/version (3.2.1)
+  - Removing phar-io/manifest (2.0.3)
+  - Removing nunomaduro/collision (v4.3.0)
+  - Removing myclabs/deep-copy (1.11.0)
+  - Removing mockery/mockery (1.5.0)
+  - Removing hamcrest/hamcrest-php (v2.0.1)
+  - Removing fzaninotto/faker (v1.9.2)
+  - Removing filp/whoops (2.14.5)
+  - Removing facade/ignition-contracts (1.0.2)
+  - Removing facade/ignition (2.17.5)
+  - Removing facade/flare-client-php (1.9.1)
+  - Removing doctrine/instantiator (1.4.1)
+  0/28 [>---------------------------]   0%
+ 10/28 [==========>-----------------]  35%
+ 25/28 [=========================>--]  89%
+ 28/28 [============================] 100%
+Package swiftmailer/swiftmailer is abandoned, you should avoid using it. Use symfony/mailer instead.
+Package fzaninotto/faker is abandoned, you should avoid using it. No replacement was suggested.
+Package phpunit/php-token-stream is abandoned, you should avoid using it. No replacement was suggested.
+Generating optimized autoload files
+Class Helper located in ./app/Http/Helpers.php does not comply with psr-4 autoloading standard (rule: App\ => ./app). Skipping.
+> Illuminate\Foundation\ComposerScripts::postAutoloadDump
+> @php artisan package:discover --ansi
+Discovered Package: barryvdh/laravel-dompdf
+Discovered Package: fideloper/proxy
+Discovered Package: fruitcake/laravel-cors
+Discovered Package: intervention/image
+Discovered Package: laravel/socialite
+Discovered Package: laravel/tinker
+Discovered Package: laravel/ui
+Discovered Package: nesbot/carbon
+Discovered Package: spatie/laravel-newsletter
+Discovered Package: srmklive/paypal
+Discovered Package: unisharp/laravel-filemanager
+Package manifest generated successfully.
+47 packages you are using are looking for funding.
+Use the `composer fund` command to find out more!
+Removing intermediate container f2e22f5ef1eb
+ ---> cc75e47343f7
+Step 7/7 : RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+ ---> Running in 00242eb2b7b7
+Removing intermediate container 00242eb2b7b7
+ ---> 724bc4cc76af
+Successfully built 724bc4cc76af
+Successfully tagged ecommerce-laravel_app:latest
+Pulling node (node:lts)...
+lts: Pulling from library/node
+4887723d153c: Pull complete
+2e51c50554dc: Pull complete
+a234579dfb0d: Pull complete
+0ce041001b89: Pull complete
+8cc49ec61978: Pull complete
+06a520031038: Pull complete
+266f908f6db3: Pull complete
+e552491c3661: Pull complete
+Digest: sha256:8530f76a96d88820d288761f022e318970dda93d01536919fbc16076b7983e63
+Status: Downloaded newer image for node:lts
+Pulling mysql (mysql:5.7)...
+5.7: Pulling from library/mysql
+20e4dcae4c69: Pull complete
+1c56c3d4ce74: Pull complete
+e9f03a1c24ce: Pull complete
+68c3898c2015: Pull complete
+6b95a940e7b6: Pull complete
+90986bb8de6e: Pull complete
+ae71319cb779: Pull complete
+ffc89e9dfd88: Pull complete
+43d05e938198: Pull complete
+064b2d298fba: Pull complete
+df9a4d85569b: Pull complete
+Digest: sha256:4bc6bc963e6d8443453676cae56536f4b8156d78bae03c0145cbe47c2aad73bb
+Status: Downloaded newer image for mysql:5.7
+Pulling nginx (nginx:alpine)...
+alpine: Pulling from library/nginx
+6a0ac1617861: Pull complete
+abaae85d1626: Pull complete
+43f834d60d8a: Pull complete
+de1b677d8c00: Pull complete
+94d083cf706a: Pull complete
+e654dbbbb9e1: Pull complete
+a5008f4a4b25: Pull complete
+fbaed3f7fcbe: Pull complete
+Digest: sha256:8b1e78743a03dbb2c95171cc58639fef29abc8816598e27fb910ed2e621e589a
+Status: Downloaded newer image for nginx:alpine
+Creating laravel_php74 ... done
+Creating laravel_node  ... done
+Creating mysql57       ... done
+Creating laravel_nginx ... done
+┌─[root@Intel5]─[/home/hulbert/Desktop/comm/Ecommerce-Laravel]
+└──╼ #
+
+

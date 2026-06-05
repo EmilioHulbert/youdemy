@@ -1,0 +1,35 @@
+└──╼ $yarn install
+yarn install v1.22.22
+[1/4] Resolving packages...
+[2/4] Fetching packages...
+[3/4] Linking dependencies...
+warning " > @mui/styles@5.16.7" has incorrect peer dependency "react@^17.0.0".
+warning " > @mui/x-data-grid@7.21.0" has unmet peer dependency "@mui/system@^5.15.14 || ^6.0.0".
+warning " > @rifflearning/attachmediastream@3.0.0" has incorrect peer dependency "webrtc-adapter@^6.4.8".
+warning " > node-polyfill-webpack-plugin@4.0.0" has unmet peer dependency "webpack@>=5".
+warning " > react-notification-system@0.4.0" has incorrect peer dependency "react@0.14.x || ^15.0.0 || ^16.0.0".
+warning " > react-notification-system@0.4.0" has incorrect peer dependency "react-dom@0.14.x || ^15.0.0 || ^16.0.0".
+warning " > @material-ui/core@4.12.4" has incorrect peer dependency "react@^16.8.0 || ^17.0.0".
+warning " > @material-ui/core@4.12.4" has incorrect peer dependency "react-dom@^16.8.0 || ^17.0.0".
+warning "@material-ui/core > @material-ui/styles@4.11.5" has incorrect peer dependency "react@^16.8.0 || ^17.0.0".
+warning "@material-ui/core > @material-ui/styles@4.11.5" has incorrect peer dependency "react-dom@^16.8.0 || ^17.0.0".
+warning "@material-ui/core > @material-ui/system@4.12.2" has incorrect peer dependency "react@^16.8.0 || ^17.0.0".
+warning "@material-ui/core > @material-ui/system@4.12.2" has incorrect peer dependency "react-dom@^16.8.0 || ^17.0.0".
+warning "@material-ui/core > @material-ui/utils@4.11.3" has incorrect peer dependency "react@^16.8.0 || ^17.0.0".
+warning "@material-ui/core > @material-ui/utils@4.11.3" has incorrect peer dependency "react-dom@^16.8.0 || ^17.0.0".
+warning " > @material-ui/icons@4.11.3" has incorrect peer dependency "react@^16.8.0 || ^17.0.0".
+warning " > @material-ui/icons@4.11.3" has incorrect peer dependency "react-dom@^16.8.0 || ^17.0.0".
+warning "@parcel/transformer-sass > @parcel/plugin > @parcel/types > @parcel/cache@2.10.3" has unmet peer dependency "@parcel/core@^2.10.3".
+warning "@parcel/transformer-sass > @parcel/plugin > @parcel/types > @parcel/fs@2.10.3" has unmet peer dependency "@parcel/core@^2.10.3".
+warning "@parcel/transformer-sass > @parcel/plugin > @parcel/types > @parcel/package-manager@2.10.3" has unmet peer dependency "@parcel/core@^2.10.3".
+warning "@parcel/transformer-sass > @parcel/plugin > @parcel/types > @parcel/workers@2.10.3" has unmet peer dependency "@parcel/core@^2.10.3".
+warning " > eslint-plugin-react-hooks@3.0.0" has incorrect peer dependency "eslint@^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0".
+warning "react-scripts > eslint-config-react-app > eslint-plugin-flowtype@8.0.3" has unmet peer dependency "@babel/plugin-syntax-flow@^7.14.5".
+warning "react-scripts > eslint-config-react-app > eslint-plugin-flowtype@8.0.3" has unmet peer dependency "@babel/plugin-transform-react-jsx@^7.14.9".
+warning "react-scripts > react-dev-utils > fork-ts-checker-webpack-plugin@6.5.3" has unmet peer dependency "typescript@>= 2.7".
+warning "react-scripts > eslint-config-react-app > @typescript-eslint/eslint-plugin > tsutils@3.21.0" has unmet peer dependency "typescript@>=2.8.0 || >= 3.2.0-dev || >= 3.3.0-dev || >= 3.4.0-dev || >= 3.5.0-dev || >= 3.6.0-dev || >= 3.6.0-beta || >= 3.7.0-dev || >= 3.7.0-beta".
+[4/4] Building fresh packages...
+Done in 670.99s.
+┌─[hulbert@Intel5]─[~/projects/zerxis.com]
+└──╼ $
+
