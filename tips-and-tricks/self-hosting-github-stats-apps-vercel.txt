@@ -1,0 +1,475 @@
+It is clear you are working hard! Looking at **git1.png**, your commitment is undeniable. You have a solid history with 425 contributions in the last year, which is a fantastic pace for a student balancing studies, CTF practice, and projects like "B00kOfProblems" and "RedTeam." You aren't just coding; you are actively engaging with the community and documenting your journey.
+
+Regarding the "dead" or broken parts of your README visible in **git2.png**, the issue is not with your code itself, but with the service you are relying on. As the error message indicates, the public instances of these tools (like `github-readme-stats` and `github-readme-streak-stats`) are hitting **GitHub API rate limits**. Because thousands of people use the same central server to fetch their stats, GitHub restricts access to prevent abuse.
+
+Here are three reliable ways to get your stats, streaks, and languages "live" again:
+
+### 1. The "Self-Host" Solution (Most Reliable)
+
+Most of these tools (e.g., `github-readme-stats`) are open-source. Instead of relying on their public hosted link, you can deploy your own private instance.
+
+* **How it works:** You "fork" the repository of the tool you want to use.
+* **Where to host:** You can deploy it to **Vercel** (which is free and very fast).
+* **The Result:** You will get your own URL (e.g., `my-stats-instance.vercel.app`) that only you use. Because you are the only one calling the API, you will almost never hit the rate limit again.
+
+### 2. The "Static" Solution (GitHub Actions)
+
+If you want to avoid hosting entirely, you can use **GitHub Actions** to generate your stats as a static image.
+
+* **How it works:** You set up a workflow that runs once a day. It queries the GitHub API, generates the image, and commits it back to your repository.
+* **The Benefit:** Your README simply points to the static image file already sitting in your repo, so there is zero load time and zero API calls when someone views your profile. It is incredibly stable.
+
+### 3. The "Lightweight" Switch
+
+If you don't want to manage hosting or actions, look for tools that are specifically designed for low-frequency updates or use caching. Some alternatives allow you to provide a **Personal Access Token (PAT)** in the URL.
+
+* *Note:* Be very careful with this. Only provide a PAT if you trust the tool implicitly, and ensure the token has minimal permissions (only "read:user" and "repo"). Adding your own token tells GitHub, "This request is coming from a specific user, not the mass public pool," which often bypasses the shared rate limits.
+
+---
+
+### Recommendation
+
+If you are comfortable with a little bit of setup, **Option 1 (Self-hosting on Vercel)** is the industry standard for keeping these profile widgets live. It keeps your README code exactly as it is, requiring only a small change to the base URL of the `img src` tags in your `README.md`.
+
+Between deploying your own instance to Vercel or using a GitHub Action to automate the image generation, which path sounds more manageable for you right now?
+
+
+Self-hosting these services on Vercel is a smart move. Because you will be using your own Personal Access Token (PAT) rather than a shared public key, your profile widgets will no longer be subject to the API rate limits that affect the public instances.
+
+Here is how we can get your "live" stats, streaks, and languages back up and running.
+
+---
+
+### Step 1: Fork the Repositories
+
+You need your own copy of the tools on your GitHub account.
+
+* Go to the official repository for **[github-readme-stats](https://github.com/anuraghazra/github-readme-stats)** and the **[github-readme-streak-stats](https://github.com/DenverCoder1/github-readme-streak-stats)** repository.
+* Click the **Fork** button in the top-right corner to create your own copy.
+
+### Step 2: Generate a Personal Access Token (PAT)
+
+This token allows your private instance to fetch data from GitHub on your behalf without hitting public rate limits.
+
+* In your GitHub settings, navigate to **Developer settings** > **Personal access tokens** > **Tokens (classic)**.
+* Generate a new token with at least `read:user` and `repo` scopes.
+* **Important:** Copy this token immediately, as you won't be able to see it again.
+
+### Step 3: Deploy to Vercel
+
+Vercel is the most common platform for hosting these types of serverless functions.
+
+* Create a free account on [Vercel](https://vercel.com/) and link your GitHub account.
+* Import your forked repositories (for stats and streaks) into Vercel.
+* During the deployment configuration, you will need to add the **Environment Variables**.
+* For `github-readme-stats`, add a variable named `PAT_1` (or `TOKEN`) with your Personal Access Token as the value.
+* For `github-readme-streak-stats`, add a variable named `TOKEN` with the same PAT value.
+
+
+* Click **Deploy**.
+
+### Step 4: Update Your README
+
+Once the deployments are live, Vercel will give you a unique URL for each project (e.g., `your-name-stats.vercel.app`).
+
+* Open your `README.md` file.
+* Replace the existing public URLs (like `github-readme-stats.vercel.app/...`) with your new custom Vercel URLs.
+* Commit the changes to your repository.
+
+---
+
+By taking these steps, you essentially become the "host" of your own data, which makes your stats and streaks highly reliable and puts you in full control.
+
+Does this seem like a workflow you'd like to try, or would you prefer we explore the GitHub Actions method as an alternative?
+
+That is excellent progress! Getting those Vercel deployments live is the hardest part, and you have successfully set up your own private instances.
+
+To get everything live, you need to replace the old public URLs in your `README.md` with your new, custom Vercel URLs.
+
+Here is the updated code block for your **"Streaks and Stats"** section. Replace your current block with this:
+
+```markdown
+<h3 align="left">📊 Streaks and Stats:</h3>
+<p align="center">
+
+  <img src="https://github-readme-streak-stats-pied-eta-99.vercel.app/?user=emiliohulbert&theme=tokyonight&hide_border=false" alt="GitHub Streaks" width="49%" />
+
+  <img src="https://github-readme-stats-roan-ten-73.vercel.app/api?username=emiliohulbert&show_icons=true&theme=tokyonight" alt="GitHub Stats" width="49%" />
+</p>
+
+  <img src="https://github-readme-stats-roan-ten-73.vercel.app/api/top-langs/?username=emiliohulbert&show_icons=true&theme=tokyonight&langs_count=8&layout=compact" alt="GitHub Langs" width="49%" />
+
+```
+
+### A few quick tips to ensure this works perfectly:
+
+* **The `/api` path:** Note that for `github-readme-stats` (the repo you deployed to `roan-ten-73`), you must include `/api` before the question mark (e.g., `...vercel.app/api?username=...`). I have included this in the code above.
+* **Token verification:** Since you have deployed these yourself, ensure that the **Personal Access Token (PAT)** you generated is added as an **Environment Variable** in the Vercel project settings for both deployments. Vercel uses these to authenticate with GitHub, which is what stops the rate-limiting error from appearing.
+* **Testing:** Once you paste this, commit the changes to your README. Your profile should update almost instantly. If an image doesn't load immediately, refresh your page, as browser caching sometimes holds onto the old "broken" image links for a minute or two.
+
+You are now in full control of your profile metrics!
+
+
+The error message in **issue.png** confirms exactly what is happening: your README is now pointing to your own Vercel deployments, but those deployments don't have the "key" (the Personal Access Token) they need to fetch your data from GitHub.
+
+You have already done the hard work of pointing the URLs in the right direction. Now, you just need to "unlock" those Vercel deployments.
+
+### How to add the missing Environment Variable
+
+You need to do this for **both** of your Vercel projects (the stats one and the streak-stats one).
+
+1. **Log in to your [Vercel Dashboard](https://vercel.com/dashboard).**
+2. Click on the project **`github-readme-stats`** (or whichever project corresponds to the URL you are using).
+3. In the top menu, go to the **Settings** tab.
+4. On the left-hand sidebar, click **Environment Variables**.
+5. Under the "Create New Environment Variable" section:
+* **Name:** Enter `PAT_1` (exactly as shown in your error message).
+* **Value:** Paste your GitHub Personal Access Token that you created earlier.
+* **Environment:** Leave this set to "Production", "Preview", and "Development" (or just Production if that's all you see).
+* Click **Save**.
+
+
+6. **Crucial Step:** Once you save the variable, Vercel will usually prompt you to **Redeploy** the project for the changes to take effect. Click the button to Redeploy.
+
+Repeat these steps for your **`github-readme-streak-stats`** project as well.
+
+### Why this fixes it
+
+By adding `PAT_1` to the Vercel settings, you are securely giving the application the permission it needs to act on your behalf. Once you redeploy, the "Something went wrong!" error should vanish, replaced by your live stats, because the application can now successfully authenticate with GitHub using that token.
+
+Let me know if the error clears up once you have added those variables and redeployed!
+
+
+It looks like you have achieved a major milestone! The fact that "Remac's GitHub Stats" and "Most Used Languages" are populating in `some-portion.png` proves that your Vercel deployment for `github-readme-stats` is **working perfectly**, and your Personal Access Token is correctly configured.
+
+The "404 Not Found" errors and missing sections are simply due to the URL structure for the other widgets not matching the expected API routes on your Vercel instance.
+
+Here is how to fix the remaining pieces:
+
+### 1. Fix the "GitHub Streaks" 404
+
+The `github-readme-streak-stats` repository functions differently than the stats repository. It typically does **not** use the `/api` path.
+
+Replace your current streak stats code block with this:
+
+```markdown
+<img src="https://github-readme-streak-stats-pied-eta-99.vercel.app/?user=emiliohulbert&theme=tokyonight&hide_border=false" alt="GitHub Streaks" width="49%" />
+
+```
+
+* **If you still get a 404:** Check your Vercel Dashboard for that specific project. Click the **Functions** tab. You should see a function (often named `index` or `app`) listed there. If the list is empty, your deployment did not build the serverless function correctly. In that case, ensure your forked repository has the correct folder structure (usually, the code should be in the root directory or `api/` folder).
+
+### 2. The "GitHub Trophies" Issue
+
+In `some-portion.png`, the text "GitHub Trophies" appears, but no image. This is because you are likely trying to link to a Vercel instance that doesn't exist.
+
+* **The Diagnosis:** You deployed your *own* version of `github-readme-stats` and `github-readme-streak-stats`. Unless you also **forked and deployed** the [github-profile-trophy](https://github.com/ryo-ma/github-profile-trophy) repository to Vercel, that URL will not work on your custom domain.
+* **The Fix:** You have two choices:
+* **Option A (Recommended):** Use the public, hosted version of Trophies for now, as it is highly stable. Use this code:
+```markdown
+<img src="https://github-profile-trophy.vercel.app/?username=emiliohulbert&theme=matrix&no-frame=true&no-bg=false&margin-w=4" alt="GitHub Trophies" width="99%" />
+
+```
+
+
+
+
+
+```
+    *   **Option B (Advanced):** If you *must* host it yourself to avoid any rate limits, you need to go to the `github-profile-trophy` GitHub repository, **Fork** it, and create a new project in Vercel following the same steps you used for the other two.
+
+### Summary Checklist to finalize:
+1.  **Stats:** Use `your-stats-url.vercel.app/api?username=...` (This is already working, based on `some-portion.png`!).
+2.  **Streaks:** Use `your-streak-url.vercel.app/?user=...` (Remove `/api` if you included it).
+3.  **Trophies:** Use the public URL provided in Option A above, unless you specifically want to host a third Vercel project.
+
+Once you update these URLs in your `README.md` and commit the changes, your profile should be fully live and error-free!
+
+```
+
+It looks like you are very close to having everything working correctly. Let's clear up the confusion regarding those "404" errors and the status in your Vercel dashboard.
+
+### 1. The "404" in Vercel Dashboard is Normal
+
+The "404 NOT_FOUND" you see in the Vercel preview (shown in `not-good.png` and `not-good2.png`) is completely normal for these specific projects.
+
+* **Why it happens:** Vercel tries to load the "root" of your website (i.e., `your-url.vercel.app/`). Because these repositories are **APIs** (they serve images, not webpages), there is no "home page" or `index.html` file at the root, so the browser naturally returns a 404 error.
+* **The Verdict:** You can ignore this 404 in the Vercel dashboard preview. As long as your `README.md` is calling the URL with the correct parameters (like `?user=emiliohulbert`), it should work perfectly.
+
+### 2. Fixing the Variable Name
+
+While `github-readme-stats` often accepts `PAT_1`, the `github-readme-streak-stats` project typically requires the environment variable to be named **`TOKEN`** specifically.
+
+1. Go to your **`github-readme-streak-stats`** project settings in Vercel.
+2. Go to **Environment Variables**.
+3. Ensure you have a variable named **`TOKEN`** (not `PAT_1`) set to your GitHub Personal Access Token.
+4. **Important:** Delete the old `PAT_1` variable in this project if you created it, then click **Redeploy** on your production deployment so the change takes effect.
+
+### 3. Regarding your README Code
+
+Your current code block looks correct and is formatted well. Since you are now hosting your own instances, you are successfully bypassing the public rate limits.
+
+* **Recommendation:** Stop relying on the Vercel dashboard "preview" button. Instead, go to your actual GitHub profile page in a browser and refresh it. If the images appear there, you have succeeded.
+* **Browser Caching:** If they still don't appear, your browser might be caching the old broken links. Try viewing your profile in an **Incognito/Private window** to verify they are working.
+
+**Summary of your status:**
+
+* **GitHub Stats (Stats & Languages):** Working correctly (as confirmed by `good.png`).
+* **GitHub Streak Stats:** Likely working, just needs the environment variable renamed to `TOKEN` to properly authenticate.
+* **Trophies:** Using the public URL is the correct approach if you don't want to manage a third deployment.
+
+**Sources:**
+
+1. [github-readme-stats](https://github.com/anuraghazra/github-readme-stats) (Documentation regarding API usage and Vercel hosting)
+2. [github-readme-streak-stats](https://github.com/DenverCoder1/github-readme-streak-stats) (Documentation regarding environment variables and configuration)
+
+Since you've already cleared your cache and set the environment variable, the `404 NOT_FOUND` error indicates that the Vercel serverless function is not properly mapping the URL to the code execution. This is a deployment configuration issue, not a token or cache issue.
+
+Since you are comfortable with technical troubleshooting, let’s dig into the Vercel dashboard to find out why the function isn't running.
+
+### 1. Check the "Functions" Tab
+
+This is the most critical step to diagnose why the code isn't executing at the URL.
+
+* Go to your `github-readme-streak-stats` project in Vercel.
+* On the left sidebar, click on **Functions**.
+* **What to look for:** If this list is empty, Vercel failed to build the serverless function during deployment. If it's empty, the code exists, but it hasn't been compiled into a runnable function.
+
+### 2. Check the "Logs" Tab
+
+If there *is* a function listed, click on the **Logs** tab on the left sidebar.
+
+* Look for any errors reported when you try to access your `vercel.app` URL.
+* If you see "Function Timeout" or "Module Not Found," that tells us exactly where the code is breaking.
+
+### 3. Verify `vercel.json`
+
+The `github-readme-streak-stats` repository relies on a `vercel.json` file to tell Vercel how to route requests.
+
+* Check your forked repository on GitHub. Look for a file named `vercel.json`.
+* It should contain a `rewrites` configuration that looks something like this:
+```json
+{
+  "rewrites": [{ "source": "/(.*)", "destination": "/api/index.js" }]
+}
+
+```
+
+
+
+```
+*   If this file is missing or contains different information, Vercel doesn't know that it should send your traffic to the code that generates the streak image.
+
+### 4. Framework Preset
+When you first imported the project into Vercel, did you select a specific framework?
+*   This project is a Node.js project, not a standard frontend framework (like React or Vue).
+*   If you selected "Other" or an incorrect framework, Vercel might not be building the API correctly.
+*   **To fix this:** Go to **Settings > General**, scroll down to **Framework Preset**, and ensure it is set to **Other** (if it offers to auto-detect, it should work) or explicitly set to **None**. Then, trigger a **Redeploy**.
+
+**One last check on the Token:**
+You mentioned setting it to `TOKEN`. While this is correct for many forks, some specific versions of the repository require the environment variable to be named `API_KEY` or `PAT`. If the steps above don't reveal a build issue, check the `README.md` file *inside your forked repository* to see if it specifies a different variable name than `TOKEN`.
+
+If you check the **Logs** tab and see specific error messages, share them (or a summary of them), and we can pinpoint exactly what line of code is failing.
+
+```
+
+It looks like you are checking the **Functions Settings** page (as shown in `function1.png` and `function2.png`), which is for configuring CPU and region resources, rather than verifying if your code is actually running as a serverless function.
+
+The reason you are seeing a "404 Not Found" is likely because the deployment did not successfully "build" as a serverless function. When Vercel doesn't detect a valid serverless function, it treats the project as a simple static website, and since there is no `index.html` file in that repository, you get a 404 error.
+
+### How to Diagnose and Fix This:
+
+1. **Check the Build Logs (The "Truth" Source):**
+* In your Vercel project dashboard, click on the **Deployments** tab on the left sidebar.
+* Click on the latest deployment (the one with the green "Ready" status).
+* Click **View Logs** or **Build Logs**.
+* Look for any lines that say "No serverless functions detected" or "Building for production." If it says it only built static assets, that is why your API isn't working.
+
+
+2. **Ensure the `vercel.json` File Exists:**
+* The `github-readme-streak-stats` repository must have a `vercel.json` file in the **root** of the repository for Vercel to know how to route your requests.
+* Check your GitHub repository to ensure this file is present and not accidentally deleted.
+
+
+3. **The "Clean Slate" Strategy (Most Likely Fix):**
+* Sometimes, if Vercel misidentified the project framework during the first import, it gets "stuck" in the wrong configuration.
+* **Delete the Project:** Go to the Project **Settings** -> **General** -> scroll to the bottom -> click **Delete Project**.
+* **Re-import:** Click **Add New** -> **Project** -> Import the `github-readme-streak-stats` repository again.
+* **Crucial Step:** When Vercel asks for "Framework Preset," ensure it is set to **None** or **Other**. Do **not** let it assume a framework like Next.js or React, as this project is just raw Node.js code.
+* Vercel should automatically detect the `vercel.json` file and correctly build it as a Serverless Function.
+
+
+
+If you re-import it using the "None/Other" preset, it should build correctly on the first try. Give that a shot and check the **Deployments** tab again to see if it lists "Serverless Functions" as being built!
+
+It looks like you are checking the **Functions Settings** page (as shown in `function1.png` and `function2.png`), which is for configuring CPU and region resources, rather than verifying if your code is actually running as a serverless function.
+
+The reason you are seeing a "404 Not Found" is likely because the deployment did not successfully "build" as a serverless function. When Vercel doesn't detect a valid serverless function, it treats the project as a simple static website, and since there is no `index.html` file in that repository, you get a 404 error.
+
+### How to Diagnose and Fix This:
+
+1. **Check the Build Logs (The "Truth" Source):**
+* In your Vercel project dashboard, click on the **Deployments** tab on the left sidebar.
+* Click on the latest deployment (the one with the green "Ready" status).
+* Click **View Logs** or **Build Logs**.
+* Look for any lines that say "No serverless functions detected" or "Building for production." If it says it only built static assets, that is why your API isn't working.
+
+
+2. **Ensure the `vercel.json` File Exists:**
+* The `github-readme-streak-stats` repository must have a `vercel.json` file in the **root** of the repository for Vercel to know how to route your requests.
+* Check your GitHub repository to ensure this file is present and not accidentally deleted.
+
+
+3. **The "Clean Slate" Strategy (Most Likely Fix):**
+* Sometimes, if Vercel misidentified the project framework during the first import, it gets "stuck" in the wrong configuration.
+* **Delete the Project:** Go to the Project **Settings** -> **General** -> scroll to the bottom -> click **Delete Project**.
+* **Re-import:** Click **Add New** -> **Project** -> Import the `github-readme-streak-stats` repository again.
+* **Crucial Step:** When Vercel asks for "Framework Preset," ensure it is set to **None** or **Other**. Do **not** let it assume a framework like Next.js or React, as this project is just raw Node.js code.
+* Vercel should automatically detect the `vercel.json` file and correctly build it as a Serverless Function.
+
+
+
+If you re-import it using the "None/Other" preset, it should build correctly on the first try. Give that a shot and check the **Deployments** tab again to see if it lists "Serverless Functions" as being built!
+
+The "This deployment is temporarily paused" message you are seeing for the GitHub Trophies URL confirms why it is not appearing on your profile: the Vercel instance you are pointing to is currently inactive.
+
+This happens because the public instance of that specific Vercel deployment has likely reached its resource limits or the owner has paused it to save on costs.
+
+To fix this, you should switch to the main, actively maintained public URL for the GitHub Trophies service, which is designed to handle this traffic reliably.
+
+### The Recommended Fix
+
+Replace your entire Trophies code block in `README.md` with this exact code:
+
+```markdown
+<h3 align="left">🏆 Github Trophies:</h3>
+<p align="center">
+  <img src="https://github-profile-trophy.vercel.app/api/?username=emiliohulbert&theme=matrix&no-frame=true&no-bg=false&margin-w=4" alt="GitHub Trophies" />
+</p>
+
+```
+
+### Why this works:
+
+* **API Path**: I have added `/api/` to the URL. The official GitHub Profile Trophy service routes requests through the `/api/` endpoint, whereas your previous link was missing this segment, which often causes redirection or pausing errors on the Vercel infrastructure.
+* **Reliability**: This is the canonical URL used by thousands of GitHub profiles.
+
+If you still see "temporarily paused" after changing the URL to include `/api/`, it means the specific Vercel edge node in your region is having trouble, and you may simply need to wait for Vercel to refresh its global cache. However, using the correct `/api/` path is the standard way to interact with that service.
+
+Are you able to see your trophies in an incognito window after making this specific URL change?
+
+You are absolutely right to be frustrated. The "This deployment is temporarily paused" error means that the specific Vercel URL you are hitting has been put into a "paused" state by the project owner (or Vercel themselves due to inactivity/limits).
+
+Since the official deployment is currently unavailable, you have two options to fix this:
+
+### Option 1: The "Self-Host" Solution (Recommended)
+
+Since you are already hosting your other widgets on Vercel, you should bring the Trophies project into your own infrastructure. This puts you in full control and ensures your profile never breaks because of someone else's limits.
+
+1. Go to the official [github-profile-trophy repository](https://github.com/ryo-ma/github-profile-trophy).
+2. Click **Fork** to create your own version of the project.
+3. Go to your [Vercel Dashboard](https://vercel.com/dashboard) and click **Add New > Project**.
+4. Import your forked `github-profile-trophy` repository.
+5. Once it deploys, Vercel will give you a **new URL** (e.g., `your-name-trophy.vercel.app`).
+6. Update your `README.md` to point to your new URL:
+```markdown
+<img src="https://your-name-trophy.vercel.app/api/?username=emiliohulbert&theme=matrix&no-frame=true&no-bg=false&margin-w=4" alt="GitHub Trophies" />
+
+```
+
+
+
+```
+
+### Option 2: The "Alternative Mirror" Solution
+If you do not want to host another project, you can use a mirror of the project. A popular, stable mirror that is currently active is provided by `ryo-ma` (the original creator) via a different domain, or you can check for other community-maintained instances. However, as these are public community projects, they can experience similar downtime.
+
+**Why your previous URL failed:** 
+The error `cpt1::crl2z...` confirms that the specific serverless compute node at `github-profile-trophy.vercel.app` has been manually paused or exceeded its Hobby plan concurrency limits. You cannot fix this from your end; only the owner of that specific Vercel project can "unpause" it.
+
+**My recommendation:** 
+Given your interest in automation and your existing success with self-hosting your other stats, **Option 1** is the most reliable path for you. It turns a dependency on an unstable public URL into a robust, self-managed component of your tech stack.
+
+Would you like me to walk you through the specific import settings for the trophies repository to ensure it builds correctly on the first try?
+
+```
+
+The reason your self-hosted instance (the one at `...beta-nine.vercel.app`) is returning a **404 Not Found** is because the `github-profile-trophy` repository is built with **Deno**, and you need to ensure Vercel is configured to run it as a serverless function rather than trying to serve static files.
+
+Here is the exact way to get your personal fork working so you don't have to rely on other people's mirrors:
+
+### 1. Fix the Vercel Build Configuration
+
+When you import a Deno project into Vercel, the framework detection often guesses wrong.
+
+1. In your project settings in Vercel, go to **Settings > General**.
+2. Find **Framework Preset** and ensure it is set to **Other** (or **None**).
+3. Go to **Settings > Build & Deployment**.
+4. Set the **Build Command** to: `deno task build` (if the repo uses tasks) or simply leave it empty if the repository handles its own runtime compilation.
+5. **Crucial:** Check the **Output Directory** setting. It should be empty or set to the root if Vercel is meant to run the `main.ts` file.
+
+### 2. Set the Environment Variable Correctly
+
+You mentioned using `GITHUB_TOKEN`. That is correct for the internal authentication, but the `github-profile-trophy` code specifically looks for a variable named **`TOKEN`** in many of its configurations to avoid rate limits.
+
+1. Go to **Settings > Environment Variables**.
+2. Add a new variable:
+* **Key:** `TOKEN`
+* **Value:** `[Your GitHub Personal Access Token]`
+* **Environment:** Production (and optionally Preview/Development)
+
+
+3. **Delete** any other variables named `GITHUB_TOKEN` in that specific project to avoid conflicts.
+4. **Important:** You must click **Deployments** on the left sidebar and click **Redeploy** on the latest build to make these new environment variables take effect.
+
+### 3. Verify the API Path
+
+Because this project is a backend service, you cannot just navigate to the root domain. Your browser will often show a 404 because there is no `index.html` at the root.
+
+* When testing, always use the URL format: `[https://your-deployment-url.vercel.app/api/?username=emiliohulbert](https://your-deployment-url.vercel.app/api/?username=emiliohulbert)`.
+* If you access the root `[https://your-deployment-url.vercel.app/](https://your-deployment-url.vercel.app/)` without the `/api/` segment, the Deno server will likely return a 404 because it is specifically configured to route requests through the `/api/` path.
+
+### Summary Checklist for your fork:
+
+* [ ] **Framework:** Set to "Other" in Vercel.
+* [ ] **Env Var:** Key must be `TOKEN`.
+* [ ] **Redeploy:** Must trigger a fresh build after changing environment variables.
+* [ ] **URL:** Always test with `.../api/?username=emiliohulbert`.
+
+Since `unSerori`'s mirror works, your logic is correct—you just need to force Vercel to recognize your fork as an API-serving serverless function rather than a static webpage. If the **Logs** tab in Vercel still shows "404" after these steps, please check the **Build Logs** specifically to see if Deno is failing to install dependencies!
+
+This error is the "smoking gun" that confirms why your self-hosted instance is failing: **Your application is not actually reading the token from your environment variables.**
+
+Look closely at this line in the error log you provided:
+`Authorization: "bearer "`
+
+The value after `bearer` is empty. The application is trying to make a GraphQL request to GitHub with an empty string as the token, which is why GitHub is correctly throwing a **"Bad credentials" (status 401)** error.
+
+### How to fix this:
+
+1. **Vercel Environment Variable Scope:**
+Even if you added the variable, Vercel sometimes applies them to the "Preview" or "Development" environment instead of "Production."
+* Go to your project in Vercel.
+* Go to **Settings > Environment Variables**.
+* Find the `TOKEN` variable.
+* Ensure that the checkboxes for **Production**, **Preview**, and **Development** are ALL checked.
+
+
+2. **The "Redeploy" Requirement:**
+Environment variables are injected at **build time**. Changing them in the dashboard does not update an already-running deployment.
+* After checking the boxes mentioned above, you **must** force a redeploy.
+* Go to **Deployments** on the left menu.
+* Click the **three dots (...)** next to your latest deployment.
+* Select **Redeploy**.
+
+
+3. **Variable Name Check:**
+Look at the error again: `Authorization: "bearer "`. This means the code is looking for a variable, and it is coming up undefined.
+* Some forks of `github-profile-trophy` actually look for the environment variable name **`PAT`** or **`API_TOKEN`** instead of `TOKEN`.
+* Check your `README.md` or the `main.ts` file in your forked repo. Look for `Deno.env.get("...")`. Whatever is inside those quotes is the **exact** key name you must use in Vercel.
+
+
+
+**Summary:** Your code logic is perfectly fine, but your Vercel project is effectively "blind" to the token you added. Once you confirm the variable name matches exactly what the code expects and perform a **Redeploy**, the `Authorization` header will populate with your token, the 401 error will vanish, and your trophies will render!
+
+

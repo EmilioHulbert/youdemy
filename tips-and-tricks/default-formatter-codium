@@ -1,0 +1,331 @@
+It sounds like you’re thinking of a formatter rather than a linter. “Pretty lint” isn’t the actual name—most people mean one of these:
+
+---
+
+## 🔧 Common extensions that auto-format & align code
+
+### 1. Prettier (most likely what you want)
+
+* Automatically formats code (JS, TS, HTML, CSS, JSON, etc.)
+* Keeps indentation, spacing, and line breaks consistent
+* Very popular and widely recommended
+
+👉 Extension name in marketplace:
+`esbenp.prettier-vscode`
+
+---
+
+### 2. ESLint
+
+* Mainly for **code quality (linting)**
+* Can auto-fix some formatting issues
+* Often used **together with Prettier**
+
+👉 Extension:
+`dbaeumer.vscode-eslint`
+
+---
+
+### 3. Beautify
+
+* Older formatter
+* Still works, but less used than Prettier
+
+---
+
+## ⚠️ Your issue (VSCodium on Parrot OS)
+
+This is where things usually break:
+
+### Common problems
+
+1. **Prettier not set as default formatter**
+2. Extension installed but not activated for file type
+3. Conflicts with ESLint or another formatter
+4. Missing config file (`.prettierrc`)
+5. VSCodium marketplace limitations (important)
+
+---
+
+## ✅ Fix (works on Linux + VSCodium)
+
+### Step 1 — Install Prettier manually (if marketplace fails)
+
+VSCodium sometimes doesn’t access Microsoft marketplace.
+
+Run:
+
+```bash
+codium --install-extension esbenp.prettier-vscode
+```
+
+---
+
+### Step 2 — Set as default formatter
+
+Open settings JSON:
+
+```bash
+Ctrl + Shift + P → Preferences: Open Settings (JSON)
+```
+
+Add:
+
+```json
+{
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true
+}
+```
+
+---
+
+### Step 3 — Ensure it works per language
+
+Example:
+
+```json
+"[javascript]": {
+  "editor.defaultFormatter": "esbenp.prettier-vscode"
+}
+```
+
+---
+
+### Step 4 — Test it
+
+Open a messy file:
+
+```js
+function test( ){console.log("hello")}
+```
+
+Save → it should become:
+
+```js
+function test() {
+  console.log("hello");
+}
+```
+
+---
+
+## 🔍 If it STILL doesn’t work
+
+Run:
+
+```bash
+which prettier
+```
+
+If empty → install globally:
+
+```bash
+npm install -g prettier
+```
+
+---
+
+## 🧠 Key insight (important)
+
+* **Prettier = formatting (what you want)**
+* **ESLint = rules + errors**
+* The “pretty lint” name is just confusion between the two
+
+---
+
+If you want, paste your config or error and I’ll debug it with you step-by-step—especially on Parrot OS, there are a few edge cases I can help you fix quickly.
+
+
+
+
+Yes — **that’s exactly the right one** ✅
+The extension `esbenp.prettier-vscode` (Prettier – Code formatter) is the one most developers use.
+
+---
+
+## ⚙️ What it actually does (quick clarity)
+
+* Formats your code automatically
+* Fixes spacing, indentation, line breaks
+* Keeps everything consistent across files
+
+---
+
+## 🚀 How to use Prettier (proper setup)
+
+### 1. Set it as default formatter (IMPORTANT)
+
+Press:
+
+```
+Ctrl + Shift + P
+```
+
+Search:
+
+```
+Format Document With...
+```
+
+Then:
+
+```
+→ Configure Default Formatter
+→ Select Prettier
+```
+
+---
+
+### 2. Enable auto format on save
+
+Open settings JSON:
+
+```
+Ctrl + Shift + P → Preferences: Open Settings (JSON)
+```
+
+Add this:
+
+```json
+{
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true
+}
+```
+
+---
+
+### 3. Optional (but recommended): create config
+
+In your project root:
+
+```bash
+touch .prettierrc
+```
+
+Add:
+
+```json
+{
+  "semi": true,
+  "singleQuote": true,
+  "tabWidth": 2
+}
+```
+
+---
+
+## ⌨️ Shortcuts (what you asked for)
+
+### 🔹 Format current file
+
+```
+Shift + Alt + F
+```
+
+👉 This is the main one you’ll use
+
+---
+
+### 🔹 Format selected code only
+
+1. Highlight code
+2. Press:
+
+```
+Ctrl + K then Ctrl + F
+```
+
+---
+
+### 🔹 Auto format on save
+
+Just press:
+
+```
+Ctrl + S
+```
+
+(works if you enabled it earlier)
+
+---
+
+## 🧪 Example
+
+Before:
+
+```js
+function test( ){console.log("hello")}
+```
+
+After pressing `Shift + Alt + F`:
+
+```js
+function test() {
+  console.log("hello");
+}
+```
+
+---
+
+## ⚠️ Common issue in VSCodium (especially on Parrot OS)
+
+If formatting **does nothing**, check:
+
+### 1. File type supported?
+
+Prettier works for:
+
+* JS / TS
+* HTML / CSS
+* JSON
+* Markdown
+
+👉 Not all languages (e.g. Python needs different formatter)
+
+---
+
+### 2. Extension conflict
+
+Disable others like:
+
+* Beautify
+* ESLint formatting (if misconfigured)
+
+---
+
+### 3. Try manual trigger
+
+Right click →
+`Format Document With... → Prettier`
+
+---
+
+### 4. Check output logs
+
+```
+View → Output → Prettier
+```
+
+---
+
+## 🧠 Pro tip (this saves headaches)
+
+If you’re using **ESLint**, add this:
+
+```bash
+npm install --save-dev eslint-config-prettier
+```
+
+This prevents conflicts between linting and formatting.
+
+---
+
+If it’s still not formatting, tell me:
+
+* file type you’re editing
+* what happens when you press `Shift + Alt + F`
+
+I’ll pinpoint the exact issue quickly.
+

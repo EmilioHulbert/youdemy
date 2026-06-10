@@ -1,0 +1,184 @@
+It looks like you are attempting to deploy `qkrdmstlr3/techstack-generator`, a repository that hasn't seen updates in about 3 years. The logs you provided show a massive amount of `npm warn` messages, which is expected for a project of that age, but those warnings themselves aren't usually what stop a deployment.
+
+If your Vercel deployment is failing or getting stuck, it is almost certainly due to a **Node.js version mismatch** between your local environment (or what the repo expects) and Vercel's default build environment.
+
+Here is how you can troubleshoot and resolve this.
+
+### 1. The "Quick Fix": Set the Node.js Version
+
+Vercel's default environment is very modern, while that repository likely expects an older LTS version of Node (likely v14 or v16).
+
+1. Go to your **Vercel Project Dashboard**.
+2. Navigate to **Settings** > **General**.
+3. Scroll down to the **Environment Variables** section (or the specific **Node.js Version** configuration if available in the UI).
+4. Add a new Environment Variable:
+* **Key:** `NODE_VERSION`
+* **Value:** `16` (or `14` if that fails)
+
+
+5. **Redeploy** the project.
+
+### 2. Verify Build Settings
+
+Gatsby projects require specific configuration. Ensure your Project Settings in Vercel match the structure of the repo:
+
+* **Build Command:** `gatsby build`
+* **Output Directory:** `public`
+* **Install Command:** `npm install` (or `yarn install`)
+
+If the deployment is timing out, it might be trying to download deprecated dependencies that are causing the `npm install` process to hang.
+
+### 3. Debugging Locally (Recommended)
+
+Since you are a developer, the most efficient way to diagnose this is to simulate the Vercel build environment locally. This prevents the "guess-and-check" cycle of pushing commits to Vercel.
+
+1. **Clone the repo locally.**
+2. **Switch to the target Node version** using `nvm` (Node Version Manager):
+```bash
+nvm install 16
+nvm use 16
+
+```
+
+
+
+```
+3.  **Run the install and build commands manually:**
+    ```bash
+    npm install
+    npm run build
+
+```
+
+If `npm install` fails locally, look at the very bottom of the error logs—that will tell you the exact package or system dependency that is breaking the build.
+
+### A Note on the Warnings
+
+The `npm warn` list you shared (e.g., `deprecated whatwg-encoding`, `uuid-browser`, `urix`) is "noise." You can safely ignore these warnings for now. They will not prevent the build from completing. Focus only on lines that say **`npm ERR!`** or **`FATAL ERROR`**.
+
+---
+
+Does the build eventually error out with a specific code, or does it simply hang at "Loading..." indefinitely? Knowing where it stops can help narrow down the specific failure.
+
+
+This specific error (`digital envelope routines::unsupported`) is a classic sign that your project is running on **Node.js 17 or newer**, which uses OpenSSL 3.0.
+
+Your project is built using an older version of Webpack that relies on hashing algorithms that OpenSSL 3.0 no longer supports by default.
+
+### The Best Solution: Don't Downgrade, Use the Flag
+
+You do **not** necessarily need to downgrade to Node 14. Instead, you can tell Node.js to allow the legacy hashing algorithms. This is the industry-standard fix for this specific error in older projects.
+
+1. Go to your **Vercel Project Dashboard**.
+2. Navigate to **Settings** > **Environment Variables**.
+3. Add a new Environment Variable:
+* **Key:** `NODE_OPTIONS`
+* **Value:** `--openssl-legacy-provider`
+
+
+4. Click **Save**.
+5. **Redeploy** your project (Go to **Deployments** and click "Redeploy").
+
+This tells Node.js to enable the legacy OpenSSL provider, which should allow your build to compile successfully even on newer Node.js versions.
+
+---
+
+### If that doesn't work: Using Node 14
+
+If for some reason the `NODE_OPTIONS` flag still results in build errors (due to other dependencies that are incompatible with newer Node environments), then yes, **downgrading to Node 14** is the correct fallback for a project of this age.
+
+If you choose to downgrade:
+
+* Go to **Settings** > **General**.
+* Look for the **Node.js Version** configuration.
+* Set it to **14.x**.
+* **Redeploy**.
+
+Try the `NODE_OPTIONS` method first, as it is much cleaner and avoids using an end-of-life Node runtime.
+
+
+
+That is a great win! Getting the build error resolved is the biggest hurdle. Now that you are ready to expand your `techstack-generator` fork, you need a workflow for adding icons.
+
+The "tech-savvy" way to handle SVGs is not to "draw" them like a graphic designer, but to **source, sanitize, and manipulate** them like a developer. Here is the professional pipeline for managing project assets.
+
+### 1. The "Golden Source": Don't Start from Scratch
+
+You should rarely draw these from scratch. Almost every popular technology has an official, high-quality SVG available.
+
+* **[Simple Icons](https://simpleicons.org/):** This is the industry standard for dev-focused SVGs. It is a massive, community-maintained collection of thousands of brand icons. They are all open-source, flat, and perfectly vectorized.
+* **Official GitHub Repositories:** Most tech projects (like Linux, Docker, etc.) have an `assets` or `brand` folder in their official repository where they host their own high-resolution SVGs.
+* **Devicon:** Another great library similar to Simple Icons.
+
+**The Workflow:** Download the official icon, then bring it into your project.
+
+---
+
+### 2. The "Tech-Savvy" Cleanup: SVGO (SVG Optimizer)
+
+If you download an SVG from the internet, it is usually bloated. It often contains unnecessary metadata, comments, layers from Adobe Illustrator, or weird pathing artifacts that bloat the file size.
+
+**You need `svgo` (SVG Optimizer).** This is a Node.js tool that parses the XML code of your SVG, strips out the junk, and keeps only the rendering instructions.
+
+1. **Install it:**
+```bash
+npm install -g svgo
+
+```
+
+
+
+```
+2.  **Run it on your new icon:**
+    ```bash
+    svgo linux-icon.svg
+
+```
+
+This will strip out metadata and leave you with a lean, clean XML file that is perfectly optimized for the web. This is what makes you "tech-savvy"—you aren't just copy-pasting files; you are managing a build pipeline for your assets.
+
+---
+
+### 3. The "Manual" Edit: Inkscape
+
+If you need to tweak an icon (e.g., remove a background, change a fill color, or scale it), **Inkscape** is the professional choice. It is the open-source equivalent of Adobe Illustrator.
+
+* **Avoid "Tracing":** Don't try to take a `.png` or `.jpg` and auto-trace it in Inkscape. It creates "dirty" paths with thousands of unnecessary points.
+* **The Path Logic:** If you open your existing icons in a text editor (VS Code works fine), you will see they are just `<path>` elements with `d` (data) attributes.
+* **Inkscape Workflow:**
+1. Open the SVG in Inkscape.
+2. Click on the path elements.
+3. If you need to change a color, just change the `fill` property in the XML code directly. It is much faster than using a GUI.
+
+
+
+---
+
+### 4. The "Hardcore" Way: Editing XML
+
+Because SVGs are just XML code, you can often edit them without opening any graphic software at all. This is the most efficient way to maintain a tech stack project.
+
+If you open one of your project's current icons (like `nginx-icon.svg`), you'll see something like this:
+
+```xml
+<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  <path d="M12 0L0 24h24L12 0z" fill="#000000"/>
+</svg>
+
+```
+
+**To make a new icon for your project:**
+
+1. Find the raw icon file.
+2. Open it in your editor (VS Code).
+3. Check the `viewBox`. If you want all your icons to look uniform in your generator, ensure the `viewBox` is consistent (usually `0 0 24 24` or `0 0 512 512`).
+4. Remove all `fill` attributes if you want your project to control the color, OR set the `fill` to `currentColor` so the icon inherits the text color of the parent element.
+
+### Summary Checklist for your `linux-icon.svg`:
+
+1. **Search:** Go to [Simple Icons](https://simpleicons.org/) and search for "Linux".
+2. **Download:** Save the raw `.svg` to your `/static` folder.
+3. **Optimize:** Run `svgo linux-icon.svg` in your terminal.
+4. **Standardize:** Open it in VS Code, ensure the `viewBox` matches your other icons (e.g., `0 0 24 24`), and confirm it uses `currentColor` if you want it to support dynamic styling.
+
+Using this method, you can add 50 new icons in a few minutes without ever opening a drawing tool.
