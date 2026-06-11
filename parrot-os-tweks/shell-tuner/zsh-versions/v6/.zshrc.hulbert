@@ -1,0 +1,142 @@
+# Enable core color features natively
+autoload -U colors && colors
+setopt PROMPT_SUBST
+
+# ==============================================================================
+# BASH HISTORY ACCELERATOR & INTEGRATION
+# ==============================================================================
+HISTFILE=~/.bash_history
+SAVEHIST=10000
+HISTSIZE=10000
+
+setopt append_history
+# setopt extended_history
+setopt hist_expire_dups_first
+setopt hist_ignore_dups
+setopt hist_ignore_space
+setopt share_history
+
+# This is the critical part for cross-shell compatibility:
+unsetopt extended_history
+
+# FORCE HINTS: Make the standard 'history' command show the whole file from item 1
+alias history='fc -l 1'
+
+# ==============================================================================
+# PERFECT ASYNC ZSH TICKER ENGINE
+# ==============================================================================
+_zsh_live_clock_ticker() {
+    if [[ "$PENDING" -eq 0 ]]; then
+        zle reset-prompt
+    fi
+}
+zle -N _zsh_live_clock_ticker
+TMOUT=1
+trap '_zsh_live_clock_ticker' ALRM
+
+# PROMPT TUNING: Using '%#' means root gets '#', standard user automatically gets '$'
+PROMPT=$'%F{red}┌──[%F{yellow}%D{%a %b %d} %D{%L:%M:%S %p}%F{red}][%F{white}%n%F{yellow}@%F{cyan}%m%F{red}]─[%F{green}%~%F{red}]\n└──╼%F{cyan}[REMAC]%F{yellow}\$ %f'
+# ==============================================================================
+
+if [ -x /usr/bin/dircolors ]; then
+    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    alias ls='ls --color=auto'
+    alias dir='dir --color=auto'
+    alias vdir='vdir --color=auto'
+    alias grep='grep --color=auto'
+    alias fgrep='fgrep --color=auto'
+    alias egrep='egrep --color=auto'
+fi
+
+alias ll='ls -lh'
+alias la='ls -lha'
+alias l='ls -CF'
+alias em='emacs -nw'
+
+alias _='sudo'
+alias _i='sudo -i'
+alias fucking='sudo'
+alias please='sudo'
+
+function hex-encode() { echo "$@" | xxd -p; }
+function hex-decode() { echo "$@" | xxd -p -r; }
+function rot13() { echo "$@" | tr 'A-Za-z' 'N-ZA-Mn-za-m'; }
+if [ -f ~/.bash_aliases ]; then
+    . ~/.bash_aliases
+fi
+
+alias venv='source /home/user/Desktop/venv/bin/activate'
+alias cleanpaste="xclip -o | tr -d '\n' | xclip -selection clipboard"
+
+autoload -Uz compinit
+compinit
+# Bind Ctrl + Left Arrow to move back one word
+bindkey "^[[1;5D" backward-word
+
+# Bind Ctrl + Right Arrow to move forward one word
+bindkey "^[[1;5E" forward-word
+bindkey "^[[1;5C" forward-word
+
+bindkey ';5D' backward-word
+bindkey ';5C' forward-word
+
+# === ADD THESE TWO LINES HERE ===
+# Bind Ctrl + Delete to delete a whole word forward
+bindkey "^[[3;5~" kill-word
+bindkey ';5~' kill-word
+
+# Make Alt+Backspace respect slashes and punctuation boundaries
+autoload -U select-word-style
+select-word-style bash
+
+# ==============================================================================
+# ULTRASONIC BASH-STYLE MID-WORD EXPANSION ENGINE (TAIL-PRESERVING)
+# ==============================================================================
+setopt COMPLETE_IN_WORD
+unsetopt ALWAYS_TO_END
+
+# Menu selection behavior
+zstyle ':completion:*' menu select=1
+zstyle ':completion:*' current-selection 'standout'
+
+bash_style_tab_complete() {
+    # If cursor is at the end of the line or next to a space, fall back safely
+    if [[ -z "$RBUFFER" || "$RBUFFER" == " "* ]]; then
+        zle expand-or-complete
+        return
+    fi
+
+    # 1. Temporarily pause the async clock signal to stop ticker race conditions
+    local saved_tmout=$TMOUT
+    TMOUT=0
+    trap '' ALRM
+
+    # 2. Capture line states
+    local left_side="$LBUFFER"
+    local right_side="$RBUFFER"
+
+    # 3. Isolation Surgery: Split the right buffer into immediate suffix and the rest of line
+    # immediate_suffix handles "virtualbox.desktop"
+    # line_tail handles " ~/.local/share/applications/"
+    local immediate_suffix="${right_side%% *}"
+    local line_tail="${right_side#$immediate_suffix}"
+
+    # 4. The Suffix Blinder: Wipe out ONLY the immediate suffix while cycling
+    RBUFFER=""
+
+    # 5. Invoke native completion strictly on the isolated left chunk
+    zle expand-or-complete
+
+    # 6. Stitch BOTH parts back together behind the current cursor position
+    RBUFFER="${immediate_suffix}${line_tail}"
+
+    # 7. Re-enable the async clock ticker safely
+    TMOUT=$saved_tmout
+    trap '_zsh_live_clock_ticker' ALRM
+    zle redisplay
+}
+
+# Register the widget and bind the key
+zle -N bash_style_tab_complete
+bindkey '^I' bash_style_tab_complete
+sudo su
