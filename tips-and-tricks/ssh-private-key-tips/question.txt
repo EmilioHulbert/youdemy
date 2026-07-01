@@ -1,0 +1,134 @@
+today i wonna understund the logic behind ssh private key access using the key like this one 
+┌──[Wed Jul 01 10:35:31 AM][root@Intel5]─[~/.ssh]
+└──╼[REMAC]# pwd
+/root/.ssh
+┌──[Wed Jul 01 10:35:33 AM][root@Intel5]─[~/.ssh]
+└──╼[REMAC]# ls
+config  id_rsa  id_rsa.pub  known_hosts  known_hosts.old  remac.pem
+┌──[Wed Jul 01 10:35:59 AM][root@Intel5]─[~/.ssh]
+└──╼[REMAC]# 
+
+
+and why the below works 
+┌──[Wed Jul 01 10:36:39 AM][root@Intel5]─[~/.ssh]
+└──╼[REMAC]# ssh admin@51.21.31.211 -i remac.pem
+Linux ip-172-31-43-237 6.12.94+deb13-cloud-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.12.94-1 (2026-06-20) x86_64
+
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+Last login: Wed Jul  1 10:36:29 2026 from 154.159.252.170
+manpath: can't set the locale; make sure $LC_* and $LANG are correct
+root@ip-172-31-43-237:/home/admin# exit
+exit
+admin@ip-172-31-43-237:~$ exit
+logout
+Connection to 51.21.31.211 closed.
+┌──[Wed Jul 01 10:36:46 AM][root@Intel5]─[~/.ssh]
+└──╼[REMAC]# 
+
+yes i know i have got in as admin and dropped to root since i hvae sudo su in bashrc
+now, issue is if i do this now ┌──[Wed Jul 01 10:37:45 AM][root@Intel5]─[~/.ssh]
+└──╼[REMAC]# ssh root@51.21.31.211 -i remac.pem
+Please login as the user "admin" rather than the user "root".
+
+that is what i get, and i want it to login with that key too but if i do 
+└──╼[REMAC]# ssh root@51.21.31.211
+Linux ip-172-31-43-237 6.12.94+deb13-cloud-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.12.94-1 (2026-06-20) x86_64
+
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+Last login: Wed Jul  1 10:37:49 2026 from 154.159.252.170
+root@ip-172-31-43-237:~# cd .ssh
+root@ip-172-31-43-237:~/.ssh# pwd
+/root/.ssh
+root@ip-172-31-43-237:~/.ssh# ls
+authorized_keys  id_ed25519  id_ed25519.pub  known_hosts  known_hosts.old
+root@ip-172-31-43-237:~/.ssh# exit
+logout
+Connection to 51.21.31.211 closed.
+
+
+ i get in because i know i had used ssh-copy-id to avoid using my passwords so thats okay
+
+ now my issue is why does this ssh root@51.21.31.211 -i remac.pem
+not let me in and somehow i cant understund the logic behind private keys because i remember doing somthing of this sort on the cloud 
+#if i fail to create a key pair for the amazon ec2 instance how can i create anew key pair afterwards and associate it with the instance
+You can create a new key pair via the EC2 Console, but you cannot directly "reassociate" it through the AWS UI because key pairs are injected only during the first boot. To map a new key pair to your existing Amazon EC2 instance, you must inject the new public key into the server manually.Follow the step-by-step methods below to create a new key pair and associate it with your instance.Step 1: Create the New Key PairOpen the Amazon EC2 Console.In the left navigation pane, under Network & Security, click Key Pairs.Click Create key pair.Enter a name, choose the format (.pem for OpenSSH/Mac/Linux or .ppk for PuTTY), and click Create key pair.Important: The private key file will download automatically. Save it safely; AWS will not let you download it again.Extract the public key text from this new key pair (or use ssh-keygen -y -f /path/to/key.pem on your local terminal to view it).Step 2: Associate it with your Instance (Choose One Method)
+
+Method B: Use User Data Script (Requires Instance Stop)If you cannot access the instance at all, you can use a startup script to overwrite the key.Stop your EC2 instance.Click Actions > Instance settings > Edit user data.Paste the following script into the field (replace YOUR_NEW_PUBLIC_KEY_HERE with your actual public key string, which starts with ssh-rsa or ssh-ed25519):bashContent-Type: multipart/mixed; boundary="//"
+MIME-Version: 1.0
+
+-#cloud-config
+cloud_final_modules:
+- [users-groups, once]
+users:
+  - name: ec2-user1
+    sudo: ["ALL=(ALL) NOPASSWD:ALL"]
+    ssh-authorized-keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCom08ftZy9v/4b0OeIrLTDyAkAnaSPACnvkhLgZqEpMfB8w8yEyDOewDLLGpTsoBk9gPkLxQzJgxUE646HVN5fVT4jJgHEmonQ5mnEggDq3fLMjMZXm/VmktUC/AMK4+yy1GLASg1WHWsnloPo/qXUKCJ2G+/CLTJvZ294rQdkKzQUB2LlrLKBfLrTH0DieviMlB1kSVAbrhzsB1sWC7tc5pl09vyNCK2Q5QtxVhoQjAeDcqSoETBaQxiIOo/jlSoBauGtDE7c4w4fVG0JTPMPEQXFYLDk4jutwV8NiXHmnmaDyee54zyOsRMIlFyMUd7E/FKkuGwEHUgzrituWfeF
+
+Save the user data and Start your instance.Log in using your new private key. Once connected, stop the instance again, clear the User Data box for security, and restart it.
+ofcourse the key is 
+┌──[Wed Jul 01 10:41:03 AM][root@Intel5]─[~/.ssh]
+└──╼[REMAC]# ssh-keygen -y -f remac.pem
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/y7rT5Rx0Qke8WR2tseSBK/QDX5nBGX9wvYr2igC6kJOLE0x29vG5JzrKIlM+Aws/mm0+8ES7vfP4A/at/HcFar0DDaaOOMRCGEMcsQ0ypit59o5+n1Tl12Ew8GN+Ifbu9h2t5r4k6zs2siysaUaWh8OLa9wcgCLHpC9OvZVnsaQVjw97VuWo18mAwIQYzdgw6EfR8jPPS1j36qz6CpCGSA1pDJE54I59/u3qaXxl9bAiIufTmTk9HbOJiU8rnnYnjG8sOZHXUU9XjbV/mxYINebOIMTnHi9Fp30DCFxU2IzU0g3FQYht3k5tJk2cQtqfK+0W3vHvUpo4IsXH4yGYMrSrqd+3
+┌──[Wed Jul 01 10:41:05 AM][root@Intel5]─[~/.ssh]
+└──╼[REMAC]# 
+
+
+and yet in the above we used the same key.
+also here └──╼[REMAC]# ssh admin@51.21.31.211 -i remac.pem
+Linux ip-172-31-43-237 6.12.94+deb13-cloud-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.12.94-1 (2026-06-20) x86_64
+
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+Last login: Wed Jul  1 10:36:42 2026 from 154.159.252.170
+manpath: can't set the locale; make sure $LC_* and $LANG are correct
+root@ip-172-31-43-237:/home/admin# exit
+exit
+admin@ip-172-31-43-237:~$ exit
+logout
+Connection to 51.21.31.211 closed.
+┌──[Wed Jul 01 10:41:37 AM][root@Intel5]─[~/.ssh]
+└──╼[REMAC]# ssh ec2-user1@51.21.31.211 -i remac.pem
+ec2-user1@51.21.31.211's password: 
+
+
+why does it ask for a password yet we dont have other ssh keygen ids in here 
+┌──[Wed Jul 01 10:42:31 AM][root@Intel5]─[~/.ssh]
+└──╼[REMAC]# ssh admin@51.21.31.211 -i remac.pem    
+Linux ip-172-31-43-237 6.12.94+deb13-cloud-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.12.94-1 (2026-06-20) x86_64
+
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+Last login: Wed Jul  1 10:41:23 2026 from 154.159.252.170
+manpath: can't set the locale; make sure $LC_* and $LANG are correct
+root@ip-172-31-43-237:/home/admin# cd ..
+root@ip-172-31-43-237:/home# ls admin/.ssh/
+authorized_keys
+root@ip-172-31-43-237:/home# ls ec2-user1/.ssh/
+authorized_keys
+root@ip-172-31-43-237:/home# cat ec2-user1/.ssh/authorized_keys 
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCom08ftZy9v/4b0OeIrLTDyAkAnaSPACnvkhLgZqEpMfB8w8yEyDOewDLLGpTsoBk9gPkLxQzJgxUE646HVN5fVT4jJgHEmonQ5mnEggDq3fLMjMZXm/VmktUC/AMK4+yy1GLASg1WHWsnloPo/qXUKCJ2G+/CLTJvZ294rQdkKzQUB2LlrLKBfLrTH0DieviMlB1kSVAbrhzsB1sWC7tc5pl09vyNCK2Q5QtxVhoQjAeDcqSoETBaQxiIOo/jlSoBauGtDE7c4w4fVG0JTPMPEQXFYLDk4jutwV8NiXHmnmaDyee54zyOsRMIlFyMUd7E/FKkuGwEHUgzrituWfeF
+root@ip-172-31-43-237:/home# cat admin/.ssh/authorized_keys 
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC/y7rT5Rx0Qke8WR2tseSBK/QDX5nBGX9wvYr2igC6kJOLE0x29vG5JzrKIlM+Aws/mm0+8ES7vfP4A/at/HcFar0DDaaOOMRCGEMcsQ0ypit59o5+n1Tl12Ew8GN+Ifbu9h2t5r4k6zs2UaWh8OLcgCLHpC9OvZVnsaQVjw97VuWo18mAwIQYzdgw6EfR8jPPS1j36qz6CpCGSA1pDJE54I59/u3qaXxl9bAiIufTmTk9HbOJiU8rnnYnjG8sOZHXUU9XjbV/mxYINebOIMTnHi9Fp30DCFxU2IzU0g3FQYht3k5tJk2cQtqfK+0W3vHvUpo4IsXH4yGYMrSrqd+3 Remac
+root@ip-172-31-43-237:/home# 
+
+
+
