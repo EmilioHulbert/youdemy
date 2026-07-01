@@ -1,0 +1,51 @@
+To ensure SSH key authentication works reliably, the SSH daemon (`sshd`) enforces strict ownership and permission requirements. If these are too open, the server will ignore your key for security reasons to prevent unauthorized access.
+
+### 1. The Required Permission Structure
+
+The directory and file permissions must follow this strict model to be considered "secure" by the SSH daemon:
+
+| Path | Required Permissions | Symbolic Mode |
+| --- | --- | --- |
+| **Home Directory** (`/home/user/`) | Should **not** be world-writable | `755` (drwxr-xr-x) |
+| **`.ssh` Directory** | Must be private to the user | `700` (drwx------) |
+| **`authorized_keys` File** | Must be readable/writable only by user | `600` (-rw-------) |
+
+---
+
+### 2. Commands to Fix Permissions
+
+You can run these commands on the server to reset everything to the secure standard. Replace `[username]` with the actual user (e.g., `ec2-user1`).
+
+```bash
+# 1. Set home directory permissions (ensure it's not world-writable)
+chmod 755 /home/[username]
+
+# 2. Set .ssh directory permissions (owner only)
+chmod 700 /home/[username]/.ssh
+
+# 3. Set authorized_keys file permissions (owner only)
+chmod 600 /home/[username]/.ssh/authorized_keys
+
+# 4. Ensure correct ownership (this is vital if files were created by root)
+chown -R [username]:[username] /home/[username]/.ssh
+
+```
+
+---
+
+### 3. Visualizing the Logic
+
+The SSH daemon checks these permissions before even checking the content of your key. If it sees `777` or `775` on the `.ssh` folder, it stops immediately to prevent "key hijacking."
+
+### Important Troubleshooting Tip
+
+If you are still being asked for a password after fixing these, check the **ownership**. If you created the `authorized_keys` file while logged in as `root`, the owner is likely `root`. The SSH daemon will reject that file for the `ec2-user1` user because the file is not owned by them. Always run the `chown` command listed above to be safe.
+
+**One final check:**
+If you still cannot connect, look at the server logs to see the specific error `sshd` is throwing. Run this on the server:
+`sudo tail -f /var/log/auth.log`
+(or `journalctl -u ssh` on some systems)
+
+Then, try to connect again from your local machine. The logs will explicitly tell you: *"Authentication refused: bad ownership or modes for directory /home/user/.ssh"* if the permissions are still the problem.
+
+Does this resolve the access issue for `ec2-user1`, or are you still seeing a password prompt?
