@@ -1,0 +1,37 @@
+┌─[root@Intel5]─[/home/hulbert]
+└──╼ ## WARNING: Ensure /dev/sda is definitely your external drive!
+sudo dd if=/dev/zero of=/dev/sda bs=446 count=1
+1+0 records in
+1+0 records out
+446 bytes copied, 0.357474 s, 1.2 kB/s
+┌─[root@Intel5]─[/home/hulbert]
+└──╼ ## 1. Mount the target Linux root
+sudo mount /dev/sda5 /mount
+
+# 2. Mount the Windows partition so it is visible inside the chroot
+sudo mkdir -p /mount/media/win
+sudo mount /dev/sda2 /mount/media/win
+
+# 3. Bind the system directories
+for dir in /dev /dev/pts /proc /sys /run; do sudo mount --bind $dir /mount$dir; done
+
+# 4. Enter the chroot
+sudo chroot /mount
+Welcome to Parrot OS
+┌[Intel5]─[22:42-10/06]─[/]
+└╼root$exec bash
+┌─[root@Intel5]─[/]
+└──╼ #grub-install --target=i386-pc --boot-directory=/boot --force /dev/sda
+Installing for i386-pc platform.
+Installation finished. No error reported.
+┌─[root@Intel5]─[/]
+└──╼ #grub-install --modules="ext2 ntfs" /dev/sda
+Installing for i386-pc platform.
+Installation finished. No error reported.
+┌─[root@Intel5]─[/]
+└──╼ #os-prober
+/dev/nvme0n1p1@/efi/Microsoft/Boot/bootmgfw.efi:Windows Boot Manager:Windows:efi
+┌─[root@Intel5]─[/]
+└──╼ #
+
+
