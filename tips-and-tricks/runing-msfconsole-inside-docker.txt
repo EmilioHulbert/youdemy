@@ -1,0 +1,62 @@
+Yes, your commands were **syntactically valid**, but the reason they felt "not persistent" is due to how Docker handles the lifecycle of the container process, as explained previously.
+
+Here is the breakdown of why those specific commands behaved the way they did:
+
+### 1. `docker build -t eternalblue-msf .`
+
+* **Status:** **Correct.**
+* This successfully builds your image and tags it as `eternalblue-msf`.
+
+### 2. `docker run -it --network host -v $(pwd):/root/Eternalblue-Doublepulsar-Metasploit eternalblue-msf /bin/bash`
+
+* **Status:** **Correct.**
+* This launches a new container from your image.
+* **Why it wasn't "persistent":** Because you used `/bin/bash` as the command, the container is tied to that specific bash session. As soon as you type `exit` or close the terminal, that bash process dies, and the container stops (it enters the `Exited` state you saw in `docker ps -a`).
+* **Improvement:** If you want a container that you can start and stop without losing your work, give it a name:
+```bash
+docker run -it --name my-eternalblue --network host -v $(pwd):/root/Eternalblue-Doublepulsar-Metasploit eternalblue-msf /bin/bash
+
+```
+
+
+Then, when you exit, you can restart it with `docker start -ai my-eternalblue`.
+
+### 3. `docker exec -it 09b1d341d5d3 /bin/bash`
+
+* **Status:** **Correct (but situational).**
+* This command is for **running a shell inside a container that is *already running*.**
+* If your container (e.g., `09b1d341d5d3`) has already exited because you typed `exit` in the previous session, this command will fail with an error like `Error response from daemon: Container ... is not running`.
+
+### 4. `docker build --progress=plain -t eternalblue-msf .`
+
+* **Status:** **Correct.**
+* Adding `--progress=plain` is an excellent choice. It disables the "fancy" condensed build output and prints every line of the build process (including the Wine errors you saw earlier) in chronological order. This is much better for debugging.
+
+---
+
+### How to achieve "Persistence" effectively
+
+If you want to keep the container running in the background and jump in and out of it without it ever stopping, use this workflow:
+
+1. **Start it in "Detached" mode with a dummy process:**
+```bash
+docker run -d --name my-eternalblue --network host -v $(pwd):/root/Eternalblue-Doublepulsar-Metasploit eternalblue-msf tail -f /dev/null
+
+```
+
+
+* The `tail -f /dev/null` keeps the container running in the background forever, even if you aren't doing anything.
+
+
+2. **Access it whenever you need to:**
+```bash
+docker exec -it my-eternalblue /bin/bash
+
+```
+
+
+* You can open multiple terminals and run this same command to have multiple windows into the same running container.
+
+
+
+**Does this distinction between running a "shell" (which kills the container when exited) and a "background service" (which stays up) help clarify why your previous containers were stopping?**
