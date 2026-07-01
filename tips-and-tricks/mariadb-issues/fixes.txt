@@ -1,0 +1,314 @@
+The primary issue you are facing is **InnoDB tablespace corruption**. Specifically, MariaDB is reporting a "Checksum mismatch" and "Tablespace is missing" for your `wp_usermeta` table.
+
+Because `wp_usermeta` is a core WordPress table that handles user metadata, its corruption is preventing your site from loading and causing the `mysqldump` failure.
+
+---
+
+### Why this happens
+
+1. **File System/Disk Error:** Sudden power loss, kernel panics, or failing hardware can cause writes to disk to be incomplete, leading to checksum errors.
+2. **Incomplete File Operations:** Manual movement or deletion of `.ibd` files (or directory permissions issues) can break the link between the InnoDB data dictionary and the physical files on disk.
+3. **Corruption:** The `.ibd` file corresponding to `wp_usermeta` is either physically damaged or the pointer in the system tablespace is broken.
+
+---
+
+### How to fix it
+
+Since you cannot run a standard `mysqldump`, you must force InnoDB to ignore the corrupt table or attempt a repair. Follow these steps in order.
+
+#### 1. Enable InnoDB Force Recovery
+
+You need to restart MariaDB in recovery mode to allow access to the database despite the corruption.
+
+1. Edit your MariaDB configuration file (usually `/etc/mysql/mariadb.conf.d/50-server.cnf` or `/etc/mysql/my.cnf`):
+```bash
+nano /etc/mysql/mariadb.conf.d/50-server.cnf
+
+```
+
+
+2. Under the `[mysqld]` section, add the following line:
+```ini
+innodb_force_recovery = 1
+
+```
+
+
+3. Restart MariaDB:
+```bash
+systemctl restart mariadb
+
+```
+
+
+
+#### 2. Backup the Data
+
+With `innodb_force_recovery` set to `1` (or up to `4` if `1` doesn't work), attempt your `mysqldump` again. **Note:** If `1` fails, try `3` or `4`, but **do not go above 4** as it risks data loss.
+
+```bash
+mysqldump --single-transaction --skip-lock-tables wordpress > wordpress_recovery.sql
+
+```
+
+*Note: We added `--skip-lock-tables` because the `LOCK TABLES` command often fails on corrupted tables.*
+
+#### 3. Attempt to Recover or Recreate the Table
+
+Once you have the dump (or as much of it as you can get), you have two paths:
+
+* **If you have a recent backup:** Drop the `wordpress` database, recreate it, and import your last known good backup. This is the **safest and most reliable method**.
+* **If you do not have a backup:**
+1. With the database in recovery mode, try to `REPAIR TABLE wp_usermeta;` via the MySQL prompt.
+2. If that fails, you may need to export the healthy tables, drop the corrupted `wp_usermeta` table, recreate it manually (by copying the `CREATE TABLE` syntax from a clean WordPress installation), and then try to recover the data from the dump file.
+
+
+
+#### 4. Post-Repair
+
+1. Once the data is recovered/restored, **remove the `innodb_force_recovery` line** from your configuration file.
+2. Restart MariaDB: `systemctl restart mariadb`.
+3. **Check for other corruption:** Run `mysqlcheck -u root -p --auto-repair --all-databases` to ensure other tables aren't affected.
+
+---
+
+### A Note on your Log Errors
+
+You also have "Access denied" warnings for `wprdpressuser` (likely a typo in your config) and `wordpressuser`. Ensure your `wp-config.php` has the correct credentials, but **only focus on fixing the corruption first**, as the access denied errors are secondary to the broken InnoDB engine.
+
+**Are you currently able to access a previous database backup (e.g., from `cron` or a backup plugin), or do you need to attempt a manual table extraction?**
+
+The primary issue you are facing is **InnoDB tablespace corruption**. Specifically, MariaDB is reporting a "Checksum mismatch" and "Tablespace is missing" for your `wp_usermeta` table.
+
+Because `wp_usermeta` is a core WordPress table that handles user metadata, its corruption is preventing your site from loading and causing the `mysqldump` failure.
+
+---
+
+### Why this happens
+
+1. **File System/Disk Error:** Sudden power loss, kernel panics, or failing hardware can cause writes to disk to be incomplete, leading to checksum errors.
+2. **Incomplete File Operations:** Manual movement or deletion of `.ibd` files (or directory permissions issues) can break the link between the InnoDB data dictionary and the physical files on disk.
+3. **Corruption:** The `.ibd` file corresponding to `wp_usermeta` is either physically damaged or the pointer in the system tablespace is broken.
+
+---
+
+### How to fix it
+
+Since you cannot run a standard `mysqldump`, you must force InnoDB to ignore the corrupt table or attempt a repair. Follow these steps in order.
+
+#### 1. Enable InnoDB Force Recovery
+
+You need to restart MariaDB in recovery mode to allow access to the database despite the corruption.
+
+1. Edit your MariaDB configuration file (usually `/etc/mysql/mariadb.conf.d/50-server.cnf` or `/etc/mysql/my.cnf`):
+```bash
+nano /etc/mysql/mariadb.conf.d/50-server.cnf
+
+```
+
+
+2. Under the `[mysqld]` section, add the following line:
+```ini
+innodb_force_recovery = 1
+
+```
+
+
+3. Restart MariaDB:
+```bash
+systemctl restart mariadb
+
+```
+
+
+
+#### 2. Backup the Data
+
+With `innodb_force_recovery` set to `1` (or up to `4` if `1` doesn't work), attempt your `mysqldump` again. **Note:** If `1` fails, try `3` or `4`, but **do not go above 4** as it risks data loss.
+
+```bash
+mysqldump --single-transaction --skip-lock-tables wordpress > wordpress_recovery.sql
+
+```
+
+*Note: We added `--skip-lock-tables` because the `LOCK TABLES` command often fails on corrupted tables.*
+
+#### 3. Attempt to Recover or Recreate the Table
+
+Once you have the dump (or as much of it as you can get), you have two paths:
+
+* **If you have a recent backup:** Drop the `wordpress` database, recreate it, and import your last known good backup. This is the **safest and most reliable method**.
+* **If you do not have a backup:**
+1. With the database in recovery mode, try to `REPAIR TABLE wp_usermeta;` via the MySQL prompt.
+2. If that fails, you may need to export the healthy tables, drop the corrupted `wp_usermeta` table, recreate it manually (by copying the `CREATE TABLE` syntax from a clean WordPress installation), and then try to recover the data from the dump file.
+
+
+
+#### 4. Post-Repair
+
+1. Once the data is recovered/restored, **remove the `innodb_force_recovery` line** from your configuration file.
+2. Restart MariaDB: `systemctl restart mariadb`.
+3. **Check for other corruption:** Run `mysqlcheck -u root -p --auto-repair --all-databases` to ensure other tables aren't affected.
+
+---
+
+### A Note on your Log Errors
+
+You also have "Access denied" warnings for `wprdpressuser` (likely a typo in your config) and `wordpressuser`. Ensure your `wp-config.php` has the correct credentials, but **only focus on fixing the corruption first**, as the access denied errors are secondary to the broken InnoDB engine.
+
+**Are you currently able to access a previous database backup (e.g., from `cron` or a backup plugin), or do you need to attempt a manual table extraction?**
+
+
+The fact that your site is loading but the login page (`/wp-login.php`) is broken or acting like a "fresh install" indicates that **the WordPress database is still partially inconsistent**.
+
+Even after an `rsync` restore, the database might have subtle corruption or permission issues that only surface when WordPress attempts to write to the `wp_usermeta` or `wp_options` tables during the login process.
+
+### Why the Login Page "Breaks"
+
+1. **Partial Data Sync:** If your `rsync` backup wasn't taken *exactly* at the same time as a flush of the InnoDB redo logs, or if some system files were locked, there might be a mismatch between the index (dictionary) and the data.
+2. **Plugin/Session Conflict:** WordPress tries to write "session tokens" to `wp_usermeta` when you log in. If that table is still having "Tablespace" errors, the login will fail, redirect, or cause a database error.
+3. **Authentication Failure:** WordPress checks `wp_users` and `wp_usermeta` to verify your identity. If it cannot read these tables, it assumes no user exists and prompts for a fresh installation.
+
+---
+
+### How to Fix It (Step-by-Step)
+
+Since you have restored the files, we need to verify the **health** of the database before assuming it is "fixed."
+
+#### 1. Verify Table Integrity
+
+Use `mysqlcheck` (or `wp-cli` if you have it installed) to scan the tables for errors. This will pinpoint if any other tables are still suffering from "Tablespace" issues.
+
+Run this from your terminal:
+
+```bash
+# Check all tables in the wordpress database
+mysqlcheck -u root -p --check wordpress
+
+```
+
+*If this returns "OK" for everything, the files are structurally sound.*
+
+#### 2. Clear Plugin/Theme Interference
+
+Sometimes a plugin or theme is "stuck" in a corrupted state after a restore. If you can get to the terminal, deactivate all plugins to rule them out:
+
+```bash
+# If using WP-CLI
+wp plugin deactivate --all
+
+# Or via MySQL (the "manual" way)
+mysql -u root -p -e "UPDATE wordpress.wp_options SET option_value = 'a:0:{}' WHERE option_name = 'active_plugins';"
+
+```
+
+#### 3. Flush the WordPress Cache
+
+If WordPress thinks it’s a fresh install, it might be reading old cached data or permalink structures.
+
+```bash
+# Clear object cache if present
+rm -rf /var/www/html/wordpress/wp-content/cache/*
+
+```
+
+#### 4. The "Nuclear" Option (Only if the above fails)
+
+If `mysqlcheck` says everything is "OK" but you still get errors, **your `wp-config.php` might be pointing to the wrong database** or there is a mismatch in the `wp_table_prefix`.
+
+1. **Check `wp-config.php`:**
+* Ensure `DB_NAME` is exactly `wordpress`.
+* Ensure `table_prefix` matches the tables in your database (e.g., `wp_`). If your tables are `wp_ecom_`, but your config says `wp_`, WordPress will look for tables that don't exist and trigger the "Fresh Install" screen.
+
+
+2. **Inspect the `wp_options` table:**
+* Log into your MariaDB console: `mysql -u root -p`
+* Run: `SELECT * FROM wordpress.wp_options WHERE option_name = 'siteurl';`
+* **Does the URL match your current server address?** If it doesn't, the site will act erratically.
+
+
+
+---
+
+### Why you didn't see this before
+
+You likely didn't see the issue because you weren't hitting the "write-heavy" parts of the database. Browsing the front-end (loading posts) is **Read-Only**. Logging into the admin panel (creating sessions, updating user meta) is **Read-Write**. Your database was likely already corrupted before the backup, but because you were only doing "Read" operations, the corruption didn't trigger an error until you tried to write to the database during login.
+
+**Do you see any output when you run `mysqlcheck -u root -p --check wordpress`? That will tell us immediately if the database engine still thinks the tables are broken.**
+
+I understand. If the site is "back" but `/wp-login.php` is returning a **404 Not Found** (or the errors you pasted earlier regarding `nginx` failing to find the file), we have shifted from a **Database Corruption** issue to a **Web Server/Configuration** issue.
+
+The fact that you are getting a 404 for a file that definitely exists (`/wp-login.php`) in your directory means Nginx is either looking in the wrong place, or it has lost its ability to "see" the file due to a configuration mismatch during your restoration.
+
+### Why you are getting a 404
+
+1. **Nginx Root Path Mismatch:** If your `rsync` restoration moved files to a slightly different location (e.g., `/var/www/html/wordpress` vs `/var/www/html`), Nginx's `root` directive is now pointing to a folder that is either empty or missing the file.
+2. **Missing `try_files` rule:** WordPress requires a specific Nginx rule to redirect requests to `index.php`. If that is missing, Nginx tries to find a physical file named `wp-login.php` and, if it fails to hand it off to PHP-FPM, it throws a 404.
+3. **Permissions on the Parent Directory:** Even if the file exists, if the Nginx user (`www-data`) cannot access the parent folder (`/var/www/html/wordpress`), it will report a 404.
+
+---
+
+### How to Fix the 404
+
+#### 1. Verify the Nginx Root
+
+Check your Nginx configuration file for your site (usually in `/etc/nginx/sites-available/`):
+
+```bash
+grep "root" /etc/nginx/sites-available/your_site_config
+
+```
+
+Compare that path with where your files actually are:
+
+```bash
+ls -l /var/www/html/wordpress/wp-login.php
+
+```
+
+**If the path in Nginx doesn't match the `ls` output exactly, update the `root` directive in your config.**
+
+#### 2. Ensure Nginx can reach the files
+
+Nginx must have "execute" (`x`) permissions on all parent directories.
+
+```bash
+# Set owner to the web user (usually www-data)
+chown -R www-data:www-data /var/www/html/wordpress
+
+# Ensure directories are accessible
+find /var/www/html/wordpress -type d -exec chmod 755 {} \;
+# Ensure files are readable
+find /var/www/html/wordpress -type f -exec chmod 644 {} \;
+
+```
+
+#### 3. Refresh Nginx Config
+
+After checking these, test and restart:
+
+```bash
+nginx -t
+systemctl restart nginx
+
+```
+
+---
+
+### Visualizing the Problem
+
+The "404" often happens because the server "hand-off" to PHP-FPM is failing, causing Nginx to treat the request as a static file search rather than a PHP execution request.
+
+### A Quick Diagnostic Test
+
+Instead of going through `/wp-login.php`, try to access a simple test file to see if Nginx is working at all.
+
+1. Create a file: `echo "<?php phpinfo(); ?>" > /var/www/html/wordpress/test.php`
+2. Try to visit `http://yourdomain/test.php`
+
+* **If this works:** The issue is specifically your WordPress rewrite rules or the `wp-login.php` file itself is corrupted/empty.
+* **If this also gives a 404:** Your Nginx `root` directive is definitely pointing to the wrong folder.
+
+**When you visit the site, does the *main* home page load, or do you get 404s for the entire site?** (Knowing this tells us if the issue is global or isolated to the login path).
+
+

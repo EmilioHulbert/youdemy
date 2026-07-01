@@ -1,0 +1,47 @@
+A "100% late fee" is a severe penalty term indicating that if you fail to pay an invoice by the due date, the provider will charge an additional penalty equal to the full amount of the original invoice. In practice, this effectively doubles your cost for that billing period. When combined with "non-refundable" policies, it typically means that once funds are added to your account balance or a service is purchased, you cannot request a payout or refund, even if you are dissatisfied with the service or if the account is terminated.
+
+### Email Deliverability and rDNS
+
+You are correct to be concerned about rDNS. Major providers like Gmail and Outlook perform a "forward-confirmed reverse DNS" (FCrDNS) check. This means they verify that the IP address of your server resolves to a hostname, and that the hostname resolves back to that same IP address.
+
+* **Can you get around this?** Without rDNS control, you are at a high risk of being flagged as spam. While you could technically send mail, major providers will likely block or throttle your traffic.
+* **Alternative:** If a VPS provider does not offer rDNS, you can use an **SMTP Relay** (also called a "Smart Host") like Amazon SES, SendGrid, Mailgun, or Postmark. You configure your mail server to hand off all outgoing mail to these specialized services. They handle the reputation, rDNS, and authentication (SPF/DKIM/DMARC) for you. This is the industry-standard "workaround" for budget VPS setups.
+
+### Running Multiple Mail Servers on One VPS
+
+Technically, you can run multiple mail "instances" on one server, but running multiple *separate* full-stack mail programs (like three separate installations of Zimbra) on a single 8vCPU/16GB RAM VPS is problematic.
+
+1. **Complexity:** Mail servers like Zimbra are "heavy"—they include their own databases (LDAP, MySQL), web servers, and antivirus/spam filters. They are designed to take over the entire operating system. Installing three separate heavy-duty mail suites on one OS will lead to massive resource contention and configuration conflicts (e.g., they will all try to bind to port 25 for incoming mail).
+2. **The "Single IP" Problem:** While you can host mail for multiple domains (e.g., `emilio.com`, `remacode.com`, `hulbery.com`) on **one** mail server using "Virtual Domains," using one single IP for all three is standard and supported. All three domains would share the same SPF, DKIM, and DMARC reputation. If one domain sends spam, it will blacklist the IP for *all* of them.
+
+### Recommended Strategy
+
+Rather than fighting the provider's limitations or trying to force multiple heavy mail suites onto one VPS, consider this more robust approach:
+
+* **Use One Mail Server, Not Three:** Instead of running three separate programs, install one capable mail server (like **Mailcow**—which uses Docker—or **Mail-in-a-Box**) on your VPS. These platforms are explicitly designed to handle multiple domains (virtual hosting) out of the box.
+* **Docker for Isolation:** You mentioned Docker. Using a solution like **Mailcow** is ideal because it uses Docker to containerize the different components (Postfix, Dovecot, ClamAV, etc.), making it easier to manage than bare-metal installs.
+* **Virtual Domains:** Once you have one mail server running, you simply add your three domains to the management panel. You then point the MX records for all three domains to your VPS's single IP.
+* **The SMTP Relay Fix:** Since you are using a budget VPS with potential rDNS issues, configure your Mailcow/Mail-in-a-Box instance to use an external SMTP relay for outgoing mail. This solves the spam folder issue while keeping your incoming mail hosting self-managed.
+
+**Summary:** Do not attempt to run multiple, separate mail software installations (e.g., three instances of Zimbra) on one VPS; it is technically unstable and unmanageable. Instead, install **one** modern, virtual-hosting-capable mail platform (like Mailcow) that manages multiple domains under one interface. Pair this with a dedicated SMTP relay service to ensure your emails actually reach their destinations.
+
+The program you are thinking of is almost certainly **Modoboa**.
+
+It sounds very similar to "Modoo" or "Modley," and it fits your description perfectly:
+
+* **Python-based:** Modoboa is written in Python 3 using the Django framework.
+* **Mail Server Management:** It isn't just a mail server; it is a **mail hosting and management platform**. It acts as a wrapper and an administrative interface that manages underlying "heavy" mail software like **Postfix** (for sending/receiving mail) and **Dovecot** (for storing/retrieving mail).
+* **Virtual Domains:** It is explicitly designed to handle multiple domains (like `emilio.com`, `remacode.com`, and `hulbery.com`) from a single, unified web interface.
+
+### Why this solves your problem:
+
+By using **Modoboa**, you avoid the nightmare of trying to run three separate mail stacks. You install one instance of Modoboa on your VPS, and inside its admin panel, you define your three domains. It will handle the mailbox creation, aliases, and webmail for all of them while using a single IP address.
+
+### A quick note on your "1-IP" concern:
+
+As mentioned, you **can** reliably use one IP for multiple domains, provided you have configured your DNS records (SPF, DKIM, DMARC) correctly for each domain. Since you are worried about deliverability on a budget VPS, remember:
+
+1. **DKIM/SPF/DMARC:** Modoboa makes it very easy to generate the specific keys you need to put into your DNS records to prove that your server is authorized to send mail for those domains.
+2. **The Relay:** Even with Modoboa, if your VPS's IP has a poor reputation or the provider doesn't support rDNS, you should still point Modoboa's "Relay" settings to an SMTP service (like Amazon SES or SendGrid). This ensures that while Modoboa *manages* the mailboxes and user accounts, the actual *delivery* of the email is handled by a trusted source.
+
+Essentially, Modoboa gives you the professional "Gmail-like" interface you want for your users, while the relay service handles the "legitimacy" of the sending process to ensure you don't land in spam folders.

@@ -1,0 +1,68 @@
+   CGroup: /system.slice/mariadb.service
+             └─1455 /usr/sbin/mariadbd
+
+Jun 19 08:31:09 Intel5 /etc/mysql/debian-start[1636]: Upgrading MySQL tables if necessary.
+Jun 19 08:31:09 Intel5 /etc/mysql/debian-start[1658]: Checking for insecure root accounts.
+Jun 19 08:31:09 Intel5 /etc/mysql/debian-start[1681]: Triggering myisam-recover for all MyISAM tables and aria-recover for all Aria tables
+Jun 23 14:49:54 Intel5 mariadbd[1455]: 2026-06-23 14:49:54 49 [Note] InnoDB: Checksum mismatch in datafile: ./wordpress/wp_usermeta.ibd, Space ID: 2813, Flags: 21
+Jun 23 14:49:54 Intel5 mariadbd[1455]: 2026-06-23 14:49:54 49 [ERROR] InnoDB: Could not find a valid tablespace file for wordpress/wp_usermeta. Please refer to https://mariadb.com/kb/en/innodb-data-dictionary-troubleshooting/ for how to resolve the issue.
+Jun 23 15:14:50 Intel5 mariadbd[1455]: 2026-06-23 15:14:50 116 [Warning] Access denied for user 'wprdpressuser'@'localhost' (using password: NO)
+Jun 23 15:14:54 Intel5 mariadbd[1455]: 2026-06-23 15:14:54 117 [Warning] Access denied for user 'wprdpressuser'@'localhost' (using password: YES)
+Jun 23 15:15:01 Intel5 mariadbd[1455]: 2026-06-23 15:15:01 118 [Warning] Access denied for user 'wprdpressuser'@'localhost' (using password: YES)
+Jun 23 15:15:28 Intel5 mariadbd[1455]: 2026-06-23 15:15:28 120 [Warning] Access denied for user 'wordpressuser'@'localhost' (using password: YES)
+Jun 23 15:15:29 Intel5 mariadbd[1455]: 2026-06-23 15:15:29 121 [Warning] Access denied for user 'wordpressuser'@'localhost' (using password: NO)
+~
+~
+
+
+┌──[Tue Jun 23 3:33:46 PM][root@Intel5]─[/etc/nginx/sites-available]
+└──╼[REMAC]# tail -f /var/log/nginx/wordpress.local.error.log
+2026/06/23 15:33:41 [error] 110420#110420: *27 FastCGI sent in stderr: "PHP message: WordPress database error Got error 194 "Tablespace is missing for a table" from storage engine InnoDB for query SELECT user_id, meta_key, meta_value FROM wp_usermeta WHERE user_id IN (1) ORDER BY umeta_id ASC made by get_user_by, WP_User->init, WP_User->for_site, WP_User->get_caps_data, get_user_meta, get_metadata, get_metadata_raw, update_meta_cache; PHP message: WordPress database error Got error 194 "Tablespace is missing for a table" from storage engine InnoDB for query SELECT umeta_id FROM wp_usermeta WHERE meta_key = 'session_tokens' AND user_id = 1 made by wp_signon, wp_set_auth_cookie, WP_Session_Tokens->create, WP_Session_Tokens->update, WP_User_Meta_Session_Tokens->update_session, WP_User_Meta_Session_Tokens->update_sessions, update_user_meta, update_metadata; PHP message: WordPress database error Got error 194 "Tablespace is missing for a table" from storage engine InnoDB for query SHOW FULL COLUMNS FROM `wp_usermeta` made by wp_signon, wp_set_auth_cookie, WP_Session_Tokens->create, WP_Session_Tokens->update, WP_User_Meta_Session_Tokens->update_session, WP_User_Meta_Session_Tokens->update_sessions, update_user_meta, update_metadata, add_metadata; PHP message: WordPress database error Got error 194 "Tablespace is missing for a table" from storage engine InnoDB for query SELECT umeta_id FROM wp_usermeta WHERE meta_key = 'wc_last_active' AND user_id = 1 made by wp_signon, do_action('wp_login'), WP_Hook->do_action, WP_Hook->apply_filters, wc_user_logged_in, wc_update_user_last_active, update_user_meta, update_metadata; PHP message: WordPress database error Got error 194 "Tablespace is missing for a table" from storage engine InnoDB for query SHOW FULL COLUMNS FROM `wp_usermeta` made by wp_signon, do_action('wp_login'), WP_Hook->do_action, WP_Hook->apply_filters, wc_user_logged_in, wc_update_user_last_active, update_user_meta, update_metadata, add_metadata; PHP message: WordPress database error Got error 194 "Tablespace is
+2026/06/23 15:33:41 [error] 110420#110420: *27 upstream sent too big header while reading response header from upstream, client: 127.0.0.1, server: localhost, request: "POST /wp-login.php HTTP/1.1", upstream: "fastcgi://unix:/var/run/php/php8.2-fpm.sock:", host: "localhost", referrer: "http://localhost/wp-login.php?redirect_to=http%3A%2F%2Flocalhost%2Fwp-admin%2F&reauth=1"
+2026/06/23 15:33:41 [error] 110420#110420: *27 open() "/usr/share/nginx/html/50x.html" failed (2: No such file or directory), client: 127.0.0.1, server: localhost, request: "POST /wp-login.php HTTP/1.1", upstream: "fastcgi://unix:/var/run/php/php8.2-fpm.sock", host: "localhost", referrer: "http://localhost/wp-login.php?redirect_to=http%3A%2F%2Flocalhost%2Fwp-admin%2F&reauth=1"
+
+
+
+
+404 Not Found
+nginx/1.22.1
+ for  http://localhost/wp-login.php
+ ariaDB [(none)]> show databases;
++--------------------+
+| Database           |
++--------------------+
+| ecom_db            |
+| ecom_store         |
+| ecommerce          |
+| ecommerceweb       |
+| ecommmerce         |
+| employeeleavedb    |
+| freshcery          |
+| information_schema |
+| internetbanking    |
+| myshop             |
+| mysql              |
+| onlinebot          |
+| performance_schema |
+| phptutorials       |
+| shop               |
+| shop_db            |
+| shopping           |
+| shopping_db        |
+| sys                |
+| testdb             |
+| userdata           |
+| wordpress          |
+| zamanet_store      |
++--------------------+
+23 rows in set (0.000 sec)
+
+MariaDB [(none)]> 
+
+┌──[Tue Jun 23 3:38:12 PM][root@Intel5]─[/var/www/html/wordpress/dump]
+└──╼[REMAC]# mysqldump wordpress > press.sql
+mysqldump: Got error: 1030: "Got error 194 "Tablespace is missing for a table" from storage engine InnoDB" when using LOCK TABLES
+┌──[Tue Jun 23 3:38:20 PM][root@Intel5]─[/var/www/html/wordpress/dump]
+└──╼[REMAC]# 
+
+
