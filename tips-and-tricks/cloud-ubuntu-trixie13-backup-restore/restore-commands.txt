@@ -1,0 +1,85 @@
+root@ip.address
+# This syncs your personal files, web server configs, and application data
+# while leaving the cloud-specific system files (fstab, network, etc.) untouched.
+
+
+
+  rsync -avPh --delete \
+  --exclude={"/dev/*","/proc/*","/sys/*","/tmp/*","/run/*","/media/*","/lost+found","/swapfile"} \
+  --exclude={"/etc/fstab","/etc/mtab","/etc/network/*","/etc/ssh/*"} \
+  --exclude={"/var/log/*","/var/cache/*","/var/tmp/*"} \
+  /media/hulbert/LINUX_DATA/amazon_linux/ \
+  root@ip.address:/
+
+root@ip-172-31-47-147:/# update-grub
+update-initramfs -u -k all
+Generating grub configuration file ...
+Found linux image: /boot/vmlinuz-6.12.86+deb13-cloud-amd64
+Found initrd image: /boot/initrd.img-6.12.86+deb13-cloud-amd64
+Found linux image: /boot/vmlinuz-6.12.74+deb13+1-cloud-amd64
+Found initrd image: /boot/initrd.img-6.12.74+deb13+1-cloud-amd64
+Found linux image: /boot/vmlinuz-6.12.48+deb13-cloud-amd64
+Found initrd image: /boot/initrd.img-6.12.48+deb13-cloud-amd64
+Adding boot menu entry for UEFI Firmware Settings ...
+done
+perl: warning: Setting locale failed.
+perl: warning: Please check that your locale settings:
+  LANGUAGE = (unset),
+  LC_ALL = (unset),
+  LC_CTYPE = (unset),
+perl: warning: Setting locale failed.
+  LC_NUMERIC = "en_US.UTF-8",
+perl: warning: Please check that your locale settings:
+  LC_COLLATE = (unset),
+  LANGUAGE = (unset),
+  LC_TIME = "en_US.UTF-8",
+  LC_ALL = (unset),
+  LC_MESSAGES = (unset),
+  LC_CTYPE = (unset),
+  LC_MONETARY = "en_US.UTF-8",
+  LC_NUMERIC = "en_US.UTF-8",
+  LC_ADDRESS = "en_US.UTF-8",
+  LC_COLLATE = (unset),
+  LC_IDENTIFICATION = "en_US.UTF-8",
+  LC_TIME = "en_US.UTF-8",
+  LC_MEASUREMENT = "en_US.UTF-8",
+  LC_MESSAGES = (unset),
+  LC_PAPER = "en_US.UTF-8",
+  LC_MONETARY = "en_US.UTF-8",
+  LC_TELEPHONE = "en_US.UTF-8",
+  LC_ADDRESS = "en_US.UTF-8",
+  LC_NAME = "en_US.UTF-8",
+  LC_IDENTIFICATION = "en_US.UTF-8",
+  LANG = "C.UTF-8"
+  LC_MEASUREMENT = "en_US.UTF-8",
+    are supported and installed on your system.
+  LC_PAPER = "en_US.UTF-8",
+  LC_TELEPHONE = "en_US.UTF-8",
+  LC_NAME = "en_US.UTF-8",
+  LANG = "C.UTF-8"
+    are supported and installed on your system.
+perl: warning: Falling back to a fallback locale ("C.UTF-8").
+perl: warning: Falling back to a fallback locale ("C.UTF-8").
+update-initramfs: Generating /boot/initrd.img-6.12.86+deb13-cloud-amd64
+
+
+  LC_TELEPHONE = "en_US.UTF-8",
+  LC_ADDRESS = "en_US.UTF-8",
+  LC_NAME = "en_US.UTF-8",
+  LC_IDENTIFICATION = "en_US.UTF-8",
+  LANG = "C.UTF-8"
+  LC_MEASUREMENT = "en_US.UTF-8",
+    are supported and installed on your system.
+  LC_PAPER = "en_US.UTF-8",
+  LC_TELEPHONE = "en_US.UTF-8",
+  LC_NAME = "en_US.UTF-8",
+  LANG = "C.UTF-8"
+    are supported and installed on your system.
+perl: warning: Falling back to a fallback locale ("C.UTF-8").
+perl: warning: Falling back to a fallback locale ("C.UTF-8").
+update-initramfs: Generating /boot/initrd.img-6.12.86+deb13-cloud-amd64
+update-initramfs: Generating /boot/initrd.img-6.12.74+deb13+1-cloud-amd64
+update-initramfs: Generating /boot/initrd.img-6.12.48+deb13-cloud-amd64
+root@ip-172-31-47-147:/# 
+
+

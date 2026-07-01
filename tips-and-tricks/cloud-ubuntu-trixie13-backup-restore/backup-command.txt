@@ -1,0 +1,8 @@
+
+rsync -avPh --info=progress2  --exclude={"/dev/*","/proc/*","/sys/*","/tmp/*","/run/*","/media/*","/lost+found","/swapfile"} amazon:/ /media/hulbert/LINUX_DATA/amazon_linux
+
+or to save bandwidth you can use
+
+
+rsync -avPh --info=progress2  --exclude={"/dev/*","/proc/*","/sys/*","/tmp/*","/run/*","/media/*","/lost+found","/swapfile"} --exclude={"/var/log/*","/var/cache/*","/var/tmp/*"} amazon:/ /media/hulbert/LINUX_DATA/amazon_linux
+
