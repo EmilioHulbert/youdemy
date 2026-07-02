@@ -1,0 +1,83 @@
+which file should i edit so as to replace hulbert with remac since i changed my username and changed all other relevant files for this bluetooth to work └──╼[REMAC]$ blueman-applet 
+blueman-applet 18.50.53 WARNING  PluginManager:151 __load_plugin: Not loading PPPSupport because its conflict has higher priority
+blueman-applet 18.50.53 WARNING  TransferService:207 _make_share_path: Invalid shared-path /home/hulbert/Desktop
+blueman-applet 18.50.53 ERROR    BasePlugin:83 _load     : g-dbus-error-quark: GDBus.Error:org.freedesktop.DBus.Error.NoReply: Message recipient disconnected from message bus without replying (4)
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/blueman/plugins/BasePlugin.py", line 77, in _load
+    self.on_load()
+  File "/usr/lib/python3/dist-packages/blueman/plugins/applet/TransferService.py", line 186, in on_load
+    self._notification.show()
+  File "/usr/lib/python3/dist-packages/blueman/gui/Notification.py", line 261, in show
+    return_id = self.Notify('(susssasa{sv}i)', self._app_name, replace_id, self._app_icon,
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/gi/overrides/Gio.py", line 349, in __call__
+    result = self.dbus_proxy.call_sync(self.method_name, arg_variant,
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+gi.repository.GLib.GError: g-dbus-error-quark: GDBus.Error:org.freedesktop.DBus.Error.NoReply: Message recipient disconnected from message bus without replying (4)
+blueman-applet 18.50.53 ERROR    PluginManager:165 __load_plugin: Failed to load TransferService
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/blueman/main/PluginManager.py", line 163, in __load_plugin
+    inst._load()
+  File "/usr/lib/python3/dist-packages/blueman/plugins/AppletPlugin.py", line 51, in _load
+    super()._load()
+  File "/usr/lib/python3/dist-packages/blueman/plugins/BasePlugin.py", line 77, in _load
+    self.on_load()
+  File "/usr/lib/python3/dist-packages/blueman/plugins/applet/TransferService.py", line 186, in on_load
+    self._notification.show()
+  File "/usr/lib/python3/dist-packages/blueman/gui/Notification.py", line 261, in show
+    return_id = self.Notify('(susssasa{sv}i)', self._app_name, replace_id, self._app_icon,
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/gi/overrides/Gio.py", line 349, in __call__
+    result = self.dbus_proxy.call_sync(self.method_name, arg_variant,
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+gi.repository.GLib.GError: g-dbus-error-quark: GDBus.Error:org.freedesktop.DBus.Error.NoReply: Message recipient disconnected from message bus without replying (4)
+Traceback (most recent call last):
+  File "/usr/bin/blueman-applet", line 40, in <module>
+    app = BluemanApplet()
+          ^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/blueman/main/Applet.py", line 44, in __init__
+    self.Plugins.load_plugin()
+  File "/usr/lib/python3/dist-packages/blueman/main/PluginManager.py", line 125, in load_plugin
+    self.__load_plugin(cls)
+  File "/usr/lib/python3/dist-packages/blueman/main/PluginManager.py", line 163, in __load_plugin
+    inst._load()
+  File "/usr/lib/python3/dist-packages/blueman/plugins/AppletPlugin.py", line 51, in _load
+    super()._load()
+  File "/usr/lib/python3/dist-packages/blueman/plugins/BasePlugin.py", line 77, in _load
+    self.on_load()
+  File "/usr/lib/python3/dist-packages/blueman/plugins/applet/TransferService.py", line 186, in on_load
+    self._notification.show()
+  File "/usr/lib/python3/dist-packages/blueman/gui/Notification.py", line 261, in show
+    return_id = self.Notify('(susssasa{sv}i)', self._app_name, replace_id, self._app_icon,
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/gi/overrides/Gio.py", line 349, in __call__
+    result = self.dbus_proxy.call_sync(self.method_name, arg_variant,
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+gi.repository.GLib.GError: g-dbus-error-quark: GDBus.Error:org.freedesktop.DBus.Error.NoReply: Message recipient disconnected from message bus without replying (4)
+┌──[Thu Jul 02 6:51:22 PM][remac@Intel5]─[~]
+└──╼[REMAC]$ 
+
+
+┌──[Thu Jul 02 7:02:44 PM][remac@Intel5]─[~]
+└──╼[REMAC]$ sudo blueman-applet
+blueman-applet 19.02.45 WARNING  PluginManager:151 __load_plugin: Not loading DhcpClient because its conflict has higher priority
+blueman-applet 19.02.45 WARNING  PluginManager:151 __load_plugin: Not loading PPPSupport because its conflict has higher priority
+
+** (blueman-applet:182411): WARNING **: 19:03:10.091: atk-bridge: get_device_events_reply: unknown signature
+
+** (blueman-tray:182635): WARNING **: 19:03:10.278: atk-bridge: get_device_events_reply: unknown signature
+^C%                      because that file is certainely not in /etc
+
+great, and to now load it since it had failed during start up applications loading point, what do i do is there any other way apart from blueman-applet& that would maybe reload all start ups or how does it go, coz this is not a service ofcourse  ┌──[Thu Jul 02 7:07:38 PM][remac@Intel5]─[~]
+└──╼[REMAC]$ systemctl --user daemon-reload
+┌──[Thu Jul 02 7:08:15 PM][remac@Intel5]─[~]
+└── ─[Thu Jul 02 7:10:36 PM][remac@Intel5]─[~]
+└──╼[REMAC]$ systemctl --user disable  --now
+dirmngr.socket                                gpg-agent.socket                            
+fusuma.service                                gpg-agent-ssh.socket                        
+gcr-ssh-agent.service                         obex.service                                
+gcr-ssh-agent.socket                          pk-debconf-helper.socket                    
+gnome-keyring-daemon.service                  pulseaudio.service                          
+gnome-keyring-daemon.socket                   pulseaudio.socket                           
+gpg-agent-browser.socket                      xdg-desktop-portal-rewrite-launchers.service
+gpg-agent-extra.socket                                                                    
