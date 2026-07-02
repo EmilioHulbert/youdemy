@@ -1,0 +1,226 @@
+Hello there.Today I wonna understund and fix an issue that kind of lies to me about my storage, probably because of how i allocated storage dynamically to my vms and understund hw things are actually aligned in btrfs
+so, first to start with this is my filesystem
+┌──[Thu Jul 02 9:05:06 AM][root@Intel5]─[/]
+└──╼[REMAC]# df -h
+Filesystem      Size  Used Avail Use% Mounted on
+udev            7.4G     0  7.4G   0% /dev
+tmpfs           1.5G  151M  1.4G  10% /run
+/dev/nvme0n1p2   50G   48G  2.3G  96% /
+tmpfs           7.5G  1.6M  7.5G   1% /dev/shm
+tmpfs           5.0M  8.0K  5.0M   1% /run/lock
+efivarfs        150K   66K   80K  46% /sys/firmware/efi/efivars
+/dev/loop0      128K  128K     0 100% /snap/bare/5
+/dev/loop2      106M  106M     0 100% /snap/core/17292
+/dev/loop4       74M   74M     0 100% /snap/core22/2411
+/dev/loop1       56M   56M     0 100% /snap/core18/2999
+/dev/loop3       64M   64M     0 100% /snap/core20/2866
+/dev/loop5       67M   67M     0 100% /snap/core24/1643
+/dev/loop6      165M  165M     0 100% /snap/gnome-3-28-1804/198
+/dev/loop7      256K  256K     0 100% /snap/gtk2-common-themes/13
+/dev/loop9      115M  115M     0 100% /snap/hugo/26311
+/dev/loop8       92M   92M     0 100% /snap/gtk-common-themes/1535
+/dev/loop12      50M   50M     0 100% /snap/snapd/26865
+/dev/loop10     116M  116M     0 100% /snap/hugo/26340
+/dev/loop11     175M  175M     0 100% /snap/postman/360
+/dev/nvme0n1p2   50G   48G  2.3G  96% /home
+tmpfs           7.5G  1.1M  7.5G   1% /tmp
+/dev/nvme0n1p1  300M  121M  179M  41% /boot/efi
+/dev/nvme0n1p6  121G  115G  2.8G  98% /mnt
+tmpfs           1.5G  120K  1.5G   1% /run/user/1003
+┌──[Thu Jul 02 9:05:19 AM][root@Intel5]─[/]
+└──╼[REMAC]# 
+
+
+There is a partition I dedicated for vms which i set to auto mount at boot hence I have this solid option for that, i.e the /mnt block
+┌──[Thu Jul 02 9:07:03 AM][root@Intel5]─[/]
+└──╼[REMAC]# cat /etc/fstab
+# /etc/fstab: static file system information.
+#
+# Use 'blkid' to print the universally unique identifier for a device; this may
+# be used with UUID= as a more robust way to name devices that works even if
+# disks are added and removed. See fstab(5).
+#
+# <file system>             <mount point>  <type>  <options>  <dump>  <pass>
+UUID=93A7-2981                            /boot/efi      vfat    defaults   0 2
+UUID=63c7c5af-cda0-4de3-8bd7-1658ef8f2207 /              btrfs   subvol=/@,defaults 0 0
+UUID=63c7c5af-cda0-4de3-8bd7-1658ef8f2207 /home          btrfs   subvol=/@home,defaults 0 0
+UUID=1fdb4317-7925-4369-8060-933dbf2f6f34 swap           swap    defaults   0 0
+tmpfs                                     /tmp           tmpfs   defaults,noatime,mode=1777 0 0
+UUID=4784b4eb-70b8-4a66-bf83-dcb38de39548 /mnt           btrfs   defaults    0 2
+┌──[Thu Jul 02 9:07:12 AM][root@Intel5]─[/]
+└──╼[REMAC]# 
+as you can see, the actual size of my main / partition where the os mainly runs is /dev/nvme0n1p2   50G   48G  2.3G  96% / and has a maximum capacity of 50GB.However, when I run the command below which mainly excluded the /mnt blcok which hosts the mounting point for the /dev/nvme0n1p6 partition, I expected to atleast see numbers below 50Gb but to my surprise, seeing 69Gb, which is an additional 19gb, from the 50gb capacity, flutters me even if I know that some partitions such as /boot are pointed to here /dev/nvme0n1p1  300M  121M  179M  41% /boot/efi
+ ┌──[Thu Jul 02 9:01:16 AM][root@Intel5]─[/]
+└──╼[REMAC]# du -shc --exclude='/mnt' /*
+4.0K	/bin
+272M	/boot
+1.2M	/dev
+49M	/etc
+22G	/home
+4.0K	/initrd.img
+4.0K	/lib
+4.0K	/lib32
+4.0K	/lib64
+4.0K	/matrix_0000.sh
+0	/media
+0	/mount
+3.1G	/opt
+0	/path
+du: cannot access '/proc/131975/task/132450/fdinfo/11': No such file or directory
+du: cannot access '/proc/219695/task/219695/fd/4': No such file or directory
+du: cannot access '/proc/219695/task/219695/fdinfo/4': No such file or directory
+du: cannot access '/proc/219695/fd/3': No such file or directory
+du: cannot access '/proc/219695/fdinfo/3': No such file or directory
+0	/proc
+0	/rescue
+876M	/root
+du: cannot access '/run/user/1003/gvfs': Permission denied
+du: cannot access '/run/user/1003/doc': Permission denied
+144M	/run
+4.0K	/sbin
+4.0G	/snap
+0	/srv
+0	/sys
+36M	/System
+4.0M	/test
+1004K	/tmp
+12G	/usr
+28G	/var
+4.0K	/vmlinuz
+69G	total
+ so if i had actually unplugged the /dev/sda flashdrive 
+ ┌──[Thu Jul 02 8:46:37 AM][root@Intel5]─[~/.ssh]
+└──╼[REMAC]# blkid
+/dev/nvme0n1p7: LABEL="swap" UUID="1fdb4317-7925-4369-8060-933dbf2f6f34" TYPE="swap" PARTUUID="f1b5f0d1-d3e9-a74a-9d55-a4b28358e3ac"
+/dev/nvme0n1p5: BLOCK_SIZE="512" UUID="9E167D6A167D43F5" TYPE="ntfs" PARTUUID="2503be8a-ebf3-4eab-a098-09f58151def2"
+/dev/nvme0n1p1: UUID="93A7-2981" BLOCK_SIZE="512" TYPE="vfat" PARTUUID="17505938-3627-2448-ac51-65d8430263bb"
+/dev/nvme0n1p6: UUID="4784b4eb-70b8-4a66-bf83-dcb38de39548" UUID_SUB="ca27efec-1d43-401f-984e-0f9310914066" BLOCK_SIZE="4096" TYPE="btrfs" PARTUUID="62b27036-3ecc-44ae-a779-93dbc14dfba4"
+/dev/nvme0n1p4: BLOCK_SIZE="512" UUID="405C9D8C5C9D7D7A" TYPE="ntfs" PARTLABEL="Basic data partition" PARTUUID="50599b43-2565-4d23-92a1-0a4e699f1b66"
+/dev/nvme0n1p2: UUID="63c7c5af-cda0-4de3-8bd7-1658ef8f2207" UUID_SUB="2dc87ab2-9fb6-4758-a8d9-733367254e45" BLOCK_SIZE="4096" TYPE="btrfs" PARTLABEL="root" PARTUUID="f1fb4b30-6b28-b942-8f83-74dd593658ac"
+/dev/loop1: TYPE="squashfs"
+/dev/loop8: TYPE="squashfs"
+/dev/loop6: TYPE="squashfs"
+/dev/loop4: TYPE="squashfs"
+/dev/loop11: TYPE="squashfs"
+/dev/loop2: TYPE="squashfs"
+/dev/loop0: TYPE="squashfs"
+/dev/loop9: TYPE="squashfs"
+/dev/loop7: TYPE="squashfs"
+/dev/loop5: TYPE="squashfs"
+/dev/loop12: TYPE="squashfs"
+/dev/loop3: TYPE="squashfs"
+/dev/loop10: TYPE="squashfs"
+/dev/nvme0n1p3: PARTLABEL="Microsoft reserved partition" PARTUUID="426710a6-8e89-43c1-b29d-6faf9930abc7"
+/dev/sda2: SEC_TYPE="msdos" LABEL_FATBOOT="VTOYEFI" LABEL="VTOYEFI" UUID="223C-F3F8" BLOCK_SIZE="512" TYPE="vfat" PARTUUID="d9eb5360-02"
+/dev/sda3: LABEL="Parrie" BLOCK_SIZE="512" UUID="75DC5F8B2D7CB1C9" TYPE="ntfs" PARTUUID="d9eb5360-03"
+/dev/sda1: LABEL="Ventoy" UUID="B660-B65C" BLOCK_SIZE="512" TYPE="exfat" PTTYPE="dos" PARTUUID="d9eb5360-01"
+so this was a previous output, how and why did that happen
+Okay, aside from all of that , if i have 99gb stated as used, in the whole mnt partition here, according to du why does df say i have used 115G then goes on to not make sense by saying i have 2.8G free instead of even atleast 6gb free or even 5 ┌──[Thu Jul 02 9:14:50 AM][root@Intel5]─[/mnt]
+└──╼[REMAC]# du -shc
+99G	.
+99G	total
+┌──[Thu Jul 02 9:14:55 AM][root@Intel5]─[/mnt]
+└──╼[REMAC]# du -shc *
+20M	down
+771M	moving
+3.2G	opt2
+0	System Volume Information
+2.3G	The_Blacklist_S10
+93G	VirtualBox VMs
+99G	total
+┌──[Thu Jul 02 9:15:06 AM][root@Intel5]─[/mnt]
+└──╼[REMAC]# df -h
+Filesystem      Size  Used Avail Use% Mounted on
+udev            7.4G     0  7.4G   0% /dev
+tmpfs           1.5G  151M  1.4G  10% /run
+/dev/nvme0n1p2   50G   48G  2.3G  96% /
+tmpfs           7.5G  1.6M  7.5G   1% /dev/shm
+tmpfs           5.0M  8.0K  5.0M   1% /run/lock
+efivarfs        150K   66K   80K  46% /sys/firmware/efi/efivars
+/dev/loop0      128K  128K     0 100% /snap/bare/5
+/dev/loop2      106M  106M     0 100% /snap/core/172922.8G
+/dev/loop4       74M   74M     0 100% /snap/core22/2411
+/dev/loop1       56M   56M     0 100% /snap/core18/2999
+/dev/loop3       64M   64M     0 100% /snap/core20/2866
+/dev/loop5       67M   67M     0 100% /snap/core24/1643
+/dev/loop6      165M  165M     0 100% /snap/gnome-3-28-1804/198
+/dev/loop7      256K  256K     0 100% /snap/gtk2-common-themes/13
+/dev/loop9      115M  115M     0 100% /snap/hugo/26311
+/dev/loop8       92M   92M     0 100% /snap/gtk-common-themes/1535
+/dev/loop12      50M   50M     0 100% /snap/snapd/26865
+/dev/loop10     116M  116M     0 100% /snap/hugo/26340
+/dev/loop11     175M  175M     0 100% /snap/postman/360
+/dev/nvme0n1p2   50G   48G  2.3G  96% /home
+tmpfs           7.5G 1020K  7.5G   1% /tmp
+/dev/nvme0n1p1  300M  121M  179M  41% /boot/efi
+/dev/nvme0n1p6  121G  115G  2.8G  98% /mnt
+tmpfs           1.5G  120K  1.5G   1% /run/user/1003
+┌──[Thu Jul 02 9:15:09 AM][root@Intel5]─[/mnt]
+└──╼[REMAC]#  okay, i know that apart from my windows xp vm housed in /home/hulbert/VirtualBox\ VMs  ┌──[Thu Jul 02 9:18:14 AM][root@Intel5]─[/mnt]
+└──╼[REMAC]# cd /home/hulbert/VirtualBox\ VMs 
+┌──[Thu Jul 02 9:18:14 AM][root@Intel5]─[~hulbert/VirtualBox VMs]
+└──╼[REMAC]# ls
+ 6.0  'Aether Lab'  'Parrot Security 6.0'  'Windows XP sp2'
+┌──[Thu Jul 02 9:18:18 AM][root@Intel5]─[~hulbert/VirtualBox VMs]
+└──╼[REMAC]# du -shc *
+0	6.0
+780K	Aether Lab
+1.7M	Parrot Security 6.0
+1.9G	Windows XP sp2
+1.9G	total
+┌──[Thu Jul 02 9:18:21 AM][root@Intel5]─[~hulbert/VirtualBox VMs]
+└──╼[REMAC]# 
+all the others are housed in ┌──[Thu Jul 02 9:18:56 AM][root@Intel5]─[~hulbert/VirtualBox VMs]
+└──╼[REMAC]# ls /mnt/VirtualBox\ VMs 
+'Aether Lab'   Aether_target_v4  'Parrot Security'  'Windows 10 Enterprise'  'WINDOWS 10 - ENTERPRISE'
+┌──[Thu Jul 02 9:18:58 AM][root@Intel5]─[~hulbert/VirtualBox VMs]
+└──╼[REMAC]# 
+
+
+so, take a look at the screenshot with my vm virtaul vs real size and tell me why all the above happens and what we should do.or it is because i did this in the past VBoxManage modifyhd "path/to/disk.vdi" --resize 51200
+
+
+(that makes it 50 GB; adjust as you like). , so is there some way to make it just fit on the disk and grow dynamically as you use it, just dpendant on the free real disk space one has 
+
+
+simple question if the whole of this ┌──[Thu Jul 02 9:38:56 AM][root@Intel5]─[/mnt]
+
+└──╼[REMAC]# ls 
+
+ down   moving   opt2  'System Volume Information'   The_Blacklist_S10  'VirtualBox VMs'
+
+┌──[Thu Jul 02 9:38:59 AM][root@Intel5]─[/mnt]
+
+└──╼[REMAC]# du -shc *
+
+20M	down
+
+771M	moving
+
+3.2G	opt2
+
+0	System Volume Information
+
+2.3G	The_Blacklist_S10
+
+93G	VirtualBox VMs
+
+99G	total
+
+┌──[Thu Jul 02 9:39:02 AM][root@Intel5]─[/mnt]
+
+└──╼[REMAC]# 
+
+is 99gb and this is what is stated as used /dev/nvme0n1p6  121G  116G  2.1G  99% /mnt what is eating my space and how do we reclaim it and if from the image you saw that windows has /Windows10-Enterprise.vdi virtual size 50gb and actual size 50gb, linux-sec.vdi has virtual size 128gb and actual size 39gb, btw does actual size 50gb mean that is the maximum storage capacity the drive can grow to be? for parrot sec 128 gb is the maximum size it can gro to be but it wont because the actual host my laptop has not such space that is free.i have told you about windows and when i boot into it despite its size being └──╼[REMAC]# du -shc WINDOWS\ 10\ -\ ENTERPRISE 
+
+51G	WINDOWS 10 - ENTERPRISE
+
+51G	total
+
+┌──[Thu Jul 02 9:42:54 AM][root@Intel5]─[/mnt/VirtualBox VMs]
+
+└──╼[REMAC]# 
+
+
+
+local disk c says i have 2.79 gigs free
