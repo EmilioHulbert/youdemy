@@ -1,0 +1,116 @@
+To change the external port for JumpServer after installation, simply editing the `config.txt` file is not sufficient. JumpServer uses **Docker Compose** to manage its containers, and the port mappings are defined within the generated Compose YAML files (usually located in the `compose` directory of your installer folder).
+
+The reason you received the "address already in use" error is that the `jms_web` container is still configured to try and bind to port `80` on the host, which is likely already occupied by another service (like Nginx or Apache) or a previous instance of the container.
+
+### Steps to change the external port
+
+Since JumpServer uses `jmsctl.sh` to manage the stack, follow these steps to properly apply a configuration change:
+
+1. **Stop and bring down the current JumpServer stack:**
+You must stop the containers and remove the existing network configuration so that the new port mapping can take effect.
+```bash
+cd /opt/jumpserver-installer-v4.10.16
+./jmsctl.sh down
+
+```
+
+
+2. **Update your configuration:**
+You have already updated the `HTTP_PORT=800` in `/opt/jumpserver/config/config.txt`. Ensure that change is saved.
+3. **Regenerate/Re-apply the configuration:**
+JumpServer's `jmsctl.sh` script reads the `config.txt` and generates the necessary Docker Compose files. You need to trigger the process that updates these settings.
+```bash
+# This command usually re-reads config.txt and updates the compose files
+./jmsctl.sh prepare
+
+```
+
+
+4. **Start the stack again:**
+Once prepared, start the stack. The script will use the new port configuration to map the `jms_web` container to your host's port `800`.
+```bash
+./jmsctl.sh start
+
+```
+
+
+
+### Why this is happening
+
+* **Static Mapping:** Docker container port mappings (e.g., `- 80:80`) are set when the container is *created*. Simply running `docker start` does not change the mapping; it just tries to start the container using the *existing* (and failing) configuration.
+* **The Orchestrator:** The `jmsctl.sh` script is the intended tool for managing the lifecycle of these containers. It handles the `docker compose` commands behind the scenes. Using `docker start` manually bypasses the logic the developers intended, which is why your manual fix was unsuccessful.
+
+### Troubleshooting
+
+If the `jmsctl.sh start` command still fails:
+
+* Check if something else is already using port `800` on your host:
+```bash
+sudo netstat -tulpn | grep :800
+
+```
+
+
+* Verify the current generated compose file to ensure it picked up the change:
+```bash
+# Look for the 'ports' section under the 'web' service
+cat /opt/jumpserver-installer-v4.10.16/compose/docker-compose.yml
+
+```
+
+
+
+If you are trying to understand how JumpServer components interact within the Docker environment, it can be helpful to visualize the container architecture.
+
+Would you like me to help you check the `docker-compose.yml` file specifically to verify that the port mapping has updated correctly?
+
+
+
+
+
+My apologies for the confusion regarding the command. The `jmsctl.sh` script does not have a `prepare` command; I mistakenly conflated manual Docker Compose workflows with the JumpServer-specific installer script.
+
+To update the port configuration using `jmsctl.sh`, you should use the **`config`** command.
+
+### How to apply the new port
+
+1. **Update the configuration:**
+You have already set `HTTP_PORT=800` in `/opt/jumpserver/config/config.txt`. Please verify it is still there.
+2. **Run the config command:**
+This command triggers the installer to re-read your `config.txt` and regenerate the internal Docker Compose files with the updated settings.
+```bash
+cd /opt/jumpserver-installer-v4.10.16
+./jmsctl.sh config
+
+```
+
+
+*Note: This may prompt you to confirm or re-enter some settings. Follow the on-screen instructions.*
+3. **Start the services:**
+Once the configuration is updated, start the stack again:
+```bash
+./jmsctl.sh start
+
+```
+
+
+
+### Understanding the relationship between the installer and Docker
+
+To better understand how `jmsctl.sh` manages your environment, it helps to see that it acts as a wrapper around the Docker Compose architecture. When you run `config`, it essentially interprets your `config.txt` and writes the actual `docker-compose.yml` file that Docker uses to bind ports to your host.
+
+### Important Note on Port 800
+
+If, after running `./jmsctl.sh config` and `./jmsctl.sh start`, the `jms_web` container fails to start again with a "port already in use" error, it means something is already bound to port `800` on your host.
+
+You can verify what is holding the port by running:
+
+```bash
+sudo ss -tulpn | grep :800
+
+```
+
+**If you still encounter issues:**
+Please provide the output of `cat /opt/jumpserver-installer-v4.10.16/compose/docker-compose.yml | grep -A 5 "web:"` so I can verify exactly what port mapping the installer has generated for the web component.
+
+Are you running any other web services (like Nginx, Apache, or another Docker container) on this server that might be competing for these ports?
