@@ -1,0 +1,132 @@
+The reason your `http://portfolio.local/` page is rendering completely blank is a mismatched asset base path.
+
+If you look closely at the compiled HTML code loaded by Nginx, your scripts and stylesheets are trying to load from a subdirectory:
+
+* `src="/react-portfolio-template/assets/index-B1iFno9z.js"`
+* `href="/react-portfolio-template/assets/index-aRblJtkY.css"`
+
+However, inside `/var/www/html/portfolio`, you copied the contents of `dist/*` directly into the **root** of your Nginx server block. Nginx is looking for a folder named `react-portfolio-template` inside `/var/www/html/portfolio/`, fails to find it, throws a bunch of 404 errors on your JS and CSS files, and leaves React with nothing to render inside `<div id="root"></div>`.
+
+---
+
+### How to Fix It
+
+This base path (`/react-portfolio-template/`) was likely configured in your project for GitHub Pages deployment. To make it work on your local Nginx server seamlessly, you have two options:
+
+#### Option 1: Fix it in Vite (Recommended)
+
+If you want to keep the root directory clean on Nginx, you need to tell Vite to build using relative or root paths instead of the hardcoded GitHub repo path.
+
+1. Open your `vite.config.js` file inside `~/Desktop/react-portfolio-template/`.
+2. Look for the `base` property. It probably looks like this:
+```javascript
+base: '/react-portfolio-template/',
+
+```
+
+
+3. Change it to either a single slash or a relative dot so it works anywhere:
+```javascript
+base: './', 
+
+```
+
+
+4. Rebuild the project:
+```bash
+npm run build
+
+```
+
+
+5. Clear out the old files in Nginx and recopy the fresh build:
+```bash
+rm -rf /var/www/html/portfolio/*
+cp -rv /home/remac/Desktop/react-portfolio-template/dist/* /var/www/html/portfolio/
+
+```
+
+
+
+#### Option 2: Quick Nginx Folder Fix (No rebuilding)
+
+If you want to keep the current build exactly as it is (perhaps to keep it ready for GitHub Pages), you just need to match the directory structure Nginx expects.
+
+Instead of dropping the contents of `dist/` directly into `/var/www/html/portfolio`, put them inside a subdirectory that matches the base path:
+
+```bash
+# Create the subdirectory that your index.html is looking for
+mkdir -p /var/www/html/portfolio/react-portfolio-template
+
+# Move everything you copied into that new folder
+mv /var/www/html/portfolio/{assets,audio,data,images,index.html} /var/www/html/portfolio/react-portfolio-template/
+
+```
+
+*Note: If you choose this option, your main `index.html` will live inside `/var/www/html/portfolio/react-portfolio-template/index.html`. To make `http://portfolio.local/` automatically redirect or serve it without typing the whole URL, you would also need to update your Nginx `root` directive to `/var/www/html/portfolio/react-portfolio-template;` and reload Nginx.*
+
+---
+
+### Bonus Nginx Clean-up
+
+While you are fixing this, your Nginx config has a tiny trap for Single Page Apps (SPAs) like React:
+
+```nginx
+location / {
+    try_files $uri $uri/ /index.php?$args;
+}
+
+```
+
+Since this is a pure React build (static HTML/JS/CSS), you don't have an `index.php` file. If you navigate to a nested React route directly or refresh the page later, Nginx will try to route to PHP and fail. Change that block to fall back to your static `index.html` instead:
+
+```nginx
+location / {
+    try_files $uri $uri/ /index.html;
+}
+
+```
+
+Then run `systemctl reload nginx`.
+
+Ah, you ran into a classic double-routing trap! Because you implemented **both** fixes at the same time, they ended up cancelling each other out.
+
+Look at how the paths stack up right now:
+
+1. Your Nginx `root` points directly to: `/var/www/html/portfolio/react-portfolio-template`
+2. So when you load `http://portfolio.local/`, Nginx serves the `index.html` located inside that folder.
+3. **But**, that `index.html` is still looking for its scripts at `/react-portfolio-template/assets/...`.
+4. Therefore, your browser requests `http://portfolio.local/react-portfolio-template/assets/index-B1iFno9z.js`.
+5. Nginx takes its `root` path and appends that URL request, looking for a file at: `/var/www/html/portfolio/react-portfolio-template/react-portfolio-template/assets/...`
+
+Because that nested folder doesn't exist, Nginx triggers your fallback `try_files $uri $uri/ /index.html;`, sending back the raw text of `index.html` instead of the actual JavaScript bundle! The browser gets confused, fails to execute the script, and renders a blank page.
+
+---
+
+### The Cleanest Fix (Keep Codebase Intact)
+
+To keep your code exactly as it is for GitHub Pages without modifying any Vite configurations, you just need to adjust your Nginx `root` directive up by one level.
+
+1. Edit `/etc/nginx/sites-available/portfolio.local.conf` and point the `root` back to the parent `portfolio` directory:
+```nginx
+# Change this back to the parent folder
+root /var/www/html/portfolio;
+
+```
+
+
+2. Save the file and reload Nginx:
+```bash
+nginx -s reload
+
+```
+
+
+
+### Why this fixes it:
+
+* **The URL:** You visit `http://portfolio.local/react-portfolio-template/` in your browser.
+* **The Index:** Nginx looks inside `/var/www/html/portfolio/react-portfolio-template/` and serves your `index.html`.
+* **The Assets:** The HTML file requests `/react-portfolio-template/assets/js...`, which evaluates perfectly against the `portfolio` root folder.
+
+Give that a try and head to `http://portfolio.local/react-portfolio-template/` in your browser—your portfolio should load right up!

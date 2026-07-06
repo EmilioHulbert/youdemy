@@ -1,0 +1,252 @@
+i have ──╼ $ll |tail +2 |nl^C
+┌─[✗]─[remac@Intel5]─[~/Desktop/react-portfolio-template]
+└──╼ $npm run build
+
+> react-portfolio-template-by-ryan-balieiro@2.0.3 build
+> vite build
+
+vite v6.4.1 building for production...
+✓ 836 modules transformed.
+dist/index.html                              3.56 kB │ gzip:   0.99 kB
+dist/assets/fa-regular-400-BjRzuEpd.woff2   25.47 kB
+dist/assets/primeicons-C6QP2o4f.woff2       35.15 kB
+dist/assets/fa-regular-400-DZaxPHgR.ttf     68.06 kB
+dist/assets/primeicons-MpK4pl85.ttf         84.98 kB
+dist/assets/primeicons-WjwUDZjB.woff        85.06 kB
+dist/assets/primeicons-DMOk5skT.eot         85.16 kB
+dist/assets/fa-brands-400-D_cYUPeE.woff2   118.68 kB
+dist/assets/fa-solid-900-CTAAxXor.woff2    158.22 kB
+dist/assets/fa-brands-400-D1LuMI3I.ttf     210.79 kB
+dist/assets/primeicons-Dr5RGzOO.svg        342.53 kB │ gzip: 105.26 kB
+dist/assets/fa-solid-900-D0aA9rwL.ttf      426.11 kB
+dist/assets/index-aRblJtkY.css             426.81 kB │ gzip:  77.81 kB
+dist/assets/swiper-C4qgqOjU.js             101.77 kB │ gzip:  31.46 kB
+dist/assets/index-B1iFno9z.js              410.10 kB │ gzip: 133.38 kB
+✓ built in 20.15s
+┌─[remac@Intel5]─[~/Desktop/react-portfolio-template]
+└──╼ $ll |tail +2 |nl
+     1	drwxr-xr-x 1 remac remac   62 Jul  6 11:59 dist
+     2	drwxr-xr-x 1 remac remac   30 Jul  6 11:17 docs
+     3	-rw-r--r-- 1 remac remac 3.3K Jul  6 11:42 index.html
+     4	-rw-r--r-- 1 remac remac 1.1K Jul  6 11:42 LICENSE
+     5	-rw-r--r-- 1 remac remac  523 Jul  6 11:42 logs
+     6	drwxr-xr-x 1 remac remac 6.5K Jul  6 11:42 node_modules
+     7	drwxr-xr-x 1 remac remac  122 Jul  6 11:40 npm
+     8	-rw-r--r-- 1 remac remac 1.2K Jul  6 11:42 package.json
+     9	-rw-r--r-- 1 remac remac 208K Jul  6 11:42 package-lock.json
+    10	drwxr-xr-x 1 remac remac   30 Jul  6 11:17 public
+    11	-rw-r--r-- 1 remac remac 8.7K Jul  6 11:42 README.md
+    12	drwxr-xr-x 1 remac remac   76 Jul  6 11:40 src
+    13	-rw-r--r-- 1 remac remac  871 Jul  6 11:42 vite.config.js
+┌─[remac@Intel5]─[~/Desktop/react-portfolio-template]
+└──╼ $ll
+total 240K
+drwxr-xr-x 1 remac remac   62 Jul  6 11:59 dist
+drwxr-xr-x 1 remac remac   30 Jul  6 11:17 docs
+-rw-r--r-- 1 remac remac 3.3K Jul  6 11:42 index.html
+-rw-r--r-- 1 remac remac 1.1K Jul  6 11:42 LICENSE
+-rw-r--r-- 1 remac remac  523 Jul  6 11:42 logs
+drwxr-xr-x 1 remac remac 6.5K Jul  6 11:42 node_modules
+drwxr-xr-x 1 remac remac  122 Jul  6 11:40 npm
+-rw-r--r-- 1 remac remac 1.2K Jul  6 11:42 package.json
+-rw-r--r-- 1 remac remac 208K Jul  6 11:42 package-lock.json
+drwxr-xr-x 1 remac remac   30 Jul  6 11:17 public
+-rw-r--r-- 1 remac remac 8.7K Jul  6 11:42 README.md
+drwxr-xr-x 1 remac remac   76 Jul  6 11:40 src
+-rw-r--r-- 1 remac remac  871 Jul  6 11:42 vite.config.js
+┌─[remac@Intel5]─[~/Desktop/react-portfolio-template]
+└──╼ $npm run prod
+npm error Missing script: "prod"
+npm error
+npm error To see a list of scripts, run:
+npm error   npm run
+npm error A complete log of this run can be found in: /home/remac/.npm/_logs/2026-07-06T09_02_58_937Z-debug-0.log
+┌─[✗]─[remac@Intel5]─[~/Desktop/react-portfolio-template]
+└──╼ $npm run
+Scripts available in react-portfolio-template-by-ryan-balieiro@2.0.3 via `npm run`:
+  dev
+    vite
+  build
+    vite build
+  lint
+    eslint .
+  preview
+    vite preview
+  resume:make:article
+    node npm/npm-resume-new-article.js
+  resume:clear
+    node npm/npm-resume-clear.js
+┌─[remac@Intel5]─[~/Desktop/react-portfolio-template]
+└──╼ $ll
+total 240K
+drwxr-xr-x 1 remac remac   62 Jul  6 11:59 dist
+drwxr-xr-x 1 remac remac   30 Jul  6 11:17 docs
+-rw-r--r-- 1 remac remac 3.3K Jul  6 11:42 index.html
+-rw-r--r-- 1 remac remac 1.1K Jul  6 11:42 LICENSE
+-rw-r--r-- 1 remac remac  523 Jul  6 11:42 logs
+drwxr-xr-x 1 remac remac 6.5K Jul  6 11:42 node_modules
+drwxr-xr-x 1 remac remac  122 Jul  6 11:40 npm
+-rw-r--r-- 1 remac remac 1.2K Jul  6 11:42 package.json
+-rw-r--r-- 1 remac remac 208K Jul  6 11:42 package-lock.json
+drwxr-xr-x 1 remac remac   30 Jul  6 11:17 public
+-rw-r--r-- 1 remac remac 8.7K Jul  6 11:42 README.md
+drwxr-xr-x 1 remac remac   76 Jul  6 11:40 src
+-rw-r--r-- 1 remac remac  871 Jul  6 11:42 vite.config.js
+┌─[remac@Intel5]─[~/Desktop/react-portfolio-template]
+└──╼ $
+and these ┌──[Mon Jul 06 12:13:23 PM][root@Intel5]─[/var/www/html/portfolio]
+└──╼[REMAC]# ls
+assets  audio  data  images  index.html
+┌──[Mon Jul 06 12:13:38 PM][root@Intel5]─[/var/www/html/portfolio]
+└──╼[REMAC]# cat /etc/nginx/sites-enabled/portfolio.local.conf 
+server {
+         listen 80;
+         access_log /var/log/nginx/portfolio.local.access.log;
+         error_log /var/log/nginx/portfolio.local.error.log;
+
+  client_max_body_size 128M;
+    root /var/www/html/portfolio;
+
+    server_name portfolio.local;
+    index index.html index.htm index.php;
+
+
+   location / {
+        # First attempt to serve request as file, then
+        # as directory, then fall back to displaying a 404.
+       #try_files $uri $uri/ =404;
+    try_files $uri $uri/ /index.php?$args;
+   }
+
+    
+location ~ \.php$ {
+    include snippets/fastcgi-php.conf;
+    fastcgi_pass unix:/var/run/php/php8.2-fpm.sock;
+    fastcgi_intercept_errors on;
+}
+
+   
+
+}
+
+┌──[Mon Jul 06 12:13:45 PM][root@Intel5]─[/var/www/html/portfolio]
+└──╼[REMAC]# cat /etc/hoss
+cat: /etc/hoss: No such file or directory
+┌──[Mon Jul 06 12:13:47 PM][root@Intel5]─[/var/www/html/portfolio]
+└──╼[REMAC]# cat /etc/hosts
+# Host addresses
+127.0.0.1  localhost test.local localhost1 b2b.django  wallet.local laravel.local remacode.local callcompany.local shopping.local kefstan-associates.local nashtechke-website.local nashtechke-design-brief.local nashtechke-campaign.local techlane-landing-page.local wordpress.local portfolio.local
+127.0.1.1 Intel5 
+::1        localhost ip6-localhost ip6-loopback
+ff02::1    ip6-allnodes
+ff02::2    ip6-allrouters
+# Others
+192.168.56.4  Z3r0S3C djangohost.local
+192.168.0.150 leavesystem.local
+┌──[Mon Jul 06 12:13:52 PM][root@Intel5]─[/var/www/html/portfolio]
+└──╼[REMAC]# 
+deploy.yml had name: Deploy portfolio to GitHub Pages
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      # Install dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # Build the project
+      - name: Build project
+        run: npm run build
+
+      # Deploy to GitHub pages
+      - name: Deploy to GitHub pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: dist but i first wanted to manually deploy it, but seems to me when i quite running this  11:41:02 AM [vite] (client) hmr invalidate /src/main.jsx Could not Fast Refresh ("true" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+11:41:02 AM [vite] (client) page reload src/main.jsx
+11:42:36 AM [vite] (client) page reload index.html
+11:42:36 AM [vite] vite.config.js changed, restarting server...
+11:42:37 AM [vite] server restarted.
+ the other page i load from nginx i.e  http://portfolio.local/ is blank <!doctype html><html lang="en">    <head>        <meta charset="UTF-8" />        <title>React Portfolio by Emilio Hulbert</title>        <!-- FavIcon -->        <link rel="icon" type="image/svg+xml" href="/react-portfolio-template/images/svg/logo.svg" />        <!-- Canonical URL -->        <link rel="canonical" href="https://emiliohulbert.github.io/react-portfolio-template/" />        <!-- Meta: Configurations -->        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">        <meta name="format-detection" content="address=no"/>        <meta name="color-scheme" content="dark">        <!-- Meta: SEO -->        <meta name="description" content="A futuristic react portfolio template by Emilio Hulbert."/>        <meta name="keywords" content="resume, cv, ryan balieiro, emiliohulbert, react, web developer, template"/>        <meta name="robots" content="index, follow"/>        <meta name="googlebot" content="index, follow"/>        <meta name="google" content="notranslate"/>        <meta name="author" content="Emilio Hulbert"/>        <meta name="theme-color" content="#111111"/>        <!-- Open Graph / Facebook -->        <meta property="og:type" content="website" />        <meta property="og:url" content="https://emiliohulbert.github.io/react-portfolio-template/" />        <meta property="og:title" content="React Portfolio by Emilio Hulbert" />        <meta property="og:description" content="A futuristic React portfolio template by Emilio Hulbert." />        <meta property="og:image" content="https://emiliohulbert.github.io/react-portfolio-template/images/pictures/og-image.jpg" />        <!-- Twitter -->        <meta property="twitter:card" content="summary_large_image" />        <meta property="twitter:url" content="https://emiliohulbert.github.io/react-portfolio-template/" />        <meta property="twitter:title" content="React Portfolio by Emilio Hulbert" />        <meta property="twitter:description" content="A futuristic React portfolio template by Emilio Hulbert." />        <meta property="twitter:image" content="https://emiliohulbert.github.io/react-portfolio-template/images/pictures/og-image.jpg" />        <!-- Structured Data -->        <script type="application/ld+json">        {            "@context": "https://schema.org",            "@type": "Person",            "name": "React Portfolio Template",            "description": "A futuristic React portfolio template by Emilio Hulbert.",            "url": "https://emiliohulbert.github.io/react-portfolio-template/"        }        </script>        <!-- Fonts -->        <link rel="preconnect" href="https://fonts.googleapis.com">        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>        <link href="https://fonts.googleapis.com/css?family=Saira:400,700" rel="stylesheet" type="text/css">        <link href="https://fonts.googleapis.com/css?family=Orbitron:400,700" rel="stylesheet" type="text/css">        <link href="https://fonts.googleapis.com/css?family=Lato:400,700,400italic,700italic" rel="stylesheet" type="text/css">      <script type="module" crossorigin src="/react-portfolio-template/assets/index-B1iFno9z.js"></script>      <link rel="modulepreload" crossorigin href="/react-portfolio-template/assets/swiper-C4qgqOjU.js">      <link rel="stylesheet" crossorigin href="/react-portfolio-template/assets/index-aRblJtkY.css">    </head>    <body style="background-color: #111111">        <div id="root"></div>    </body></html> this is what i had done ─[Mon Jul 06 12:15:30 PM][root@Intel5]─[/var/www/html/portfolio]
+└──╼[REMAC]# ls
+assets  audio  data  images  index.html
+┌──[Mon Jul 06 12:15:36 PM][root@Intel5]─[/var/www/html/portfolio]
+└──╼[REMAC]# cp -rvv /home/remac/Desktop/react-portfolio-template/dist/* .
+
+thought this should work, but loaded blank ──╼[REMAC]# ll portfolio 
+total 0
+drwxr-xr-x 1 www-data www-data 62 Jul  6 12:21 react-portfolio-template
+┌──[Mon Jul 06 12:27:24 PM][root@Intel5]─[/var/www/html]
+└──╼[REMAC]# ll portfolio/react-portfolio-template 
+total 4.0K
+drwxr-xr-x 1 www-data www-data  666 Jul  6 12:20 assets
+drwxr-xr-x 1 www-data www-data  118 Jul  6 12:20 audio
+drwxr-xr-x 1 www-data www-data  146 Jul  6 12:20 data
+drwxr-xr-x 1 www-data www-data   32 Jul  6 12:20 images
+-rw-r--r-- 1 www-data www-data 3.5K Jul  6 12:20 index.html
+┌──[Mon Jul 06 12:27:37 PM][root@Intel5]─[/var/www/html]
+└──╼[REMAC]# service nginx reload
+┌──[Mon Jul 06 12:27:44 PM][root@Intel5]─[/var/www/html]
+└──╼[REMAC]# cat /etc/nginx/sites-available/portfolio.local.conf
+server {
+         listen 80;
+         access_log /var/log/nginx/portfolio.local.access.log;
+         error_log /var/log/nginx/portfolio.local.error.log;
+
+  client_max_body_size 128M;
+    root /var/www/html/portfolio/react-portfolio-template;
+
+    server_name portfolio.local;
+    index index.html index.htm index.php;
+
+
+   location / {
+        # First attempt to serve request as file, then
+        # as directory, then fall back to displaying a 404.
+       #try_files $uri $uri/ =404;
+     #try_files $uri $uri/ /index.php?$args;
+     try_files $uri $uri/ /index.html;
+   }
+
+    
+location ~ \.php$ {
+    include snippets/fastcgi-php.conf;
+    fastcgi_pass unix:/var/run/php/php8.2-fpm.sock;
+    fastcgi_intercept_errors on;
+}
+
+   
+
+}
+
+┌──[Mon Jul 06 12:28:18 PM][root@Intel5]─[/var/www/html]
+└──╼[REMAC]# 
+─╼[REMAC]# tail -f /var/log/nginx/portfolio.local.error.log 
+2026/07/06 12:21:47 [error] 412589#412589: *15 directory index of "/var/www/html/portfolio/" is forbidden, client: 127.0.0.1, server: portfolio.local, request: "GET / HTTP/1.1", host: "portfolio.local"
+2026/07/06 12:23:34 [error] 766822#766822: *17 directory index of "/var/www/html/portfolio/" is forbidden, client: 127.0.0.1, server: portfolio.local, request: "GET / HTTP/1.1", host: "portfolio.local"
+2026/07/06 12:23:36 [error] 766822#766822: *17 directory index of "/var/www/html/portfolio/" is forbidden, client: 127.0.0.1, server: portfolio.local, request: "GET / HTTP/1.1", host: "portfolio.local"
+2026/07/06 12:23:38 [error] 766822#766822: *17 directory index of "/var/www/html/portfolio/" is forbidden, client: 127.0.0.1, server: portfolio.local, request: "GET / HTTP/1.1", host: "portfolio.local"
+2026/07/06 12:23:56 [error] 766823#766823: *18 directory index of "/var/www/html/portfolio/" is forbidden, client: 127.0.0.1, server: portfolio.local, request: "GET / HTTP/1.1", host: "portfolio.local"
+2026/07/06 12:23:56 [error] 766823#766823: *18 rewrite or internal redirection cycle while internally redirecting to "/index.html", client: 127.0.0.1, server: portfolio.local, request: "GET /favicon.ico HTTP/1.1", host: "portfolio.local", referrer: "http://portfolio.local/"
+
+ i get  this 026/07/06 12:21:47 [error] 412589#412589: *15 directory index of "/var/www/html/portfolio/" is forbidden, client: 127.0.0.1, server: portfolio.local, request: "GET / HTTP/1.1", host: "portfolio.local" was before i set the root directive properly and the ry block but even now i still have blank page.method 1 worked.n=but i wonna keep code base intact for future purpose
+
