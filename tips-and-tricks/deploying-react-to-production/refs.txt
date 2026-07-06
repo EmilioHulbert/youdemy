@@ -130,3 +130,56 @@ nginx -s reload
 * **The Assets:** The HTML file requests `/react-portfolio-template/assets/js...`, which evaluates perfectly against the `portfolio` root folder.
 
 Give that a try and head to `http://portfolio.local/react-portfolio-template/` in your browser—your portfolio should load right up!
+
+
+Exactly! Since your Nginx root is set to `/var/www/html/portfolio`, visiting `http://portfolio.local/` makes Nginx look for an `index.html` file directly inside `/var/www/html/portfolio`. Because that directory only contains the `react-portfolio-template` folder and no index file of its own, Nginx panics and throws a `403 Forbidden` error.
+
+To automatically redirect any traffic hitting the bare domain `http://portfolio.local/` straight into your working setup, you can add an exact match location block to your Nginx configuration.
+
+Here is how to update your file:
+
+### The Configuration Tweak
+
+Open `/etc/nginx/sites-available/portfolio.local.conf` and add the `location = /` block right above your main location block:
+
+```nginx
+server {
+    listen 80;
+    access_log /var/log/nginx/portfolio.local.access.log;
+    error_log /var/log/nginx/portfolio.local.error.log;
+
+    client_max_body_size 128M;
+    root /var/www/html/portfolio;
+
+    server_name portfolio.local;
+    index index.html index.htm;
+
+    # 1. Redirect bare root domain traffic to the subfolder
+    location = / {
+        return 301 /react-portfolio-template/;
+    }
+
+    # 2. Handle everything else inside the subfolder
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/var/run/php/php8.2-fpm.sock;
+        fastcgi_intercept_errors on;
+    }
+}
+
+```
+
+### Apply the Changes
+
+Once you have saved the file, test your syntax and reload the service:
+
+```bash
+nginx -t && systemctl reload nginx
+
+```
+
+Now, typing `http://portfolio.local/` into your browser will smoothly bounce you right to `http://portfolio.local/react-portfolio-template/`, keeping your folder structures identical to GitHub Pages without any awkward broken links.
