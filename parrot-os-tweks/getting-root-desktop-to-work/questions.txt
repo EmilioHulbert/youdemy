@@ -1,0 +1,384 @@
+On my parrot home even before I try to customize the theme I feel to be good, we need to sort out some issues.I know we don't use root account as main account unless when we need to fix things or otherwise something requiring special permissions.Now on my parrot home edition, when i login as root, desktop icons dont show.and it takes time before it kind of loads, not so slow but not good, whereas the root home directory is not even that filled up.Lets troubleshoot this desktop environment using terminal like power users
+
+it could be something else, ──[Thu Jul 02 9:04:34 PM][root@Intel5]─[~]
+└──╼[REMAC]# journalctl -b -p err
+Jul 02 19:13:56 Intel5 kernel: ACPI BIOS Error (bug): AE_AML_BUFFER_LIMIT, Field [CAP1] at bit offset/length 64/32 exceeds size of target Buffer (64 bits) (20240322/dsopcode-198)
+Jul 02 19:13:56 Intel5 kernel: ACPI Error: Aborting method \_SB._OSC due to previous error (AE_AML_BUFFER_LIMIT) (20240322/psparse-529)
+Jul 02 19:13:56 Intel5 kernel: /var/lib/snapd/snaps/core24_1349.snap: Can't lookup blockdev
+Jul 02 19:13:56 Intel5 kernel: /var/lib/snapd/snaps/core20_2686.snap: Can't lookup blockdev
+Jul 02 19:13:56 Intel5 kernel: /var/lib/snapd/snaps/core_17272.snap: Can't lookup blockdev
+Jul 02 19:13:56 Intel5 kernel: /var/lib/snapd/snaps/hugo_25734.snap: Can't lookup blockdev
+Jul 02 19:13:56 Intel5 kernel: /var/lib/snapd/snaps/hugo_25876.snap: Can't lookup blockdev
+Jul 02 19:13:56 Intel5 systemd[1]: Failed to mount snap-core-17272.mount - Mount unit for core, revision 17272.
+Jul 02 19:13:56 Intel5 systemd[1]: Failed to mount snap-core20-2686.mount - Mount unit for core20, revision 2686.
+Jul 02 19:13:56 Intel5 systemd[1]: Failed to mount snap-core24-1349.mount - Mount unit for core24, revision 1349.
+Jul 02 19:13:56 Intel5 systemd[1]: Failed to mount snap-hugo-25734.mount - Mount unit for hugo, revision 25734.
+Jul 02 19:13:56 Intel5 systemd[1]: Failed to mount snap-hugo-25876.mount - Mount unit for hugo, revision 25876.
+Jul 02 19:13:58 Intel5 kernel: snd_hda_codec_conexant hdaudioC0D0: vmaster hook already present before cdev!
+Jul 02 19:13:58 Intel5 (-fprintd)[909]: open-fprintd.service: Failed at step EXEC spawning /usr/bin/open-fprintd: No such file or directory
+Jul 02 19:13:59 Intel5 bluetoothd[900]: src/plugin.c:plugin_init() Failed to init vcp plugin
+Jul 02 19:13:59 Intel5 bluetoothd[900]: src/plugin.c:plugin_init() Failed to init mcp plugin
+Jul 02 19:13:59 Intel5 bluetoothd[900]: src/plugin.c:plugin_init() Failed to init bap plugin
+Jul 02 19:13:59 Intel5 kernel: Bluetooth: hci0: Reading supported features failed (-16)
+Jul 02 19:13:59 Intel5 bluetoothd[900]: profiles/sap/server.c:sap_server_register() Sap driver initialization failed.
+Jul 02 19:13:59 Intel5 bluetoothd[900]: sap-server: Operation not permitted (1)
+Jul 02 19:14:00 Intel5 (python)[1180]: linesearch_tcp.service: Failed at step EXEC spawning /opt/line-search-server/venv/bin/python: No such file or directory
+Jul 02 19:14:00 Intel5 ntpd[1218]: CONFIG: restrict nopeer ignored
+Jul 02 19:14:00 Intel5 ntpd[1218]: CLOCK: leapsecond file ('/usr/share/zoneinfo/leap-seconds.list'): expired less than 552 days ago
+Jul 02 19:14:00 Intel5 (python)[1253]: linesearch_tcp.service: Failed at step EXEC spawning /opt/line-search-server/venv/bin/python: No such file or directory
+Jul 02 19:14:00 Intel5 bluetoothd[900]: profiles/input/server.c:connect_event_cb() Refusing input device connect: No such file or directory (2)
+Jul 02 19:14:00 Intel5 bluetoothd[900]: profiles/input/server.c:confirm_event_cb() Refusing connection from 38:04:20:00:21:DB: unknown device
+Jul 02 19:14:00 Intel5 ntpd[1218]: statistics directory /var/log/ntpsec/ does not exist or is unwriteable, error No such file or directory
+Jul 02 19:14:00 Intel5 (python)[1299]: linesearch_tcp.service: Failed at step EXEC spawning /opt/line-search-server/venv/bin/python: No such file or directory
+Jul 02 19:14:00 Intel5 (python)[1391]: linesearch_tcp.service: Failed at step EXEC spawning /opt/line-search-server/venv/bin/python: No such file or directory
+Jul 02 19:14:00 Intel5 (python)[1465]: linesearch_tcp.service: Failed at step EXEC spawning /opt/line-search-server/venv/bin/python: No such file or directory
+Jul 02 19:14:01 Intel5 systemd[1]: Failed to start linesearch_tcp.service - Line Search TCP Server.
+Jul 02 19:14:01 Intel5 ntpd[1530]: CONFIG: restrict nopeer ignored
+Jul 02 19:14:01 Intel5 ntpd[1530]: CLOCK: leapsecond file ('/usr/share/zoneinfo/leap-seconds.list'): expired less than 552 days ago
+Jul 02 19:14:01 Intel5 ntpd[1530]: statistics directory /var/log/ntpsec/ does not exist or is unwriteable, error No such file or directory
+Jul 02 19:14:05 Intel5 ntpd[1966]: CONFIG: restrict nopeer ignored
+Jul 02 19:14:05 Intel5 ntpd[1966]: CLOCK: leapsecond file ('/usr/share/zoneinfo/leap-seconds.list'): expired less than 552 days ago
+Jul 02 19:14:05 Intel5 ntpd[1966]: IO: bind(21) AF_INET6 fe80::59e9:3c2c:5b5c:8c01%3#123 flags 0x1 failed: Cannot assign requested address
+Jul 02 19:14:05 Intel5 ntpd[1966]: IO: unable to create socket on wlp1s0 (5) for fe80::59e9:3c2c:5b5c:8c01%3#123
+Jul 02 19:14:05 Intel5 ntpd[1966]: statistics directory /var/log/ntpsec/ does not exist or is unwriteable, error No such file or directory
+Jul 02 19:14:06 Intel5 ntpd[1966]: IO: bind(22) AF_INET6 fe80::59e9:3c2c:5b5c:8c01%3#123 flags 0x1 failed: Cannot assign requested address
+Jul 02 19:14:06 Intel5 ntpd[1966]: IO: unable to create socket on wlp1s0 (6) for fe80::59e9:3c2c:5b5c:8c01%3#123
+Jul 02 19:14:08 Intel5 lightdm[1831]: gkr-pam: couldn't unlock the login keyring.
+Jul 02 19:14:10 Intel5 bluetoothd[900]: profiles/audio/avdtp.c:avdtp_parse_rej() SET_CONFIGURATION request rejected: Stream End Point in Use (19)
+Jul 02 19:14:11 Intel5 bluetoothd[900]: src/profile.c:ext_io_disconnected() Unable to get io data for Hands-Free Voice gateway: getpeername: Transport endpoint is not connected (107)
+Jul 02 19:14:11 Intel5 xdg-desktop-portal[2306]: pw.conf: can't load config client.conf: No such file or directory
+Jul 02 19:15:59 Intel5 systemd-networkd-wait-online[1104]: Timeout occurred while waiting for network connectivity.
+Jul 02 19:15:59 Intel5 systemd[1]: Failed to start systemd-networkd-wait-online.service - Wait for Network to be Configured.
+Jul 02 19:16:01 Intel5 ntpd[3656]: CONFIG: restrict nopeer ignored
+Jul 02 19:16:01 Intel5 ntpd[3656]: CLOCK: leapsecond file ('/usr/share/zoneinfo/leap-seconds.list'): expired less than 552 days ago
+Jul 02 19:16:01 Intel5 ntpd[3656]: statistics directory /var/log/ntpsec/ does not exist or is unwriteable, error No such file or directory
+Jul 02 19:16:02 Intel5 systemd[1]: Failed to start telebit.service - Telebit Remote.
+Jul 02 19:16:03 Intel5 (fusuma)[4215]: fusuma.service: Failed to determine user credentials: No such process
+Jul 02 19:16:03 Intel5 (fusuma)[4215]: fusuma.service: Failed at step USER spawning /usr/local/bin/fusuma: No such process
+Jul 02 19:16:03 Intel5 (fusuma)[4249]: fusuma.service: Failed to determine user credentials: No such process
+Jul 02 19:16:03 Intel5 (fusuma)[4249]: fusuma.service: Failed at step USER spawning /usr/local/bin/fusuma: No such process
+Jul 02 19:16:04 Intel5 (fusuma)[4267]: fusuma.service: Failed to determine user credentials: No such process
+Jul 02 19:16:04 Intel5 (fusuma)[4267]: fusuma.service: Failed at step USER spawning /usr/local/bin/fusuma: No such process
+Jul 02 19:16:04 Intel5 (fusuma)[4304]: fusuma.service: Failed to determine user credentials: No such process
+Jul 02 19:16:04 Intel5 (fusuma)[4304]: fusuma.service: Failed at step USER spawning /usr/local/bin/fusuma: No such process
+Jul 02 19:16:04 Intel5 (fusuma)[4343]: fusuma.service: Failed to determine user credentials: No such process
+Jul 02 19:16:04 Intel5 (fusuma)[4343]: fusuma.service: Failed at step USER spawning /usr/local/bin/fusuma: No such process
+Jul 02 19:16:04 Intel5 systemd[1]: Failed to start fusuma.service - Fusuma - Multitouch Gesture Recognizer.
+Jul 02 19:18:00 Intel5 systemd-networkd-wait-online[3448]: Timeout occurred while waiting for network connectivity.
+Jul 02 19:18:00 Intel5 systemd[1]: Failed to start systemd-networkd-wait-online.service - Wait for Network to be Configured.
+Jul 02 20:48:52 Intel5 bluetoothd[900]: src/adv_monitor.c:btd_adv_monitor_power_down() Unexpected NULL btd_adv_monitor_manager object upon power down
+Jul 02 20:48:52 Intel5 bluetoothd[900]: No matching connection for device
+Jul 02 20:50:06 Intel5 hp-systray[12051]: hp-systray[12051]: error: hp-systray cannot be run as root. Exiting.
+Jul 02 20:50:06 Intel5 obexd[12143]: bluetooth: RequestProfile error: org.bluez.Error.NotPermitted, UUID already registered
+Jul 02 20:50:06 Intel5 obexd[12143]: bluetooth: RequestProfile error: org.bluez.Error.NotPermitted, UUID already registered
+Jul 02 20:50:06 Intel5 obexd[12143]: bluetooth: RequestProfile error: org.bluez.Error.NotPermitted, UUID already registered
+Jul 02 20:50:06 Intel5 obexd[12143]: bluetooth: RequestProfile error: org.bluez.Error.NotPermitted, UUID already registered
+Jul 02 20:50:06 Intel5 obexd[12143]: bluetooth: RequestProfile error: org.bluez.Error.NotPermitted, UUID already registered
+Jul 02 20:50:06 Intel5 obexd[12143]: bluetooth: RequestProfile error: org.bluez.Error.NotPermitted, UUID already registered
+Jul 02 20:50:06 Intel5 obexd[12143]: bluetooth: RequestProfile error: org.bluez.Error.NotPermitted, UUID already registered
+┌──[Thu Jul 02 9:06:48 PM][root@Intel5]─[~]
+└──╼[REMAC]# 
+┌──[Thu Jul 02 9:06:52 PM][root@Intel5]─[~]
+└──╼[REMAC]# caja --no-desktop&
+[1] 87560
+┌──[Thu Jul 02 9:06:53 PM][root@Intel5]─[~]
+└──╼[REMAC]# caja --no-desktop 
+Could not register the application: Timeout was reached
+[1]  + exit 1     caja --no-desktop
+Could not register the application: Timeout was reached
+┌──[Thu Jul 02 9:07:35 PM][root@Intel5]─[~]
+└──╼[REMAC]# man gsettings
+┌──[Thu Jul 02 9:08:13 PM][root@Intel5]─[~]
+└──╼[REMAC]#  gsettings get org.mate.background show-desktop-icons
+true
+┌──[Thu Jul 02 9:08:47 PM][root@Intel5]─[~]
+└──╼[REMAC]# ls -ld /root/.config
+drwxr-xr-x 1 root root 1658 Jul  2 20:57 /root/.config
+┌──[Thu Jul 02 9:08:56 PM][root@Intel5]─[~]
+└──╼[REMAC]# ls -ld /root/.cache
+drwxr-xr-x 1 root root 702 Jul  2 20:56 /root/.cache
+┌──[Thu Jul 02 9:09:26 PM][root@Intel5]─[~]
+└──╼[REMAC]# bash
+┌─[root@Intel5]─[~]
+└──╼ #
+
+─[✗]─[root@Intel5]─[~]
+└──╼ #gsettings get org.gnome.desktop.background show-desktop-icons
+true
+┌─[root@Intel5]─[~]
+└──╼ #
+
+
+└──╼[REMAC]# ps aux | grep caja
+remac       2211  0.1  0.5 1088520 84452 ?       Sl   19:14   0:07 /usr/bin/caja
+root       87170  0.0  0.1 380496 29228 tty1     Sl   20:59   0:00 /usr/bin/caja
+root       89233  2.9  0.4 1114776 76724 pts/5   SNl  21:17   0:00 caja --no-desktop
+root       89292  0.1  0.1 227600 21648 tty1     Sl   21:18   0:00 caja
+root       89296  0.1  0.1 227532 21852 tty1     Sl   21:18   0:00 caja
+root       89300  0.0  0.1 227532 21560 tty1     Sl   21:18   0:00 caja
+root       89304  0.1  0.1 227536 21828 tty1     Sl   21:18   0:00 caja
+root       89308  0.0  0.1 227532 21452 tty1     Sl   21:18   0:00 caja
+root       89404  0.0  0.0   6332  2204 pts/1    S+   21:18   0:00 grep --color=auto caja
+┌──[Thu Jul 02 9:18:37 PM][root@Intel5]─[/home/remac]
+└──╼[REMAC]# 
+this cannot register the application.timeout was reached.it is not that i wonna use the root account on a daily basis.i just wonna make sure it is running well.coz i think in the past it had less glitchy mechanism.lets get it smooth and then i leave it alone.how do we fix
+
+
+─[Thu Jul 02 9:23:39 PM][root@Intel5]─[~/Desktop]
+└──╼[REMAC]# cat err 
+──╼[REMAC]# cat try 
+# Set the display variable (usually :0 for the primary login)
+export DISPLAY=:0
+
+# Re-initialize the D-Bus session for this root instance
+eval $(dbus-launch --sh-syntax)
+
+# Manually launch the desktop component
+caja --desktop --force-desktop &
+┌──[Thu Jul 02 9:22:45 PM][root@Intel5]─[~/Desktop]
+└──╼[REMAC]# bash
+┌─[root@Intel5]─[~/Desktop]
+└──╼ ## Set the display variable (usually :0 for the primary login)
+export DISPLAY=:0
+
+# Re-initialize the D-Bus session for this root instance
+eval $(dbus-launch --sh-syntax)
+
+# Manually launch the desktop component
+caja --desktop --force-desktop &
+Authorization required, but no authorization protocol specified
+
+[1] 96895
+┌─[root@Intel5]─[~/Desktop]
+└──╼ #Could not parse arguments: Unknown option --desktop
+
+[1]+  Exit 1                  caja --desktop --force-desktop
+┌─[root@Intel5]─[~/Desktop]
+└──╼ #caja --force-desktop &
+[1] 97523
+┌─[root@Intel5]─[~/Desktop]
+└──╼ #Authorization required, but no authorization protocol specified
+
+Could not parse arguments: Cannot open display: 
+
+[1]+  Exit 1                  caja --force-desktop
+┌─[root@Intel5]─[~/Desktop]
+└──╼ #export DISPLAY=:0
+┌─[root@Intel5]─[~/Desktop]
+└──╼ #eval $(dbus-launch --sh-syntax)
+Authorization required, but no authorization protocol specified
+
+┌─[root@Intel5]─[~/Desktop]
+└──╼ #
+
+
+┌──[Thu Jul 02 9:23:42 PM][root@Intel5]─[~/Desktop]
+└──╼[REMAC]# 
+─╼[REMAC]# ls -l /root/.Xauthority
+-rw-r--r-- 1 root root 100 Jul  2 20:49 /root/.Xauthority
+┌──[Thu Jul 02 9:24:09 PM][root@Intel5]─[~/Desktop]
+└──╼[REMAC]# 
+ ─[Thu Jul 02 9:24:31 PM][root@Intel5]─[~/Desktop]
+└──╼[REMAC]# cat /root/.Xauthority
+Intel51MIT-MAGIC-COOKIE-1B)������F¹1MIT-MAGIC-COOKIE-1�[GR����t�x`i���#                                                                                                                                                                                                                                                      ┌──[Thu Jul 02 9:24:33 PM][root@Intel5]─[~/Desktop]
+└──╼[REMAC]# 
+so not yet fixed
+
+──[Thu Jul 02 9:26:49 PM][root@Intel5]─[~/Desktop]
+└──╼[REMAC]# cat err 
+ 02 9:26:01 PM][root@Intel5]─[~]
+└──╼[REMAC]# Could not register the application: GDBus.Error:org.freedesktop.DBus.Error.UnknownMethod: No such interface “org.gtk.Actions” on object at path /org/mate/Caja
+
+[1]  + exit 1     caja --no-desktop
+┌──[Thu Jul 02 9:26:07 PM][root@Intel5]─[~]
+└──╼[REMAC]# 
+
+┌──[Thu Jul 02 9:26:52 PM][root@Intel5]─[~/Desktop]
+└──╼[REMAC]# 
+
+─[Thu Jul 02 9:27:47 PM][root@Intel5]─[~/Desktop]
+└──╼[REMAC]# vi attempt
+┌──[Thu Jul 02 9:30:09 PM][root@Intel5]─[~/Desktop]
+└──╼[REMAC]# cat err 
+──[Thu Jul 02 9:28:14 PM][root@Intel5]─[~]
+└──╼[REMAC]# echo $DBUS_SESSION_BUS_ADDRESS
+unix:path=/run/user/0/bus
+┌──[Thu Jul 02 9:28:46 PM][root@Intel5]─[~]
+└──╼[REMAC]# export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/0/bus
+┌──[Thu Jul 02 9:29:03 PM][root@Intel5]─[~]
+└──╼[REMAC]# caja --no-desktop &
+[1] 118767
+┌──[Thu Jul 02 9:29:04 PM][root@Intel5]─[~]
+└──╼[REMAC]# Could not register the application: GDBus.Error:org.freedesktop.DBus.Error.UnknownMethod: No such interface “org.gtk.Actions” on object at path /org/mate/Caja
+
+[1]  + exit 1     caja --no-desktop
+┌──[Thu Jul 02 9:29:26 PM][root@Intel5]─[~]
+└──╼[REMAC]# dbus-send --session --dest=org.freedesktop.DBus --type=method_call --print-reply /org/freedesktop/DBus org.freedesktop.DBus.ListNames
+method return time=1783016966.884808 sender=org.freedesktop.DBus -> destination=:1.7266 serial=3 reply_serial=2
+   array [
+      string "org.freedesktop.DBus"
+      string ":1.7"
+      string "org.freedesktop.network-manager-applet"
+      string ":1.8"
+      string "org.kde.runners.activities"
+      string "org.freedesktop.systemd1"
+      string "org.mate.Panel"
+      string "org.gtk.vfs.mountpoint_12093"
+      string "org.mate.PowerManager"
+      string "org.gtk.vfs.Daemon"
+      string "org.mate.panel.applet.ClockAppletFactory"
+      string "org.mate.panel.applet.NotificationAreaAppletFactory"
+      string "org.blueman.Tray"
+      string "org.mate.VolumeControlStatusIcon"
+      string "org.gnome.SessionManager"
+      string ":1.40"
+      string ":1.41"
+      string "org.a11y.Bus"
+      string "org.mate.panel.applet.InhibitAppletFactory"
+      string "org.gtk.vfs.UDisks2VolumeMonitor"
+      string ":1.42"
+      string ":1.20"
+      string ":1.3398"
+      string ":1.21"
+      string ":1.44"
+      string "org.gnome.keyring"
+      string ":1.22"
+      string ":1.23"
+      string "org.mate.panel.applet.WnckletFactory"
+      string ":1.24"
+      string ":1.25"
+      string ":1.48"
+      string ":1.26"
+      string ":1.27"
+      string ":1.28"
+      string "org.bluez.obex"
+      string "ca.desrt.dconf"
+      string "org.gtk.vfs.GPhoto2VolumeMonitor"
+      string ":1.29"
+      string "org.mate.panel.applet.BriskMenuFactory"
+      string "org.kde.kglobalaccel"
+      string "org.mate.SettingsDaemon"
+      string "org.gtk.vfs.AfcVolumeMonitor"
+      string "org.gtk.vfs.GoaVolumeMonitor"
+      string ":1.7265"
+      string ":1.7266"
+      string "org.mate.Terminal.Display_1_0"
+      string "org.kde.ActivityManager"
+      string ":1.50"
+      string "org.blueman.Applet"
+      string "org.mate.Caja"
+      string ":1.30"
+      string ":1.31"
+      string ":1.6753"
+      string ":1.32"
+      string ":1.5984"
+      string ":1.11"
+      string ":1.3400"
+      string ":1.13"
+      string ":1.36"
+      string ":1.14"
+      string ":1.1"
+      string "org.mate.SettingsDaemon.Rfkill"
+      string ":1.15"
+      string "org.freedesktop.secrets"
+      string ":1.38"
+      string ":1.3"
+      string ":1.16"
+      string "org.gtk.vfs.MTPVolumeMonitor"
+      string "org.mate.panel.applet.MultiLoadAppletFactory"
+      string ":1.39"
+      string ":1.17"
+      string ":1.18"
+      string ":1.19"
+   ]
+┌──[Thu Jul 02 9:29:30 PM][root@Intel5]─[~]
+└──╼[REMAC]# bash
+┌─[root@Intel5]─[~]
+└──╼ #
+
+
+┌──[Thu Jul 02 9:30:13 PM][root@Intel5]─[~/Desktop]
+└──╼[REMAC]# bash
+┌─[root@Intel5]─[~/Desktop]
+└──╼ #
+
+
+yeah, but why must I keep on repeating this process.I thought it should be automatic ─[root@Intel5]─[~/Desktop]
+└──╼ #cat repeat 
+    :NMMMMMMMMMMMMNo
+           `yMMMMMMMMMMMMMm:
+             /NMMMMMMMMMMMMMy`
+              .hMMMMMMMMMMMMMN+
+                  ``-NMMMMMMMMMd-
+                     /MMMMMMMMMMMs`
+                      mMMMMMMMsyNMN/
+                      +MMMMMMMo  :sNh.
+                      `NMMMMMMm     -o/
+                       oMMMMMMM.
+                       `NMMMMMM+
+                        +MMd/NMh
+                         mMm -mN`
+                         /MM  `h:
+                          dM`   .
+                          :M-
+                           d:
+                           -+
+                            -
+┌──[Thu Jul 02 9:32:31 PM][root@Intel5]─[~]
+└──╼[REMAC]# caja --force-desktop &
+[1] 127301
+┌──[Thu Jul 02 9:32:31 PM][root@Intel5]─[~]
+└──╼[REMAC]# Could not register the application: GDBus.Error:org.freedesktop.DBus.Error.UnknownMethod: No such interface “org.gtk.Actions” on object at path /org/mate/Caja
+
+[1]  + exit 1     caja --force-desktop
+┌──[Thu Jul 02 9:33:03 PM][root@Intel5]─[~]
+└──╼[REMAC]# echo $DBUS_SESSION_BUS_ADDRESS
+unix:path=/run/user/0/bus
+┌──[Thu Jul 02 9:33:14 PM][root@Intel5]─[~]
+└──╼[REMAC]# export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/0/bus
+┌──[Thu Jul 02 9:33:26 PM][root@Intel5]─[~]
+└──╼[REMAC]# caja --force-desktop &
+[1] 131702
+┌──[Thu Jul 02 9:33:26 PM][root@Intel5]─[~]
+└──╼[REMAC]# Initializing caja-image-converter extension
+Initializing caja-open-terminal extension
+Initializing caja-sendto extension
+┌──[Thu Jul 02 9:33:35 PM][root@Intel5]─[~]
+└──╼[REMAC]# bash
+┌─[root@Intel5]─[~]
+└──╼ #
+
+
+┌─[root@Intel5]─[~/Desktop]
+└──╼ #
+what happens with it that it is not auto ┌─[root@Intel5]─[~/Desktop]
+└──╼ #cat ~/.profile
+# /etc/profile: system-wide .profile file for the Bourne shell (sh(1))
+# and Bourne compatible shells (bash(1), ksh(1), ash(1), ...).
+
+if [ "${PS1-}" ]; then
+  if [ "${BASH-}" ] && [ "$BASH" != "/bin/sh" ]; then
+    # The file bash.bashrc already sets the default PS1.
+    # PS1='\h:\w\$ '
+    if [ -f /etc/bash.bashrc ]; then
+      . /etc/bash.bashrc
+    fi
+  fi
+fi
+
+if [ -d /etc/profile.d ]; then
+  for i in /etc/profile.d/*.sh; do
+    if [ -r $i ]; then
+      . $i
+    fi
+  done
+  unset i
+fi
+
+export FBTERM_BACKGROUND_IMAGE=1
+cat /opt/nifty-background.fbimg > /dev/fb0; fbterm
+┌─[root@Intel5]─[~/Desktop]
+└──╼ #
+any relation? or which files are responsible.desktop should forever always load just fine like other users
+
+

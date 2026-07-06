@@ -1,0 +1,110 @@
+──[Thu Jul 02 9:04:34 PM][root@Intel5]─[~]
+└──╼[REMAC]# journalctl -b -p err
+Jul 02 19:13:56 Intel5 kernel: ACPI BIOS Error (bug): AE_AML_BUFFER_LIMIT, Field [CAP1] at bit offset/length 64/32 exceeds size of target Buffer (64 bits) (20240322/dsopcode-198)
+Jul 02 19:13:56 Intel5 kernel: ACPI Error: Aborting method \_SB._OSC due to previous error (AE_AML_BUFFER_LIMIT) (20240322/psparse-529)
+Jul 02 19:13:56 Intel5 kernel: /var/lib/snapd/snaps/core24_1349.snap: Can't lookup blockdev
+Jul 02 19:13:56 Intel5 kernel: /var/lib/snapd/snaps/core20_2686.snap: Can't lookup blockdev
+Jul 02 19:13:56 Intel5 kernel: /var/lib/snapd/snaps/core_17272.snap: Can't lookup blockdev
+Jul 02 19:13:56 Intel5 kernel: /var/lib/snapd/snaps/hugo_25734.snap: Can't lookup blockdev
+Jul 02 19:13:56 Intel5 kernel: /var/lib/snapd/snaps/hugo_25876.snap: Can't lookup blockdev
+Jul 02 19:13:56 Intel5 systemd[1]: Failed to mount snap-core-17272.mount - Mount unit for core, revision 17272.
+Jul 02 19:13:56 Intel5 systemd[1]: Failed to mount snap-core20-2686.mount - Mount unit for core20, revision 2686.
+Jul 02 19:13:56 Intel5 systemd[1]: Failed to mount snap-core24-1349.mount - Mount unit for core24, revision 1349.
+Jul 02 19:13:56 Intel5 systemd[1]: Failed to mount snap-hugo-25734.mount - Mount unit for hugo, revision 25734.
+Jul 02 19:13:56 Intel5 systemd[1]: Failed to mount snap-hugo-25876.mount - Mount unit for hugo, revision 25876.
+Jul 02 19:13:58 Intel5 kernel: snd_hda_codec_conexant hdaudioC0D0: vmaster hook already present before cdev!
+Jul 02 19:13:58 Intel5 (-fprintd)[909]: open-fprintd.service: Failed at step EXEC spawning /usr/bin/open-fprintd: No such file or directory
+Jul 02 19:13:59 Intel5 bluetoothd[900]: src/plugin.c:plugin_init() Failed to init vcp plugin
+Jul 02 19:13:59 Intel5 bluetoothd[900]: src/plugin.c:plugin_init() Failed to init mcp plugin
+Jul 02 19:13:59 Intel5 bluetoothd[900]: src/plugin.c:plugin_init() Failed to init bap plugin
+Jul 02 19:13:59 Intel5 kernel: Bluetooth: hci0: Reading supported features failed (-16)
+Jul 02 19:13:59 Intel5 bluetoothd[900]: profiles/sap/server.c:sap_server_register() Sap driver initialization failed.
+Jul 02 19:13:59 Intel5 bluetoothd[900]: sap-server: Operation not permitted (1)
+Jul 02 19:14:00 Intel5 (python)[1180]: linesearch_tcp.service: Failed at step EXEC spawning /opt/line-search-server/venv/bin/python: No such file or directory
+Jul 02 19:14:00 Intel5 ntpd[1218]: CONFIG: restrict nopeer ignored
+Jul 02 19:14:00 Intel5 ntpd[1218]: CLOCK: leapsecond file ('/usr/share/zoneinfo/leap-seconds.list'): expired less than 552 days ago
+Jul 02 19:14:00 Intel5 (python)[1253]: linesearch_tcp.service: Failed at step EXEC spawning /opt/line-search-server/venv/bin/python: No such file or directory
+Jul 02 19:14:00 Intel5 bluetoothd[900]: profiles/input/server.c:connect_event_cb() Refusing input device connect: No such file or directory (2)
+Jul 02 19:14:00 Intel5 bluetoothd[900]: profiles/input/server.c:confirm_event_cb() Refusing connection from 38:04:20:00:21:DB: unknown device
+Jul 02 19:14:00 Intel5 ntpd[1218]: statistics directory /var/log/ntpsec/ does not exist or is unwriteable, error No such file or directory
+Jul 02 19:14:00 Intel5 (python)[1299]: linesearch_tcp.service: Failed at step EXEC spawning /opt/line-search-server/venv/bin/python: No such file or directory
+Jul 02 19:14:00 Intel5 (python)[1391]: linesearch_tcp.service: Failed at step EXEC spawning /opt/line-search-server/venv/bin/python: No such file or directory
+Jul 02 19:14:00 Intel5 (python)[1465]: linesearch_tcp.service: Failed at step EXEC spawning /opt/line-search-server/venv/bin/python: No such file or directory
+Jul 02 19:14:01 Intel5 systemd[1]: Failed to start linesearch_tcp.service - Line Search TCP Server.
+Jul 02 19:14:01 Intel5 ntpd[1530]: CONFIG: restrict nopeer ignored
+Jul 02 19:14:01 Intel5 ntpd[1530]: CLOCK: leapsecond file ('/usr/share/zoneinfo/leap-seconds.list'): expired less than 552 days ago
+Jul 02 19:14:01 Intel5 ntpd[1530]: statistics directory /var/log/ntpsec/ does not exist or is unwriteable, error No such file or directory
+Jul 02 19:14:05 Intel5 ntpd[1966]: CONFIG: restrict nopeer ignored
+Jul 02 19:14:05 Intel5 ntpd[1966]: CLOCK: leapsecond file ('/usr/share/zoneinfo/leap-seconds.list'): expired less than 552 days ago
+Jul 02 19:14:05 Intel5 ntpd[1966]: IO: bind(21) AF_INET6 fe80::59e9:3c2c:5b5c:8c01%3#123 flags 0x1 failed: Cannot assign requested address
+Jul 02 19:14:05 Intel5 ntpd[1966]: IO: unable to create socket on wlp1s0 (5) for fe80::59e9:3c2c:5b5c:8c01%3#123
+Jul 02 19:14:05 Intel5 ntpd[1966]: statistics directory /var/log/ntpsec/ does not exist or is unwriteable, error No such file or directory
+Jul 02 19:14:06 Intel5 ntpd[1966]: IO: bind(22) AF_INET6 fe80::59e9:3c2c:5b5c:8c01%3#123 flags 0x1 failed: Cannot assign requested address
+Jul 02 19:14:06 Intel5 ntpd[1966]: IO: unable to create socket on wlp1s0 (6) for fe80::59e9:3c2c:5b5c:8c01%3#123
+Jul 02 19:14:08 Intel5 lightdm[1831]: gkr-pam: couldn't unlock the login keyring.
+Jul 02 19:14:10 Intel5 bluetoothd[900]: profiles/audio/avdtp.c:avdtp_parse_rej() SET_CONFIGURATION request rejected: Stream End Point in Use (19)
+Jul 02 19:14:11 Intel5 bluetoothd[900]: src/profile.c:ext_io_disconnected() Unable to get io data for Hands-Free Voice gateway: getpeername: Transport endpoint is not connected (107)
+Jul 02 19:14:11 Intel5 xdg-desktop-portal[2306]: pw.conf: can't load config client.conf: No such file or directory
+Jul 02 19:15:59 Intel5 systemd-networkd-wait-online[1104]: Timeout occurred while waiting for network connectivity.
+Jul 02 19:15:59 Intel5 systemd[1]: Failed to start systemd-networkd-wait-online.service - Wait for Network to be Configured.
+Jul 02 19:16:01 Intel5 ntpd[3656]: CONFIG: restrict nopeer ignored
+Jul 02 19:16:01 Intel5 ntpd[3656]: CLOCK: leapsecond file ('/usr/share/zoneinfo/leap-seconds.list'): expired less than 552 days ago
+Jul 02 19:16:01 Intel5 ntpd[3656]: statistics directory /var/log/ntpsec/ does not exist or is unwriteable, error No such file or directory
+Jul 02 19:16:02 Intel5 systemd[1]: Failed to start telebit.service - Telebit Remote.
+Jul 02 19:16:03 Intel5 (fusuma)[4215]: fusuma.service: Failed to determine user credentials: No such process
+Jul 02 19:16:03 Intel5 (fusuma)[4215]: fusuma.service: Failed at step USER spawning /usr/local/bin/fusuma: No such process
+Jul 02 19:16:03 Intel5 (fusuma)[4249]: fusuma.service: Failed to determine user credentials: No such process
+Jul 02 19:16:03 Intel5 (fusuma)[4249]: fusuma.service: Failed at step USER spawning /usr/local/bin/fusuma: No such process
+Jul 02 19:16:04 Intel5 (fusuma)[4267]: fusuma.service: Failed to determine user credentials: No such process
+Jul 02 19:16:04 Intel5 (fusuma)[4267]: fusuma.service: Failed at step USER spawning /usr/local/bin/fusuma: No such process
+Jul 02 19:16:04 Intel5 (fusuma)[4304]: fusuma.service: Failed to determine user credentials: No such process
+Jul 02 19:16:04 Intel5 (fusuma)[4304]: fusuma.service: Failed at step USER spawning /usr/local/bin/fusuma: No such process
+Jul 02 19:16:04 Intel5 (fusuma)[4343]: fusuma.service: Failed to determine user credentials: No such process
+Jul 02 19:16:04 Intel5 (fusuma)[4343]: fusuma.service: Failed at step USER spawning /usr/local/bin/fusuma: No such process
+Jul 02 19:16:04 Intel5 systemd[1]: Failed to start fusuma.service - Fusuma - Multitouch Gesture Recognizer.
+Jul 02 19:18:00 Intel5 systemd-networkd-wait-online[3448]: Timeout occurred while waiting for network connectivity.
+Jul 02 19:18:00 Intel5 systemd[1]: Failed to start systemd-networkd-wait-online.service - Wait for Network to be Configured.
+Jul 02 20:48:52 Intel5 bluetoothd[900]: src/adv_monitor.c:btd_adv_monitor_power_down() Unexpected NULL btd_adv_monitor_manager object upon power down
+Jul 02 20:48:52 Intel5 bluetoothd[900]: No matching connection for device
+Jul 02 20:50:06 Intel5 hp-systray[12051]: hp-systray[12051]: error: hp-systray cannot be run as root. Exiting.
+Jul 02 20:50:06 Intel5 obexd[12143]: bluetooth: RequestProfile error: org.bluez.Error.NotPermitted, UUID already registered
+Jul 02 20:50:06 Intel5 obexd[12143]: bluetooth: RequestProfile error: org.bluez.Error.NotPermitted, UUID already registered
+Jul 02 20:50:06 Intel5 obexd[12143]: bluetooth: RequestProfile error: org.bluez.Error.NotPermitted, UUID already registered
+Jul 02 20:50:06 Intel5 obexd[12143]: bluetooth: RequestProfile error: org.bluez.Error.NotPermitted, UUID already registered
+Jul 02 20:50:06 Intel5 obexd[12143]: bluetooth: RequestProfile error: org.bluez.Error.NotPermitted, UUID already registered
+Jul 02 20:50:06 Intel5 obexd[12143]: bluetooth: RequestProfile error: org.bluez.Error.NotPermitted, UUID already registered
+Jul 02 20:50:06 Intel5 obexd[12143]: bluetooth: RequestProfile error: org.bluez.Error.NotPermitted, UUID already registered
+┌──[Thu Jul 02 9:06:48 PM][root@Intel5]─[~]
+└──╼[REMAC]# 
+┌──[Thu Jul 02 9:06:52 PM][root@Intel5]─[~]
+└──╼[REMAC]# caja --no-desktop&
+[1] 87560
+┌──[Thu Jul 02 9:06:53 PM][root@Intel5]─[~]
+└──╼[REMAC]# caja --no-desktop 
+Could not register the application: Timeout was reached
+[1]  + exit 1     caja --no-desktop
+Could not register the application: Timeout was reached
+┌──[Thu Jul 02 9:07:35 PM][root@Intel5]─[~]
+└──╼[REMAC]# man gsettings
+┌──[Thu Jul 02 9:08:13 PM][root@Intel5]─[~]
+└──╼[REMAC]#  gsettings get org.mate.background show-desktop-icons
+true
+┌──[Thu Jul 02 9:08:47 PM][root@Intel5]─[~]
+└──╼[REMAC]# ls -ld /root/.config
+drwxr-xr-x 1 root root 1658 Jul  2 20:57 /root/.config
+┌──[Thu Jul 02 9:08:56 PM][root@Intel5]─[~]
+└──╼[REMAC]# ls -ld /root/.cache
+drwxr-xr-x 1 root root 702 Jul  2 20:56 /root/.cache
+┌──[Thu Jul 02 9:09:26 PM][root@Intel5]─[~]
+└──╼[REMAC]# bash
+┌─[root@Intel5]─[~]
+└──╼ #
+
+─[✗]─[root@Intel5]─[~]
+└──╼ #gsettings get org.gnome.desktop.background show-desktop-icons
+true
+┌─[root@Intel5]─[~]
+└──╼ #
+
+
+

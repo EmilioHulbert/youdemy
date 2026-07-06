@@ -1,0 +1,444 @@
+Troubleshooting a desktop environment (DE) directly as `root` is a classic "power user" challenge. You are correct that logging in as root is generally discouraged for daily use due to security risks, but it is often necessary to understand how the system handles permissions and environment variables.
+
+In many Linux distributions, including those using MATE or GNOME-based environments like Parrot, the desktop icons and session management are handled by a specific file manager component (like `caja` or `nautilus`). When logged in as `root`, this component often fails to initialize properly because it may be trying to access user-level configuration files or is being restricted by security policies like Polkit or D-Bus.
+
+Here is how we can troubleshoot this like power users using the terminal.
+
+---
+
+### 1. Check for Session Errors
+
+Since the loading is slow, the first step is to see what the system is complaining about during the login process. Open a terminal and run this command immediately after logging in as `root` to see recent errors:
+
+```bash
+journalctl -b -p err
+
+```
+
+* **What to look for:** Look for lines related to `dbus`, `polkit`, `caja`, or `gsettings`. This will often point to a "Permission Denied" or "Timeout" error that explains the delay and the failure to load desktop icons.
+
+### 2. Verify File Manager Integration
+
+The desktop icons are managed by the desktop shell (for MATE, it's `caja`). If `caja` isn't launching, the desktop will be blank. Try manually launching it from the terminal to see if it spits out errors:
+
+```bash
+caja --no-desktop &
+
+```
+
+If you get error messages about "D-Bus" or "X11", it confirms that the root user’s environment isn't properly initialized for a graphical session.
+
+### 3. Check for Desktop Configuration
+
+Often, the setting that tells the file manager to "manage the desktop" is a simple boolean toggle in the configuration database. You can query this directly:
+
+```bash
+# Check if desktop management is enabled
+gsettings get org.mate.background show-desktop-icons
+# Or, if using a newer/different environment:
+gsettings get org.gnome.desktop.background show-desktop-icons
+
+```
+
+If this returns `false`, force it to `true`:
+
+```bash
+gsettings set org.mate.background show-desktop-icons true
+
+```
+
+### 4. Inspect Permission Mismatches
+
+Even as root, graphical applications sometimes try to write to a user's hidden configuration folder that they don't have access to or that has corrupted permissions. Check the ownership of your configuration files:
+
+```bash
+ls -ld /root/.config
+ls -ld /root/.cache
+
+```
+
+If these are owned by a different user (e.g., your standard account), the graphical shell may hang while trying to read/write them. Ensure they are owned by `root`:
+
+```bash
+chown -R root:root /root/.config /root/.cache
+
+```
+
+### 5. Why is it slow? (The "Root-Specific" Lag)
+
+The lag you are experiencing is likely **D-Bus or network-service timeouts**. Graphical environments often expect a full user session environment (with `systemd --user` instances, pulseaudio, etc.). When you log in as root, the system might be trying to launch services that are intended for standard users, and they hang until they reach a timeout period.
+
+* **Pro-Tip:** Check if your `/root` directory has a massive number of files in hidden folders like `.cache/thumbnails`. Sometimes, the system tries to index these as soon as you log in.
+* Run `du -sh /root/.cache/*` to see if anything is unusually bloated.
+
+
+
+---
+
+### Recommendation
+
+If you want to manage system configurations without the "root-session" headache, try this instead:
+
+1. **Stay logged in as your standard user.**
+2. Use `sudo -i` or `su -` in a terminal to perform root tasks.
+3. If you **must** run a GUI app as root, use `gksu` or `pkexec`, or simply launch the app from your terminal using `sudo [application_name]`. This keeps the DE running in your user space while giving the specific application the elevated permissions it needs.
+
+**Do you have any specific error messages popping up in the logs when you run `journalctl` after the slow login completes?**
+
+
+The logs you provided paint a very clear picture: **Your Desktop Environment (MATE/Caja) is failing because it is caught in a massive dependency timeout loop** caused by system-level services trying to start in an environment not designed for them.
+
+The "Timeout was reached" when running `caja` confirms that the D-Bus session (which handles inter-process communication) is either unresponsive or blocked by the services failing to initialize.
+
+### 1. The Root Cause: Systemd Service Congestion
+
+Look closely at your logs. You have multiple system-level services trying to start as `root` in a graphical context, and they are **failing hard**:
+
+* **Snapd:** Multiple `Failed to mount snap...` errors.
+* **Fusuma:** Repeatedly failing to find user credentials.
+* **Network/NTP:** Timeouts waiting for network connectivity.
+* **Line Search/Telebit:** Failing to spawn because they expect a standard user environment (likely looking for a specific path like `/opt/...`).
+
+When you log into a Desktop Environment as `root`, `systemd` tries to launch the full user-session stack. Because `root` doesn't have the standard session configuration (like a home directory for a non-system user, a valid D-Bus session bus, or specific path variables), these services hang, block the D-Bus, and eventually time out. **This is why your desktop takes time to load—it is waiting for these background services to stop timing out.**
+
+### 2. Immediate Fixes
+
+#### A. Disable unnecessary services for the Root session
+
+You don't need Fusuma (gestures), Snapd-mounts, or NTP synchronization running *inside* your graphical root session. You can mask these or stop them from starting automatically for the root user.
+
+To stop the immediate hang, try disabling the services that are cluttering your logs:
+
+```bash
+# Disable services that are failing and causing timeouts
+systemctl stop fusuma.service
+systemctl disable fusuma.service
+# Repeat for other failing services if needed, like linesearch_tcp
+systemctl stop linesearch_tcp.service
+systemctl disable linesearch_tcp.service
+
+```
+
+#### B. The D-Bus "Timeout" Issue
+
+Since `caja` is failing to register with D-Bus, ensure your environment variables are set correctly for the root session. When you log in as root, run this to reset your DBUS session:
+
+```bash
+export $(dbus-launch)
+caja --no-desktop &
+
+```
+
+If icons appear after this, the issue is that your root session is missing a proper D-Bus session bus.
+
+### 3. Why Desktop Icons Aren't Showing
+
+Even though `gsettings` says `show-desktop-icons` is `true`, Caja won't draw them if it cannot establish a connection to the X11/Wayland display server or the D-Bus session.
+
+Since you are a power user, let's verify if the desktop process is actually running:
+
+```bash
+ps aux | grep caja
+
+```
+
+If you don't see a `caja --desktop` process, it means it crashed or failed to start. Try manually launching the desktop component specifically:
+
+```bash
+caja --desktop &
+
+```
+
+---
+
+### Critical Advice
+
+The logs show that your system is actively struggling to manage "User-Space" services (like `fusuma`, `hp-systray`, `ntpd`) in a "Root-Space" login. **This is essentially "System Abuse" of the Root account.**
+
+If you want to maintain a clean Parrot environment, I strongly recommend you **stop logging in as root for your desktop session.** You are effectively breaking the security and stability model of the OS, which is why these services (like `hp-systray` or `fusuma`) are explicitly rejecting your root login.
+
+**Action Plan:**
+
+1. **Stop using root for GUI:** Use your standard user account for daily use.
+2. **Use `sudo` or `pkexec`:** If you need to perform an action that requires root, run the command in the terminal.
+3. **Clean up the services:** If you *must* use root for a specific GUI tool, use the `systemctl disable` commands above for the services (like `fusuma`) that are failing.
+
+Does the desktop load significantly faster if you temporarily disable `fusuma` and the `linesearch_tcp` services?
+
+It is clear what is happening: You have a "process explosion." Look at your `ps aux` output; you have **six** instances of `caja` fighting for the same desktop/D-Bus session on `tty1`.
+
+Because you are logged into a root session while a standard user (`remac`) session is already active or lingering, the `caja` processes are deadlocked because they are trying to initialize desktop management on a display (X11) that already has an owner.
+
+### 1. The "Clean Slate" Procedure
+
+To fix this, we need to kill the conflicting instances and force a clean reset of the environment variables. Run these commands as `root`:
+
+```bash
+# 1. Kill all stray caja processes
+pkill -9 caja
+
+# 2. Kill any lingering session processes that might be holding the D-Bus
+# Be careful: only kill the ones owned by root
+pkill -u root caja
+
+# 3. Verify they are gone
+ps aux | grep caja  # Should only show your grep command
+
+```
+
+### 2. Force the Correct Environment
+
+The "Timeout was reached" error occurs because `caja` cannot find the X11 display socket or the D-Bus address. We will manually define them.
+
+Run this sequence to start the desktop component correctly:
+
+```bash
+# Set the display variable (usually :0 for the primary login)
+export DISPLAY=:0
+
+# Re-initialize the D-Bus session for this root instance
+eval $(dbus-launch --sh-syntax)
+
+# Manually launch the desktop component
+caja --desktop --force-desktop &
+
+```
+
+### 3. Why this was "Less Glitchy" in the past
+
+In older versions of Parrot (and Debian-based distros), X11 had less stringent security checks on the D-Bus. Modern versions use `systemd --user` to spawn per-user services.
+
+When you log in as `root` via a display manager (like `lightdm`), it creates a "root session" that competes with the `remac` session. If you want this to run smoothly, you have to prevent the `root` desktop from trying to register as the **default** session manager.
+
+### 4. The "Power User" Configuration Check
+
+Check your `Xauthority` file. If the permissions here are wrong, the graphical interface will always timeout because it cannot "handshake" with the X server.
+
+```bash
+# Check if root has access to the X authority file
+ls -l /root/.Xauthority
+
+```
+
+If it is missing or owned by `remac`, that is the primary reason for the timeout. If it's missing, you can fix it by copying your user's Xauthority (if you are just trying to get it working):
+
+```bash
+cp /home/remac/.Xauthority /root/.Xauthority
+chown root:root /root/.Xauthority
+
+```
+
+### Troubleshooting Checklist
+
+* **If you get a "Cannot open display" error:** The `DISPLAY` variable is wrong. Try `export DISPLAY=:1` (if you are logged into a second virtual terminal).
+* **If it still times out:** It means `polkit` is blocking the request. You can check if the system is rejecting the GUI action by running `pkaction --list` or checking the logs while running the command.
+
+**Does `caja --desktop --force-desktop` successfully spawn the icons after you kill the existing processes?**
+
+The "Authorization required" error is the smoking gun. Even though you are `root`, you do not have permission to draw on the X server (display) currently running your session because the X server is "owned" by the login session that started it.
+
+When you log in as `root` via a display manager, the X server is configured to only allow the specific user ID that initiated the session to interact with the GUI.
+
+### The Fix: Grant X11 Access
+
+You need to tell the X server to allow `root` to connect to the display. Run these commands **as the user `remac**` (or use `sudo` from your terminal if you are currently in a terminal *inside* the desktop session):
+
+1. **Add the current user to the X authorization list:**
+```bash
+xhost +local:root
+
+```
+
+
+*This command explicitly tells the X server to accept connections from local `root` processes.*
+2. **Verify the environment variable:**
+Now switch back to your `root` terminal and ensure your display is set:
+```bash
+export DISPLAY=:0
+
+```
+
+
+3. **Attempt to launch the file manager again:**
+```bash
+caja --no-desktop &
+
+```
+
+
+
+---
+
+### Why this is happening (The "Power User" Reality)
+
+You mentioned that it was "less glitchy" in the past. This is because recent updates to X11 and Wayland security (specifically `xauth` and `xhost` tightening) make it much harder for different users to "see" each other's graphical windows.
+
+Even though you are both `root` and `remac` on the same machine, the OS treats them as distinct security realms. When you launch a `caja` process as `root` while `remac` is logged into the graphical interface, the X server sees a security violation and denies the connection.
+
+### If `xhost` doesn't solve it:
+
+Check the `DISPLAY` number. Sometimes, if you have multiple sessions open, the root session might be on `:1`. Check where the current session is:
+
+```bash
+w
+# or
+who
+
+```
+
+Look at the `FROM` column (e.g., `:0`). If it says `:1`, change your export: `export DISPLAY=:1`.
+
+**One last thing:**
+If `caja` says `Unknown option --desktop`, try just:
+
+```bash
+caja --force-desktop
+
+```
+
+(Some versions of MATE have shifted the arguments, but `--force-desktop` is the standard flag to tell Caja to "take over" the wallpaper/icon drawing).
+
+**Does running `xhost +local:root` allow the GUI app to open without the "Authorization required" error?**
+
+The error `GDBus.Error:org.freedesktop.DBus.Error.UnknownMethod: No such interface “org.gtk.Actions”` is the smoking gun. It confirms that `caja` is attempting to communicate with the MATE desktop services via D-Bus, but it is failing because **the D-Bus session you launched is isolated from the main system session where the Desktop Environment is actually running.**
+
+When you ran `eval $(dbus-launch)`, you created a *new* D-Bus instance just for that terminal, but the MATE desktop environment (which owns the display) is looking for a session bus that is already active.
+
+### The Power User Path to Resolution
+
+To fix this, you don't want a new D-Bus; you want to "hijack" the one already running for your GUI session.
+
+#### 1. Identify the correct D-Bus address
+
+In your current graphical session (where you are logged in), find the D-Bus address being used by the desktop. Run this from a terminal **inside** the desktop session:
+
+```bash
+# This will show you the exact DBUS_SESSION_BUS_ADDRESS currently in use
+echo $DBUS_SESSION_BUS_ADDRESS
+
+```
+
+#### 2. Export that address to your Root shell
+
+Copy the output from the command above (it will look like `unix:path=/run/user/1000/bus...`). Now, in your `root` terminal, force your shell to use that **same** address:
+
+```bash
+# Replace with the actual address you got from the previous step
+export DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus 
+
+```
+
+*(Note: If your user ID is not 1000, use the number found in the path.)*
+
+#### 3. Why the "No such interface" error?
+
+When `caja` tries to start, it checks for `org.gtk.Actions`. If the D-Bus session isn't pointing to the main desktop session, `caja` assumes it's running in a "headless" or isolated environment and crashes because it can't find the desktop interface service.
+
+#### 4. The "Brute Force" Check
+
+If the above export still doesn't work, it means the `remac` user has locked down the D-Bus through `polkit`. To verify, run:
+
+```bash
+# See if you can communicate with the bus at all
+dbus-send --session --dest=org.freedesktop.DBus --type=method_call --print-reply /org/freedesktop/DBus org.freedesktop.DBus.ListNames
+
+```
+
+If this command lists a massive wall of text, your D-Bus connection is working. If it returns an error, your terminal has no access to the graphical session's message bus.
+
+### A Final Reality Check
+
+You mentioned you want to get this smooth and "leave it alone."
+
+The reason this feels so glitchy now compared to "the past" is due to **Systemd-Logind integration**. Modern Linux distributions tie the Graphical Session, the D-Bus, and the User Session into a single, tightly-locked `systemd` scope. When you log in as `root` graphically, you are creating a "phantom" session that `systemd` doesn't fully support for the standard MATE desktop components.
+
+**If you want to see if the desktop environment is fundamentally broken for root:**
+Try logging out entirely, and at the login screen, switch to a TTY (Ctrl+Alt+F3). Login as `root` there and try:
+`startx`
+
+If `startx` launches a clean, non-glitchy desktop, then your problem is 100% caused by the `lightdm` display manager's security policy blocking the root user from the main session.
+
+Does the `dbus-send` command above return a list of names, or an error?
+
+This is the final piece of the puzzle. Looking at your `dbus-send` output, we can clearly see `org.mate.Caja` is **already registered** on the bus.
+
+### The Diagnosis
+
+When you run `caja --no-desktop`, the new process tries to claim the `org.mate.Caja` service name on the D-Bus. Because an instance is **already running** (likely the one from your `remac` session or a previous root session), the new process fails with a "GDBus Error." It effectively says: *"I cannot become the Caja instance because someone else is already using that identity."*
+
+You have a "Session Collision."
+
+### The Power User Solution
+
+Since you want to "make sure it is running well" and "leave it alone," you need to stop trying to force a new, conflicting `caja` process into an occupied session. Instead, you should simply tell the **existing** instance to refresh or re-bind to the desktop if it's missing.
+
+Try these two refined commands as `root`:
+
+#### 1. The "Signal" Method (Gentle)
+
+Instead of launching a new process that fights for the name, send a signal to the existing process to re-initialize:
+
+```bash
+# This sends a 'HUP' (hangup) signal to all caja processes, 
+# which usually forces them to reload their configuration/desktop bindings
+pkill -HUP caja
+
+```
+
+#### 2. The "Display Force" Method (Aggressive)
+
+If you just want the desktop icons to appear on the screen currently controlled by root, you don't need a new D-Bus service; you need the window manager to allow the root user's desktop view. Use this exact syntax:
+
+```bash
+# Don't try to register a new D-Bus name, just force the desktop UI
+caja --force-desktop &
+
+```
+
+### Why this is still "Glitchy"
+
+In Parrot (and similar Debian-based systems), the `mate-session` manager handles the lifecycle of these apps. Because you are logged in as `root` (a user not intended to have a graphical session), there is no `mate-session-manager` (as `root`) to coordinate these apps.
+
+**If you still have no icons after `caja --force-desktop &`:**
+It means the `mate-panel` or `caja` is hard-locked to the User ID of `remac`. At this point, the "glitchiness" is a security feature, not a bug—the system is protecting the `remac` desktop from being hijacked by the `root` user.
+
+**The "Leave it alone" recommendation:**
+If you get to a state where the terminal works and you can access your files via `caja --no-desktop` (even with the warning), **stop there.** Trying to force full desktop integration (icons, wallpaper) while logged in as `root` will always be a battle against modern Linux session security (Polkit/Systemd-logind).
+
+**Does running `pkill -HUP caja` followed by `caja --force-desktop` trigger the icons to appear?**
+
+
+It is not "automatic" because you are fighting the **Linux Session Management lifecycle**.
+
+In a normal user session (like `remac`), the **Session Manager** (e.g., `mate-session`) is responsible for orchestrating the environment. It automatically launches the D-Bus, sets the `DISPLAY` variable, handles X11 authorization, and then spawns `caja` with the correct flags.
+
+When you log in as `root`, the system is designed to **prevent** a full graphical session from starting to protect the system's core stability. As a result, there is no "Session Manager" for root, so none of those variables are set, and nothing is launched automatically.
+
+### Why your `.profile` isn't fixing this
+
+Your `.profile` is a **shell** configuration file. It only runs when you open a terminal or log in via a text-based console. It does not run when the Graphical Desktop Environment (DE) initializes. Because `caja` is a graphical application, it doesn't care about what is in your shell `.profile`—it cares about the **Systemd User Session**.
+
+### The Files Responsible
+
+To make this "automatic," you would need to inject your commands into the startup sequence of the Desktop Environment itself, not your shell.
+
+1. **`/etc/xdg/autostart/`**: This is where desktop environments look for applications to launch at login. If you created a `.desktop` file here that runs `caja --force-desktop`, the system *might* pick it up, but it will likely still fail because the D-Bus environment isn't ready yet.
+2. **`~/.config/autostart/`**: The user-specific version of the above.
+3. **`systemd --user` units**: This is the modern, "Power User" way to handle services. You would create a service unit that waits for `graphical-session.target` and then executes your command.
+
+### The "Power User" Verdict
+
+You are trying to force a **Service Account** (root) to act like a **Human User Account**. Modern Linux security architecture (Polkit, D-Bus, X11/Wayland authorization) is specifically built to stop exactly what you are doing.
+
+* **The "Glitchy" Past:** You remember it being smoother because older Linux versions (using `init` instead of `systemd`) didn't have the "Session Isolation" that exists today. You could `su` into root and just run a graphical app because permissions were largely "user-agnostic."
+* **The Current Reality:** Every graphical app now looks for a specific "Session Bus" owned by a "User ID." Since `root` (UID 0) is fundamentally different from `remac` (UID 1000), they cannot share the same "desktop" space without being manually forced.
+
+**If you really want to automate this:**
+You can create a script in `/root/.local/bin/fix-desktop.sh` and add it to **"Startup Applications"** in your MATE settings (if you can get the GUI to open to access that menu). However, even then, the timing will be hit-or-miss because the system is trying to deny the root user the display permission the moment the session starts.
+
+**My advice:** Don't automate this. By forcing a root graphical session, you are bypassing the very security features that keep your Parrot OS installation from being corrupted by a single stray command.
+
+If you find yourself needing root for specific tasks, stay logged in as `remac` and use `gksu` or `pkexec` to launch the specific tools you need. It is significantly more stable and is the "intended" way to maintain a Parrot home system.
+
+Do you want to know how to create a custom Polkit rule to allow your user account to run specific root-level GUI tools without needing to log in as root?
+

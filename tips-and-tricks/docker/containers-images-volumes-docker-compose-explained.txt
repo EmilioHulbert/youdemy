@@ -1,0 +1,49 @@
+It is completely normal to find these tools confusing at first! They are often used together, but they serve very different purposes. Here is a breakdown to help you clear things up.
+
+---
+
+### Docker vs. Docker Compose: The Core Difference
+
+Think of it this way: **Docker** is the tool for building and running a single container, while **Docker Compose** is the tool for managing a multi-container ecosystem.
+
+| Feature | Docker (The Engine) | Docker Compose (The Orchestrator) |
+| --- | --- | --- |
+| **Purpose** | Building images and running individual containers. | Defining and running multi-container applications. |
+| **Configuration** | Uses a `Dockerfile` to build an image. | Uses a `docker-compose.yml` file to link services. |
+| **Scope** | One container at a time. | An entire stack (e.g., App + Database + Cache). |
+
+**Is it a replacement?**
+No. Docker Compose is **not** a replacement for Docker. You cannot run a container without the Docker engine (the daemon). Docker Compose actually sits "on top" of Docker—it tells Docker how to spin up multiple containers, how to network them together, and how to set up their shared storage.
+
+---
+
+### How they interact with your files
+
+#### 1. Does `docker-compose` check the `Dockerfile`?
+
+Yes, absolutely. When you run `docker-compose up`, the tool reads your `docker-compose.yml` file. If that file contains a `build: .` instruction, Docker Compose will look into that directory, find your `Dockerfile`, and use it to build the image before starting the container. It uses the `Dockerfile` to define **how** to create the environment, and the `yml` file to define **how** to run it.
+
+#### 2. What happens if you run `docker build`?
+
+If you run `docker build .` in a terminal, it **only** looks for a `Dockerfile`. It completely ignores your `docker-compose.yml` file. The `docker build` command is a "low-level" command used to create an image; it does not know about your services, networks, or volumes defined in a Compose file.
+
+#### 3. Is `docker-compose` vs `docker compose` different?
+
+Yes, there is a technical difference, though they do the same thing:
+
+* **`docker-compose` (with a hyphen):** This is the "legacy" version. It was a standalone Python script installed separately.
+* **`docker compose` (with a space):** This is the modern "V2" version. It is now a plugin integrated directly into the Docker CLI. It is faster, written in Go, and is the standard way to use it moving forward.
+
+---
+
+### Containers, Images, and Volumes: A Quick Recap
+
+You are correct: **You get containers from images.**
+
+* **Image:** Think of this as a **blueprint** or a "recipe." It is a static, read-only file that contains your code, libraries, and settings. It does nothing on its own.
+* **Container:** This is the **running instance** of that image. It is the actual environment where your code lives and executes. You can start/stop a container, and you can create many containers from a single image.
+* **Volume:** These are the **storage persistence layers**. Because containers are ephemeral (they "forget" everything when they are deleted), we use volumes to map a folder on your computer to a folder inside the container. This allows your database or data to survive even if you destroy the container.
+
+---
+
+To help me give you more specific guidance, are you currently setting up a project that involves a database and an application, or are you just exploring how these tools work together?
