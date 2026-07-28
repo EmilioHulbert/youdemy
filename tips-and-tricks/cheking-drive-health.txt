@@ -30,6 +30,7 @@ If the filesystem check returns many errors, your drive may be physically dying.
 
 * Install `smartmontools` if you haven't: `sudo apt install smartmontools`
 * Check the drive health: `sudo smartctl -a /dev/sdX`
+smartctl -a -d sat /dev/sda
 * Look specifically for the **Reallocated_Sector_Ct** or **Current_Pending_Sector** values. High or increasing values are a definitive sign of hardware failure.
 
 ---

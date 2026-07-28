@@ -1,0 +1,50 @@
+That classic Android "smart network" trap. Your phone sees the Wi-Fi connection, latches onto it, and assumes that's where the internet should come from—completely ignoring your mobile data even though the Wi-Fi has no actual internet backbone.
+
+Because Android handles ADB/Wireless Debugging over the local network (Wi-Fi), we **need** that Wi-Fi connection alive, but we also need your phone to use mobile data for its internet.
+
+Here is how you can force your Oppo A18 (ColorOS) to use both simultaneously, or bypass this roadblock entirely.
+
+---
+
+### Solution 1: Enable "Mobile Data Always Active" (The Best Fix)
+
+By default, Android shuts off the mobile data modem the second you connect to Wi-Fi. You can force Android to keep both active, allowing it to fall back to mobile data for internet while keeping the Wi-Fi local network alive for `scrcpy`.
+
+1. Go to **Settings** > **About Device** > **Version**.
+2. Tap **Version Number** (or Build Number) **7 times** until it says "You are now a developer."
+3. Go back to the main **Settings** menu > **Additional Settings** > **Developer Options**.
+4. Scroll down to the **Networking** section.
+5. Toggle **ON** **"Mobile data always active"** (sometimes called *Always keep mobile data active*).
+
+> **Why this works:** This forces the phone to route internet traffic through your cellular network while keeping the local Wi-Fi connection intact for your laptop to talk to the phone via wireless ADB.
+
+### Solution 2: Turn off "Smart Wi-Fi" / Wi-Fi Assistant
+
+ColorOS has an aggressive feature that tries to manage poor internet connections, which sometimes breaks local-only networks.
+
+1. Go to **Settings** > **Wi-Fi**.
+2. Look for **Wi-Fi Assistant** (or tap the three dots/gear icon in the top right).
+3. **Disable** **"Auto-connect to the best Wi-Fi network"** or **"Auto-switch to mobile network"**.
+*Note: If this is enabled, the phone might constantly drop the laptop's hotspot because it realizes there's no internet, which kills your wireless debugging session.*
+
+### Solution 3: Reverse the Setup (Hotspot from Phone instead)
+
+If your laptop's hotspot configuration is still giving you routing headaches, reverse the roles. It achieves the exact same local network link for `scrcpy`.
+
+1. Turn on the **Personal Hotspot** on your **Oppo A18**. (This keeps your phone's mobile data working perfectly).
+2. Connect your **laptop** to your phone’s Wi-Fi hotspot.
+3. Your phone and laptop are now on the same local network.
+4. Go to Developer Options on the phone, enable **Wireless Debugging**, and pair it with `scrcpy` using the IP address assigned by the phone's hotspot.
+
+---
+
+### Quick `scrcpy` Tip Once Connected
+
+Once the network issue is sorted and you run `adb tcpip 5555`, you can connect over the network using:
+
+```bash
+scrcpy -e
+
+```
+
+*(The `-e` flag tells scrcpy to explicitly look for a TCP/IP / ethernet connection).* Try Solution 1 first—it’s usually the instant fix for this exact setup! Let me know if it gives you any trouble.
