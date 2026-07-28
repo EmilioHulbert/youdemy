@@ -1,0 +1,40 @@
+Here is how you can manage, delete, and prevent Gemini from saving automatic chats triggered by "Hey Google":
+
+---
+
+### 1. Delete Existing Gemini Chats
+
+You can delete past automatic voice chats directly from your Gemini activity log:
+
+1. Open the **Gemini mobile app** or go to [myactivity.google.com/product/gemini](https://myactivity.google.com/product/gemini) in your browser.
+2. Tap your **Profile Picture / Initial** (top right) and select **Gemini Apps Activity**.
+3. To delete individual voice chats, tap the **`X`** or **Delete** icon next to specific items.
+4. To delete all past chats at once, tap **Delete** near the top of the page and select **All time**.
+
+---
+
+### 2. Disable Saving Gemini Activity Automatically
+
+To stop Gemini from saving your prompts and voice interactions to your chat history altogether:
+
+1. In the **Gemini app**, tap your **Profile Picture / Initial** $\rightarrow$ **Gemini Apps Activity**.
+2. Look for the **Keep Activity** toggle at the top (it will say "On").
+3. Tap **On** and select **Turn off** (or **Turn off and delete activity**).
+
+> **Note:** When *Keep Activity* is off, future interactions won't be saved in your chat history log or used to build past conversation threads.
+
+---
+
+### 3. Prevent "Hey Google" from Activating Gemini
+
+If you want to keep using the Gemini app manually but stop "Hey Google" voice triggers from automatically opening Gemini and generating new chats:
+
+* **Turn off "Hey Google" for Gemini:**
+1. Open the **Gemini app**.
+2. Tap your **Profile Picture / Initial** $\rightarrow$ **Settings** $\rightarrow$ **Talk to Gemini hands-free**.
+3. Toggle off **"Hey Google"**.
+
+
+* **Switch Back to Google Assistant (Optional):**
+1. In the **Gemini app**, tap your **Profile Picture / Initial**.
+2. Tap **Switch to Google Assistant**.
