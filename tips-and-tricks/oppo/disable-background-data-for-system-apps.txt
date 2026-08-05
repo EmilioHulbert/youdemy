@@ -1,0 +1,22 @@
+To target **all apps on the system** (including system apps like Chrome, Gmail, YouTube, etc.) while preventing the loop from breaking on protected UIDs like `UID 0`, the script needs to filter for valid app UIDs ($\ge 10000$) across the complete package list (`pm list packages -u`).
+
+Here is the complete script that finishes the job across both user and system packages:
+
+```bash
+adb shell 'for pkg in $(pm list packages | cut -d: -f2); do
+    uid=$(pm list packages -U | grep "^package:$pkg " | awk -F"uid:" "{print \$2}")
+    if [ ! -z "$uid" ] && [ "$uid" -ge 10000 ] 2>/dev/null; then
+        cmd netpolicy add restrict-background-blacklist $uid 2>/dev/null
+        cmd appops set $pkg RUN_IN_BACKGROUND ignore 2>/dev/null
+        cmd appops set $pkg RUN_ANY_IN_BACKGROUND ignore 2>/dev/null
+        am force-stop $pkg 2>/dev/null
+    fi
+done'
+
+```
+
+### Why this handles Chrome and Gmail:
+
+1. **Removes the `-3` flag:** Using `pm list packages` instead of `pm list packages -3` includes all built-in system apps.
+2. **Filters `[ "$uid" -ge 10000 ]`:** Built-in apps like Chrome (`com.android.chrome`) and Gmail (`com.google.android.gm`) run under user-level UIDs above 10000, while low-level kernel/root services (like `UID 0` or `UID 1000`) are safely skipped to avoid script execution halts.
+3. **Forces application state reset:** `am force-stop` closes background instances of Chrome and Gmail so the kernel network restrictions apply immediately upon relaunch.

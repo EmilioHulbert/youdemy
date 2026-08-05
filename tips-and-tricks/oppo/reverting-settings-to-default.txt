@@ -1,0 +1,86 @@
+## Reboot Persistence Breakdown
+
+| Optimization Category | Persists Across Reboot? | Details |
+| --- | --- | --- |
+| **AOT Compilation (`compile -m speed`)** | **YES** | Pre-compiled OAT/ODEX machine code binaries are written directly to disk (`/data/dalvik-cache/`). They persist across reboots until the app is updated or wiped. |
+| **AppOps Restrictions (`RUN_IN_BACKGROUND`)** | **YES** | AppOps states are committed to system policy XML configurations on the data partition and remain intact after rebooting. |
+| **Network Policy (`restrict-background-blacklist`)** | **YES** | Stored in `/data/system/netpolicy.xml` and loaded automatically by the kernel on boot. |
+| **Animation & Touch Settings (`settings put ...`)** | **YES** | Stored permanently in the device settings database (`/data/system/users/0/settings_*.xml`). |
+| **Disabled Telemetry (`pm disable-user`)** | **YES** | State remains `DISABLED_USER` across reboots until re-enabled manually or during a major Android OS update. |
+| **Disable HW Overlays (`disable_hw_overlays`)** | **NO** | Android resets SurfaceFlinger overlay states back to default (0) on reboot for display safety. You must re-run this specific command after a restart. |
+
+---
+
+## How to Fully Revert All Restrictions & Optimizations
+
+If you need to undo every policy restriction, restore animations, and re-enable services, run the following commands:
+
+### 1. Revert All Background Data & AppOps Restrictions
+
+Clears all UIDs from the network blacklist and restores background execution permissions for all installed packages:
+
+```bash
+# Clear Network Policy Denylist
+adb shell "cmd package list packages -U | awk -F'uid:' '{print \$2}' | grep -E '^[0-9]+$' | awk '\$1>=10000' | sort -u | xargs -I {} cmd netpolicy remove restrict-background-blacklist {} 2>/dev/null"
+
+# Reset AppOps Permissions to Default
+adb shell "for pkg in \$(pm list packages | cut -d: -f2); do cmd appops set \$pkg RUN_IN_BACKGROUND allow 2>/dev/null; cmd appops set \$pkg RUN_ANY_IN_BACKGROUND allow 2>/dev/null; done"
+
+# Reset Vendor Restrict Background Flags
+adb shell settings put global default_restrict_background 0
+adb shell settings put secure RestrictBackgroundStatus 0
+
+```
+
+---
+
+### 2. Restore Default Animations & Display Rendering
+
+Restores default Android animation speeds (1.0x) and re-enables standard hardware overlays:
+
+```bash
+adb shell settings put global window_animation_scale 1.0
+adb shell settings put global transition_animation_scale 1.0
+adb shell settings put global animator_duration_scale 1.0
+adb shell settings put global disable_hw_overlays 0
+
+```
+
+---
+
+### 3. Restore Touch & Logging Settings
+
+Restores standard system logging and default touch response timings:
+
+```bash
+adb shell settings put secure long_press_timeout 400
+adb shell settings delete system max_fling_velocity 2>/dev/null
+adb shell settings put global sys_tracing_enabled 1
+adb shell settings put global logger_enabled 1
+adb shell settings put global activity_starts_logging_enabled 1
+
+```
+
+---
+
+### 4. Re-Enable Oppo Telemetry & Packages
+
+Re-enables the disabled system services back to active status:
+
+```bash
+adb shell pm enable com.oppo.logkit
+adb shell pm enable com.nearme.statistics.rom
+adb shell pm enable com.heytap.mcs
+
+```
+
+---
+
+### 5. Revert AOT Speed Compilation (Optional)
+
+Resets ART compilation state back to the default profile-guided JIT compilation mode:
+
+```bash
+adb shell "cmd package compile -m speed-profile -a"
+
+```

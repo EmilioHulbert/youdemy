@@ -1,0 +1,68 @@
+The reason the UI toggle stays blue for WhatsApp and Poweramp is because vendor UI frameworks (like ColorOS, Realme UI, and OxygenOS) maintain their own custom system settings database for that specific toggle switch.
+
+While `cmd netpolicy` restricts network sockets at the core Android framework level, it does **not** flip the vendor UI switch. Furthermore, app operations (AppOps) handle individual app capabilities separately.
+
+To forcibly flip the background data restriction and revoke background network capabilities across both standard Android AppOps and vendor settings databases, run these commands:
+
+---
+
+### 1. Apply Both AppOps Restrictions (Network + Background Run)
+
+The `cmd netpolicy` denylist is active, but you also need to set the `RUN_IN_BACKGROUND` and `RUN_ANY_IN_BACKGROUND` AppOps modes to `ignore` for all packages:
+
+```bash
+adb shell "for pkg in \$(pm list packages -3 | cut -d: -f2); do cmd appops set \$pkg RUN_IN_BACKGROUND ignore; cmd appops set \$pkg RUN_ANY_IN_BACKGROUND ignore; done"
+
+```
+
+---
+
+### 2. Force-Sync the Vendor UI Toggle via `settings` DB
+
+On ColorOS/Realme UI/OxygenOS devices, background data toggles are written to the `system` or `secure` settings namespace under specific keys. Force-update the global background data restriction setting directly:
+
+```bash
+adb shell settings put global default_restrict_background 1
+adb shell settings put secure RestrictBackgroundStatus 1
+
+```
+
+---
+
+### 3. Target Specific Packages Directly (WhatsApp & Poweramp)
+
+To verify the package names and UIDs for WhatsApp and Poweramp directly:
+
+```bash
+# Get WhatsApp UID and force restrict
+WA_UID=$(adb shell pm list packages -U | grep com.whatsapp | awk -F'uid:' '{print $2}')
+adb shell cmd netpolicy add restrict-background-blacklist $WA_UID
+adb shell cmd appops set com.whatsapp RUN_IN_BACKGROUND ignore
+
+# Get Poweramp UID and force restrict
+PA_UID=$(adb shell pm list packages -U | grep com.maxmpz.audioplayer | awk -F'uid:' '{print $2}')
+adb shell cmd netpolicy add restrict-background-blacklist $PA_UID
+adb shell cmd appops set com.maxmpz.audioplayer RUN_IN_BACKGROUND ignore
+
+```
+
+---
+
+### Clean All-in-One Shell Script
+
+Here is a unified loop that iterates through all third-party apps, resolves their exact UIDs, revokes background AppOps, adds them to `netpolicy`, and kills running instances to force the OS to apply the restrictions immediately:
+
+```bash
+adb shell 'for pkg in $(pm list packages -3 | cut -d: -f2); do
+    uid=$(pm list packages -3 -U | grep "^package:$pkg " | awk -F"uid:" "{print \$2}")
+    if [ ! -z "$uid" ]; then
+        cmd netpolicy add restrict-background-blacklist $uid 2>/dev/null
+        cmd appops set $pkg RUN_IN_BACKGROUND ignore 2>/dev/null
+        cmd appops set $pkg RUN_ANY_IN_BACKGROUND ignore 2>/dev/null
+        am force-stop $pkg 2>/dev/null
+    fi
+done'
+
+```
+
+
