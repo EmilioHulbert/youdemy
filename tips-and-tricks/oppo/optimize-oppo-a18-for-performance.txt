@@ -102,3 +102,95 @@ adb shell pm disable-user --user 0 com.heytap.mcs
 * `com.oppo.logkit`: Stops the internal Oppo log collection service.
 * `com.nearme.statistics.rom`: Disables background telemetry sent back to HeyTap/Oppo servers.
 * `com.heytap.mcs`: Disables HeyTap Push Cloud messaging service if you don't use HeyTap cloud accounts.
+
+#Oppo telemetry disabling issue
+why does this seem to fail ┌──[Wed Aug 05 3:49:54 PM][root@Intel5]─[/home/remac/Desktop/youdemy/tips-and-tricks/oppo]
+└──╼[REMAC]# adb shell pm disable-user --user 0 com.oppo.logkit
+adb shell pm disable-user --user 0 com.nearme.statistics.rom
+adb shell pm disable-user --user 0 com.heytap.mcs
+
+Exception occurred while executing 'disable-user':
+java.lang.IllegalArgumentException: Unknown package: com.oppo.logkit
+	at com.android.server.pm.PackageManagerService.setEnabledSettings(PackageManagerService.java:4229)
+	at com.android.server.pm.PackageManagerService.-$$Nest$msetEnabledSettings(PackageManagerService.java:0)
+	at com.android.server.pm.PackageManagerService$IPackageManagerImpl.setApplicationEnabledSetting(PackageManagerService.java:6293)
+	at com.android.server.pm.PackageManagerShellCommand.runSetEnabledSetting(PackageManagerShellCommand.java:2434)
+	at com.android.server.pm.PackageManagerShellCommand.onCommand(PackageManagerShellCommand.java:302)
+	at com.android.modules.utils.BasicShellCommandHandler.exec(BasicShellCommandHandler.java:97)
+	at android.os.ShellCommand.exec(ShellCommand.java:38)
+	at com.android.server.pm.PackageManagerService$IPackageManagerImpl.onShellCommand(PackageManagerService.java:7037)
+	at android.os.Binder.shellCommand(Binder.java:1243)
+	at android.os.Binder.onTransact(Binder.java:1056)
+	at android.content.pm.IPackageManager$Stub.onTransact(IPackageManager.java:4620)
+	at com.android.server.pm.PackageManagerService$IPackageManagerImpl.onTransact(PackageManagerService.java:7021)
+	at android.os.Binder.execTransactInternal(Binder.java:1523)
+	at android.os.Binder.execTransact(Binder.java:1457)
+
+Exception occurred while executing 'disable-user':
+java.lang.IllegalArgumentException: Unknown package: com.nearme.statistics.rom
+	at com.android.server.pm.PackageManagerService.setEnabledSettings(PackageManagerService.java:4229)
+	at com.android.server.pm.PackageManagerService.-$$Nest$msetEnabledSettings(PackageManagerService.java:0)
+	at com.android.server.pm.PackageManagerService$IPackageManagerImpl.setApplicationEnabledSetting(PackageManagerService.java:6293)
+	at com.android.server.pm.PackageManagerShellCommand.runSetEnabledSetting(PackageManagerShellCommand.java:2434)
+	at com.android.server.pm.PackageManagerShellCommand.onCommand(PackageManagerShellCommand.java:302)
+	at com.android.modules.utils.BasicShellCommandHandler.exec(BasicShellCommandHandler.java:97)
+	at android.os.ShellCommand.exec(ShellCommand.java:38)
+	at com.android.server.pm.PackageManagerService$IPackageManagerImpl.onShellCommand(PackageManagerService.java:7037)
+	at android.os.Binder.shellCommand(Binder.java:1243)
+	at android.os.Binder.onTransact(Binder.java:1056)
+	at android.content.pm.IPackageManager$Stub.onTransact(IPackageManager.java:4620)
+	at com.android.server.pm.PackageManagerService$IPackageManagerImpl.onTransact(PackageManagerService.java:7021)
+	at android.os.Binder.execTransactInternal(Binder.java:1523)
+	at android.os.Binder.execTransact(Binder.java:1457)
+Package com.heytap.mcs new state: disabled-user
+┌──[Wed Aug 05 3:49:59 PM][root@Intel5]─[/home/remac/Desktop/youdemy/tips-and-tricks/oppo]
+└──╼[REMAC]# 
+
+The `java.lang.IllegalArgumentException: Unknown package` error happens because modern ColorOS / Realme UI releases (especially on newer Android versions running on devices like the Oppo A18) renamed or replaced older legacy package names like `com.oppo.logkit` and `com.nearme.statistics.rom` with unified `com.oplus.*` namespace packages.
+
+Notice that `com.heytap.mcs` succeeded (`Package com.heytap.mcs new state: disabled-user`) because that package exists on your build.
+
+To locate the exact corresponding logging, analytics, and tracking packages present on your Oppo A18 build and disable them cleanly, run the commands below.
+
+---
+
+### 1. Find the Active Oppo/Oplus Telemetry Packages
+
+Search your phone's package list directly for active logkit and telemetry packages:
+
+```bash
+adb shell pm list packages | grep -E 'log|stats|analytics|nearme|oplus'
+
+```
+
+---
+
+### 2. Modern ColorOS Replacement Disable Commands
+
+On current ColorOS builds, Oppo uses these package names for diagnostics, logging, and metrics:
+
+```bash
+# ColorOS System Diagnostics & Logkit
+adb shell pm disable-user --user 0 com.oplus.logkit 2>/dev/null
+
+# Oplus ROM Statistics & Tracking
+adb shell pm disable-user --user 0 com.oplus.stats 2>/dev/null
+adb shell pm disable-user --user 0 com.oplus.posture 2>/dev/null
+
+# Oppo User Experience / Analytics Framework
+adb shell pm disable-user --user 0 com.oplus.statistics.rom 2>/dev/null
+
+```
+
+---
+
+### 3. Safe Dynamic Disabler Script
+
+If you want a clean dynamic command that searches for any remaining active Oppo logkit/statistics packages on the device and disables only the ones that exist (preventing `Unknown package` exceptions):
+
+```bash
+adb shell 'for pkg in $(pm list packages | grep -E "logkit|statistics|nearme\.rom" | cut -d: -f2); do
+    pm disable-user --user 0 $pkg 2>/dev/null && echo "Disabled: $pkg"
+done'
+
+```
