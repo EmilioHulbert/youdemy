@@ -1,0 +1,52 @@
+Yes, you will still see substantial performance gains even after clearing caches and rebooting—even without re-applying `disable_hw_overlays 1`.
+
+The compilation pass (`cmd package compile -m speed -a`) compiles application bytecode directly into native ELF ARM machine binaries written straight to disk (`/data/dalvik-cache/`). Clearing standard app caches (like temporary app storage or app cache directories) does **not** delete these compiled OAT/ODEX native binaries. Combined with disabled animations, killed system tracing, and disabled telemetry daemons—all of which survive reboots—the CPU offloads significant continuous overhead.
+
+---
+
+### The "Superman" ADB Tricks for Persistent Reboot-Surviving Gains
+
+Here are two advanced optimizations that survive reboots and target CPU scheduling, background thrashing, and process management on low-to-mid-tier SoCs like the MediaTek Helio G85:
+
+#### 1. Throttle Background Process Limit & System Cached Apps
+
+By default, Android allows up to 32+ cached background processes in RAM, forcing the Low Memory Killer (LMK) to continuously swap and thrash processes when RAM gets tight. Enforcing a strict background limit persistent across reboots prevents background apps from waking up CPU cores.
+
+```bash
+adb shell settings put global max_phantom_processes 4
+adb shell settings put global cached_apps_freezer enabled
+
+```
+
+* **What `max_phantom_processes 4` does:** Restricts background child processes (forked threads created by apps that run independently of the main app lifecycle) to a strict limit of 4.
+* **What `cached_apps_freezer enabled` does:** Uses Linux `cgroups` (Control Groups) to immediately freeze cached background processes in CPU state `SIGSTOP`. Frozen apps consume zero CPU clock cycles while sitting in RAM, completely eliminating background battery drain and CPU background thread wakeups.
+
+---
+
+#### 2. Kill Window Motion Acceleration & Force Fixed Touch Latency
+
+Android includes hidden touch prediction and surface fling parameters designed to smooth out slow touches, but on budget displays, this adds software processing delay before a touch event is dispatched to the application framework.
+
+```bash
+adb shell settings put system view_touch_slop 4
+adb shell settings put global touch_press_delay 0
+
+```
+
+* **What `view_touch_slop 4` does:** Reduces the pixel distance threshold required before Android registers a touch movement (swipe/scroll) from the default ~8-16 pixels down to 4 pixels. Scrolling and dragging feel instant.
+* **What `touch_press_delay 0` does:** Removes the kernel-to-framework input buffer delay for click states, registering initial touch down events on the very first frame.
+
+---
+
+#### 3. Disable RAM Expansion / Virtual RAM Overhead (ColorOS RAM Expansion)
+
+ColorOS ships with a feature called "RAM Expansion" (zRAM swap onto internal UFS/eMMC storage). On devices like the Oppo A18, swapping RAM pages back and forth onto slow flash storage creates massive system micro-stutters under load.
+
+```bash
+adb shell settings put global zram_enabled 0
+
+```
+
+*(Alternatively, toggle off "RAM Expansion" inside **Settings $\rightarrow$ About Device $\rightarrow$ RAM** and restart).*
+
+* **What it does:** Forces the phone to rely strictly on physical LPDDR4X RAM instead of paging memory blocks to eMMC/UFS storage. Memory access speeds jump significantly, eliminating random app-switch freezes.
