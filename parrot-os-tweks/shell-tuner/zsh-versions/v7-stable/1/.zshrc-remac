@@ -1,0 +1,240 @@
+# Enable core color features natively
+autoload -U colors && colors
+setopt PROMPT_SUBST
+
+# ==============================================================================
+# BASH HISTORY ACCELERATOR & INTEGRATION
+# ==============================================================================
+HISTFILE=~/.bash_history
+SAVEHIST=10000
+HISTSIZE=10000
+
+setopt append_history
+# setopt extended_history
+setopt hist_expire_dups_first
+setopt hist_ignore_dups
+setopt hist_ignore_space
+setopt share_history
+
+# Critical for cross-shell compatibility
+unsetopt extended_history
+
+# FORCE HINTS: Make the standard 'history' command show the whole file from item 1
+alias history='fc -l 1'
+# ==============================================================================
+# LIVE CLOCK TICKER — TERMINATOR AWARE
+# ==============================================================================
+
+_zsh_live_clock_ticker() {
+    local tty pts state_file state
+
+    tty=$(tty 2>/dev/null) || return
+
+    pts="${tty#/dev/pts/}"
+
+    state_file="/tmp/zsh-live-clock-${pts}"
+
+    [[ -f "$state_file" ]] || return
+
+    state=$(<"$state_file")
+
+    # Never redraw while:
+    #   - terminal is scrolled
+    #   - text is selected
+    #   - mouse selection is active
+    [[ "$state" == "live" ]] || return
+
+    # Never redraw while ZLE is processing input.
+    [[ "$PENDING" -eq 0 ]] || return
+
+    zle reset-prompt
+}
+
+zle -N _zsh_live_clock_ticker
+
+TMOUT=1
+trap '_zsh_live_clock_ticker' ALRM
+
+
+# ==============================================================================
+# PROMPT
+# ==============================================================================
+
+PROMPT=$'%F{red}┌──[%F{yellow}%D{%a %b %d} %D{%L:%M:%S %p}%F{red}][%F{white}%n%F{yellow}@%F{cyan}%m%F{red}]─[%F{green}%~%F{red}]\n└──╼%F{cyan}[REMAC]%F{yellow}\\$ %f'
+# ==============================================================================
+# DIRCOLORS / LS
+# ==============================================================================
+if [ -x /usr/bin/dircolors ]; then
+    test -r ~/.dircolors && \
+        eval "$(dircolors -b ~/.dircolors)" || \
+        eval "$(dircolors -b)"
+
+    alias ls='ls --color=auto'
+    alias dir='dir --color=auto'
+    alias vdir='vdir --color=auto'
+    alias grep='grep --color=auto'
+    alias fgrep='fgrep --color=auto'
+    alias egrep='egrep --color=auto'
+fi
+
+alias ll='ls -lh'
+alias la='ls -lha'
+alias l='ls -CF'
+alias em='emacs -nw'
+
+
+# ==============================================================================
+# SUDO SHORTCUTS
+# ==============================================================================
+alias _='sudo'
+alias _i='sudo -i'
+alias fucking='sudo'
+alias please='sudo'
+
+
+# ==============================================================================
+# SMALL UTILITY FUNCTIONS
+# ==============================================================================
+function hex-encode() {
+    echo "$@" | xxd -p
+}
+
+function hex-decode() {
+    echo "$@" | xxd -p -r
+}
+
+function rot13() {
+    echo "$@" | tr 'A-Za-z' 'N-ZA-Mn-za-m'
+}
+
+if [ -f ~/.bash_aliases ]; then
+    . ~/.bash_aliases
+fi
+
+alias venv='source /home/user/Desktop/venv/bin/activate'
+alias cleanpaste="xclip -o | tr -d '\n' | xclip -selection clipboard"
+
+
+# ==============================================================================
+# ZSH COMPLETION
+# ==============================================================================
+autoload -Uz compinit
+compinit
+
+
+# ==============================================================================
+# KEYBOARD BINDINGS
+# ==============================================================================
+
+# Ctrl + Left Arrow
+bindkey "^[[1;5D" backward-word
+
+# Ctrl + Right Arrow
+bindkey "^[[1;5E" forward-word
+bindkey "^[[1;5C" forward-word
+
+# Alternate sequences
+bindkey ';5D' backward-word
+bindkey ';5C' forward-word
+
+# Ctrl + Delete
+bindkey "^[[3;5~" kill-word
+bindkey ';5~' kill-word
+
+
+# ==============================================================================
+# ALT + BACKSPACE WORD BEHAVIOR
+# ==============================================================================
+autoload -U select-word-style
+select-word-style bash
+
+
+# ==============================================================================
+# ULTRASONIC BASH-STYLE MID-WORD EXPANSION ENGINE
+# TAIL-PRESERVING
+# ==============================================================================
+setopt COMPLETE_IN_WORD
+unsetopt ALWAYS_TO_END
+
+# Menu selection behavior
+zstyle ':completion:*' menu select=1
+zstyle ':completion:*' current-selection 'standout'
+
+
+# ==============================================================================
+# BASH-STYLE TAB COMPLETION
+# ==============================================================================
+#
+# IMPORTANT:
+# There is NO clock pausing/resuming here anymore.
+#
+# The old version contained:
+#
+#     TMOUT=0
+#     trap '' ALRM
+#     trap '_zsh_live_clock_ticker' ALRM
+#
+# Those are gone because the ticker itself is gone.
+#
+# ==============================================================================
+
+bash_style_tab_complete() {
+
+    # If cursor is at the end of the line or next to a space,
+    # fall back safely.
+    if [[ -z "$RBUFFER" || "$RBUFFER" == " "* ]]; then
+        zle expand-or-complete
+        return
+    fi
+
+    # --------------------------------------------------------------------------
+    # Capture the current line state
+    # --------------------------------------------------------------------------
+    local left_side="$LBUFFER"
+    local right_side="$RBUFFER"
+
+    # --------------------------------------------------------------------------
+    # Split the right buffer into:
+    #
+    #   immediate_suffix
+    #   line_tail
+    #
+    # Example:
+    #
+    #   command virtualbox.desktop ~/.local/share/applications/
+    #           ^^^^^^^^^^^^^^^^^ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    # --------------------------------------------------------------------------
+    local immediate_suffix="${right_side%% *}"
+    local line_tail="${right_side#$immediate_suffix}"
+
+    # --------------------------------------------------------------------------
+    # Temporarily hide ONLY the immediate suffix while completion operates
+    # --------------------------------------------------------------------------
+    RBUFFER=""
+
+    # --------------------------------------------------------------------------
+    # Native Zsh completion on the isolated left side
+    # --------------------------------------------------------------------------
+    zle expand-or-complete
+
+    # --------------------------------------------------------------------------
+    # Restore everything behind the cursor
+    # --------------------------------------------------------------------------
+    RBUFFER="${immediate_suffix}${line_tail}"
+
+    # Normal redisplay only because the user actually requested completion.
+    zle redisplay
+}
+
+
+# Register the widget
+zle -N bash_style_tab_complete
+
+# Bind TAB
+bindkey '^I' bash_style_tab_complete
+
+
+# ==============================================================================
+# ROOT SHELL
+# ==============================================================================
+# sudo su
