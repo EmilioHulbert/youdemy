@@ -1,0 +1,169 @@
+# Enable core color features natively
+autoload -U colors && colors
+setopt PROMPT_SUBST
+
+# ==============================================================================
+# BASH HISTORY ACCELERATOR & INTEGRATION
+# ==============================================================================
+HISTFILE=~/.bash_history
+SAVEHIST=10000
+HISTSIZE=10000
+
+setopt append_history
+# setopt extended_history
+setopt hist_expire_dups_first
+setopt hist_ignore_dups
+setopt hist_ignore_space
+setopt share_history
+
+# This is the critical part for cross-shell compatibility:
+unsetopt extended_history
+
+# FORCE HINTS: Make the standard 'history' command show the whole file from item 1
+alias history='fc -l 1'
+
+# ==============================================================================
+# LIVE CLOCK TICKER — TERMINATOR AWARE
+# ==============================================================================
+
+_zsh_live_clock_ticker() {
+    local tty pts state_file state
+
+    tty=$(tty 2>/dev/null) || return
+
+    pts="${tty#/dev/pts/}"
+
+    state_file="/tmp/zsh-live-clock-${pts}"
+
+    [[ -f "$state_file" ]] || return
+
+    state=$(<"$state_file")
+
+    # Never redraw while:
+    #   - terminal is scrolled
+    #   - text is selected
+    #   - mouse selection is active
+    [[ "$state" == "live" ]] || return
+
+    # Never redraw while ZLE is processing input.
+    [[ "$PENDING" -eq 0 ]] || return
+
+    zle reset-prompt
+}
+
+zle -N _zsh_live_clock_ticker
+
+TMOUT=1
+trap '_zsh_live_clock_ticker' ALRM
+
+# PROMPT TUNING: Using '%#' means root gets '#', standard user automatically gets '$'
+PROMPT=$'%F{red}┌──[%F{yellow}%D{%a %b %d} %D{%L:%M:%S %p}%F{red}][%F{white}%n%F{yellow}@%F{cyan}%m%F{red}]─[%F{green}%~%F{red}]\n└──╼%F{cyan}[REMAC]%F{yellow}\# %f'
+# ==============================================================================
+
+if [ -x /usr/bin/dircolors ]; then
+    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    alias ls='ls --color=auto'
+    alias dir='dir --color=auto'
+    alias vdir='vdir --color=auto'
+    alias grep='grep --color=auto'
+    alias fgrep='fgrep --color=auto'
+    alias egrep='egrep --color=auto'
+fi
+
+alias ll='ls -lh'
+alias la='ls -lha'
+alias l='ls -CF'
+alias em='emacs -nw'
+
+alias _='sudo'
+alias _i='sudo -i'
+alias fucking='sudo'
+alias please='sudo'
+
+function hex-encode() { echo "$@" | xxd -p; }
+function hex-decode() { echo "$@" | xxd -p -r; }
+function rot13() { echo "$@" | tr 'A-Za-z' 'N-ZA-Mn-za-m'; }
+if [ -f ~/.bash_aliases ]; then
+    . ~/.bash_aliases
+fi
+
+alias venv='source /home/user/Desktop/venv/bin/activate'
+alias cleanpaste="xclip -o | tr -d '\n' | xclip -selection clipboard"
+
+autoload -Uz compinit
+compinit
+fastfetch --structure OS:Kernel:Uptime:CPU:Memory
+
+# Bind Ctrl + Left Arrow to move back one word
+bindkey "^[[1;5D" backward-word
+
+# Bind Ctrl + Right Arrow to move forward one word
+bindkey "^[[1;5E" forward-word
+bindkey "^[[1;5C" forward-word
+
+bindkey ';5D' backward-word
+bindkey ';5C' forward-word
+
+# === ADD THESE TWO LINES HERE ===
+# Bind Ctrl + Delete to delete a whole word forward
+bindkey "^[[3;5~" kill-word
+bindkey ';5~' kill-word
+
+# Make Alt+Backspace respect slashes and punctuation boundaries
+autoload -U select-word-style
+select-word-style bash
+
+# ==============================================================================
+# ULTRASONIC CONTEXT-LOCKED INLINE CYCLING ENGINE
+# ==============================================================================
+# 1. Instruct core Zsh to cycle matches cleanly inline without spawning grids
+setopt COMPLETE_IN_WORD
+unsetopt ALWAYS_TO_END
+setopt MENU_COMPLETE
+unsetopt AUTO_MENU
+
+# Disable the visual menu selection grid that hides RBUFFER
+zstyle ':completion:*' menu false
+
+bash_style_tab_complete() {
+    # If the right buffer is empty or begins with a space, match natively
+    if [[ -z "$RBUFFER" || "$RBUFFER" == " "* ]]; then
+        zle expand-or-complete
+        return
+    fi
+
+    # 1. Total blackout for the live clock ticker to protect line positioning
+    local saved_tmout=$TMOUT
+    TMOUT=0
+    trap '' ALRM
+
+    # 2. Extract the exact segment up to the next space character
+    local right_word="${RBUFFER%% *}"
+    local line_tail="${RBUFFER#$right_word}"
+
+    # 3. Capture the current prefix under the cursor to track filtering state
+    local initial_lbuffer="$LBUFFER"
+
+    # 4. Hide the right-hand side text block from Zsh's completion engine
+    RBUFFER=""
+
+    # 5. Execute native inline cycling state
+    zle menu-complete
+
+    # 6. Injection Guard: Clean up trailing spaces added by core autocomplete loops
+    if [[ "$LBUFFER" == *" " ]]; then
+        LBUFFER="${LBUFFER% }"
+    fi
+
+    # 7. Snap the right-hand string block back onto the terminal interface seamlessly
+    RBUFFER="${right_word}${line_tail}"
+
+    # 8. Re-awaken the live clock engine and refresh the prompt layout
+    TMOUT=$saved_tmout
+    trap '_zsh_live_clock_ticker' ALRM
+    zle redisplay
+}
+
+# Register the widget and bind it exclusively to the Tab key
+zle -N bash_style_tab_complete
+bindkey '^I' bash_style_tab_complete
