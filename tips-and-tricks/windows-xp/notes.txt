@@ -1,0 +1,1 @@
+use network adapter type as intel desktop, so you must change them
