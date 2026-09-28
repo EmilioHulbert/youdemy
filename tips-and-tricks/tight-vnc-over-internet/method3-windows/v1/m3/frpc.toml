@@ -1,0 +1,19 @@
+
+
+# Top-level client configuration
+serverAddr = "5.2.31.211"
+serverPort = 7000
+auth.token = "AN4UvWWoQ3V2NTRVG9+IWfhy6xyfK5c6H4bBfFkh3Uk="
+
+# Log settings (must be defined before [[proxies]])
+log.to = 'C:\Windows\System32\config\TxR\frpc\frpc.log'
+log.level = "info"
+log.maxDays = 3
+
+# Proxy definitions (must be at the bottom)
+[[proxies]]
+name = "tightvnc-nanyuki"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 5900
+remotePort = 5900
