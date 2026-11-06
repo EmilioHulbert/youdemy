@@ -1,0 +1,313 @@
+Skip to main contentAccessibility help
+AI Mode
+All
+Short videos
+Videos
+Forums
+More
+Upgrade
+
+
+
+
+when using robocopy in windows how do i exclude c:\users\kibet\crossdevice from being copied
+To exclude a specific folder from being copied in Robocopy, use the /XD (Exclude Directories) option.
+Here is the exact syntax you need:
+cmd
+robocopy "C:\source" "D:\destination" /E /XD "C:\users\kibet\crossdevice"
+Use code with caution.
+Key Elements:
+/XD "C:\users\kibet\crossdevice" – Tells Robocopy to skip this specific directory path completely. Always wrap the path in quotation marks to prevent errors caused by spaces or special characters.
+/E – Copies all subdirectories, including empty ones (a standard flag used for full backups).
+Pro-Tips for Exclusions:
+Multiple Folders: You can exclude multiple folders by separating them with a space:
+/XD "C:\path\folder1" "C:\path\folder2"
+Relative Paths: If your source folder is C:\users\kibet, you can just use the folder name instead of the absolute path:
+/XD crossdevice
+If you want to fine-tune your command, let me know:
+Do you also need to exclude specific file types (like .tmp or .log)?
+Would you like to add logging flags to verify what was skipped?
+
+
+
+
+Bot kwy for oenovo laptops is what.for hp is f9
+For Lenovo laptops, the primary Boot Menu key is F12 (or Fn + F12). 
+
+Lenovo
+ +1
+Just like you use F9 on HP laptops to select your boot device, tapping F12 on a Lenovo right after turning it on will open the Boot Manager. 
+
+Lenovo
+ +1
+Depending on your specific Lenovo model, there are three primary ways to access it:
+1. The Standard Key (ThinkPads & Laptops with Standard Function Keys)
+Turn on or restart the laptop.
+Immediately start tapping the F12 key repeatedly before the Lenovo logo appears. 
+
+Lenovo
+ +1
+2. The Multi-Function Key (IdeaPads & Yoga Series)
+Many consumer-grade Lenovo laptops require you to hold the Function lock.
+Press and hold Fn, then rapidly tap F12 together right at startup. 
+
+Lenovo
+ +1
+3. The Novo Button (Lenovo's Secret Shortcut)
+If your keyboard isn't responding fast enough due to "Fast Startup," turn the laptop completely off.
+Look on the left or right side of the laptop for a tiny pinhole with a curved arrow icon next to it (called the Novo Button).
+Push a paperclip or a SIM ejector tool into the hole while the laptop is off. The computer will turn on and instantly show a hidden menu where you can click Boot Menu. 
+
+YouTube
+·Rotinas Contábeis
+ +2
+Quick Brand Comparison Table
+If you ever work with other laptop brands, here is a quick reference for their dedicated boot keys: 
+
+Instagram
+·HimraTech
+Laptop Brand    Boot Menu Key   BIOS Settings Key
+HP  F9 or Esc   F10
+Lenovo  F12 or Fn + F12 F1 or F2
+Dell    F12 F2
+ASUS    Esc or F8   F2 or Del
+Acer    F12 F2
+(Note: Official step-by-step instructions can be found directly on the Lenovo Support Page.)
+Are you trying to boot from a USB drive or reinstall Windows? If you are having trouble getting the menu to load, let me know so I can help you disable Windows Fast Startup!
+
+
+
+
+
+Lenovo
+How to select boot device, set boot order, and enable boot menu - ideapad, ThinkPad, ThinkStation, ThinkCentre, ideacentre - Lenovo Support US
+Press F12 or (Fn+F12) rapidly and repeatedly at the Lenovo logo during bootup to open Windows Boot Manager. Select boot device in ...
+
+
+YouTube
+·
+Rotinas Contábeis
+Boot Lenovo Notebook - Enter BIOS Boot Menu
+tentar acessar a BIOS (apertando ・ para destravar o boot. Com o notebook desligado, insere-se uma chave de celular nesse orifício ...
+
+1:35
+
+Facebook
+·
+Tech Whiz Ajith
+PC / Laptop Boot Keys for Dell, HP, Lenovo, ASUS, Acer, MSI and More | Tech Whiz Ajith
+Boot Menu key(F12), Lenovo: Boot Menu key(F12 / Fn + F12), BIOS/Setup key(F2 / Fn + F2), Recovery partition(Novo Button "Small pin...
+PC / Laptop Boot Keys for Dell, HP, Lenovo, ASUS, Acer, MSI and More | Tech Whiz Ajith by Tech Whiz Ajith on Facebook
+0:14
+Windows 10 enterprise eval iso no cursor for the Lenovo laptop during installation so is there a way around
+Yes, there is a very easy workaround. The missing cursor during a fresh Windows 10 installation happens because the official Microsoft ISO does not contain the newest Lenovo I2C touchpad drivers.
+You can complete the entire Windows installation using only your keyboard, and your touchpad/mouse will start working normally once Windows boots up and updates its drivers.
+Here are the key keyboard shortcuts to navigate the setup without a mouse:
+The Golden Shortcuts
+Tab: Moves your selection highlight to the next button, checkbox, or text field.
+Shift + Tab: Moves the selection backward to the previous item.
+Spacebar: Checks/unchecks boxes or triggers the highlighted button.
+Enter: Activates a highlighted button (same as clicking it).
+Arrow Keys: Navigates dropdown menus, radio buttons, or lists (like choosing a hard drive partition).
+Step-by-Step Guide to Installing with the Keyboard
+Language Selection Screen: Press Enter to hit "Next". On the next screen, press Tab until "Install Now" is highlighted, then hit Enter.
+License Terms: When the terms pop up, press Spacebar to check the box for "I accept the license terms", then press Tab to highlight "Next" and hit Enter.
+Installation Type: Use the Down Arrow to select "Custom: Install Windows only (advanced)" and hit Enter.
+Drive Selection: Use the Arrow Keys to select the drive partition where you want to install Windows.
+If you need to format or delete partitions: Use Tab to move down to the "Delete" or "Format" buttons, hit Enter, confirm the popup with Enter, and then use Tab to get back to the drive list.
+Once the correct drive is highlighted, Tab over to "Next" and press Enter.
+Out-of-Box Experience (OOBE): Once Windows installs and reboots, use Tab, Arrow Keys, and Spacebar to choose your region, keyboard layout, and network settings.
+Alternative Fix: The Touchpad Toggle Key
+On some Lenovo laptops, the touchpad is accidentally disabled by the firmware during boot. Try pressing F6 or Fn + F6 (look for the icon that looks like a crossed-out touchpad). On older ThinkPads, you can also use the red TrackPoint nub in the middle of the keyboard, as it uses a standard PS/2 driver that Windows always recognizes.
+If you get stuck on a specific screen or have trouble selecting a hard drive partition using the arrow keys, let me know where you are blocked so I can give you the exact key sequence!
+
+
+
+
+Rebuild windows mbr since i forgot to delete the 100mb partitions so they could be created a fresh and so we have win 10 and win 11 but ofcourse win 11 is not there as i have formatted and used that partition so lets rebuild mbr using cmd
+To rebuild your system's boot configuration and fix the missing boot entries via the Command Prompt, we need to address a quick technical detail first: Modern laptops running Windows 11 use GPT/UEFI (BCDBoot) instead of the legacy MBR.
+If you try to run traditional legacy MBR commands (bootrec /fixmbr) on a modern Lenovo setup, you will likely get an "Access is denied" error because your system boots via UEFI.
+Instead, we will use the BCDBoot tool to completely wipe and recreate your boot configuration files inside that 100MB partition. Here is exactly how to do it using CMD from your Windows 10 installation media:
+Step 1: Open Command Prompt at Boot
+Boot from your Windows 10 installation USB.
+On the very first language screen, press Shift + F10 on your keyboard. This will instantly open a black Command Prompt window.
+Step 2: Identify Your Drive Letters
+Because you are booting from a USB, the drive letters might be shifted (e.g., your Windows 10 OS partition might look like D: or E: instead of C:). Let's find out exactly what they are:
+Type diskpart and press Enter.
+Type list volume and press Enter.
+Look at the list and identify two crucial things:
+The 100MB System Partition: This is usually formatted as FAT32 (labeled System or Hidden). Look at its letter (if it doesn't have one, we will fix that next).
+Your Main Windows 10 Partition: Look for your large NTFS partition where Windows 10 is actually installed. Note its drive letter (for this guide, let's assume it is C:).
+Step 3: Assign a Letter to the 100MB Partition (If Hidden)
+If your 100MB FAT32 partition does not have a letter assigned to it in the list, assign it one manually:
+Type select volume X (replace X with the volume number of your 100MB FAT32 partition) and press Enter.
+Type assign letter=V and press Enter.
+Type exit and press Enter to leave Diskpart.
+Step 4: Rebuild the Boot Files (The Fix)
+Now, run the following command to completely rewrite the boot configuration from your Windows 10 system files straight into your 100MB partition:
+cmd
+bcdboot C:\Windows /s V: /f UEFI
+Use code with caution.
+(Make sure to replace C: with your actual Windows OS partition letter from Step 2, and V: with the letter assigned to your 100MB partition).
+What this command does:
+C:\Windows – Points to your working Windows installation to grab clean boot files.
+/s V: – Copies those brand-new boot files directly into your 100MB system partition.
+/f UEFI – Forces the system to build modern UEFI boot entries, bypassing the outdated, locked MBR structure and cleaning out the ghost Windows 11 remnants.
+Once you see the message "Boot files successfully created," close the command prompt, unplug your USB drive, and restart your Lenovo laptop. It should boot straight into Windows 10 without any issues.
+If the command gives you an error message, or if list volume showed your system is actually using an old-school legacy NTFS Active partition instead of FAT32, let me know what you see on your screen so we can adjust the flags!
+
+
+
+
+Failure when attempting to copy boot files
+The "Failure when attempting to copy boot files" error usually means one of two things: the command prompt is pointing to the wrong drive letters, or the 100MB boot partition is locked/corrupted.
+Since you formatted the old Windows 11 partition, the drive letters in the recovery environment almost certainly shifted. Let's fix this by finding the exact letters and wiping the 100MB partition clean so bcdboot can write fresh files.
+Follow these steps exactly in your Command Prompt (Shift + F10):
+Step 1: Find the True Drive Letters
+Type diskpart and press Enter.
+Type list volume and press Enter.
+Carefully check the table on your screen:
+Find your main Windows 10 OS partition (Look at the Size column for your large NTFS drive). Note its letter under the Ltr column. Even if it is C: inside Windows, it might show up as D: or E: here.
+Find your 100MB boot partition (Look for the 100MB size, usually formatted as FAT32). Note its volume number.
+Step 2: Format the 100MB Partition to Unblock It
+If the old Windows 11 boot configurations are corrupted, bcdboot will refuse to overwrite them. Let's format it fresh:
+Type select volume X (replace X with the volume number of your 100MB partition) and press Enter.
+Type format fs=fat32 quick and press Enter.
+Type assign letter=V and press Enter.
+Type exit and press Enter.
+Step 3: Run the Corrected BCD Command
+Now run the command using the exact letters you verified in Step 1.
+If your main Windows OS partition showed up as D: in Step 1, use this:
+cmd
+bcdboot D:\Windows /s V: /f UEFI
+Use code with caution.
+If your main Windows OS partition showed up as C: in Step 1, use this:
+cmd
+bcdboot C:\Windows /s V: /f UEFI
+Use code with caution.
+Alternative "All-in-One" Command (If UEFI still fails)
+If your Lenovo laptop happens to be older or configured in legacy/CSM mode rather than modern UEFI, change the final flag to ALL. This forces Windows to create both MBR and UEFI boot files at the same time, bypassing firmware restrictions:
+cmd
+bcdboot C:\Windows /s V: /f ALL
+Use code with caution.
+(Swap C: with D: if necessary based on your Step 1 findings).
+Once it says "Boot files successfully created", you are good to go! Restart the laptop.
+If it fails again, tell me:
+What letter did list volume show next to your large Windows NTFS partition?
+Under the Info column in list volume, does any partition say System or Boot?
+
+
+
+
+Bfsvc error failed to set element application adevice failed to populate bcd store
+The "Bfsvc error: Failed to set element application device" combined with "Failed to populate BCD store" means that the boot configuration data engine cannot find or write to your 100MB system partition, or the partition table style (GPT vs. MBR) is mismatching the boot environment.
+Since you mentioned in your previous prompt that you wanted to "rebuild MBR", your hard drive partition style might actually be set to Legacy MBR rather than UEFI, causing the modern /f UEFI command to fail completely.
+Let's use a bulletproof fallback method to force the system to accept the new bootloader files. Follow these steps carefully in your Command Prompt (Shift + F10):
+Step 1: Wipe the System Partition Registry
+Windows is currently blocking you because the old Windows 11 boot data registry is corrupted and locked. Run this command to completely delete the broken BCD registry file so bcdboot can build a brand new one from scratch:
+cmd
+del V:\EFI\Microsoft\Boot\BCD
+Use code with caution.
+(If it says "Could not find file", that is fine—it means the partition is already empty. Move to Step 2).
+Step 2: Use the System-Independent Command
+Instead of forcing it to use UEFI or Legacy, let's force Windows to write both types of boot files and dynamically point to your active system.
+Run this command (assuming C: is your main Windows 10 drive and V: is the 100MB partition):
+cmd
+bcdboot C:\Windows /s V: /f ALL
+Use code with caution.
+Note: If your main Windows partition showed up as D: when you ran list volume earlier, make sure to change C:\Windows to D:\Windows.
+Step 3: What to do if it still fails (The Diskpart Legacy Fix)
+If you get the exact same error, your drive is definitely formatted as a Legacy MBR disk rather than GPT. In this case, Windows requires the 100MB partition to be formatted as NTFS (not FAT32) and marked as Active.
+Let's convert the 100MB partition to Legacy format:
+Type diskpart and press Enter.
+Type select volume V and press Enter.
+Type format fs=ntfs quick and press Enter.
+Type active and press Enter. (This tells the laptop's motherboard that this is the primary boot partition).
+Type exit and press Enter.
+Now, run the legacy boot repair command:
+cmd
+bcdboot C:\Windows /s V: /f BIOS
+Use code with caution.
+(Swap C: with D: if your Windows partition is named D).
+This will bypass the bfsvc UEFI application device error entirely and drop the classic MBR bootloader straight onto the drive. Once it says "Boot files successfully created", restart your Lenovo!
+If you get an error during Step 3 stating "The selected disk is not a fixed MBR disk", tell me immediately. It means your drive is GPT and we need to fix a hidden partition mismatch!
+
+
+
+
+Right clicking keyboard shortcut or option for lenovo is
+On Lenovo laptops, you can right-click without a mouse using either of these quick options:
+1. The Universal Keyboard Shortcuts
+If you don't have a cursor during your Windows installation, use these keyboard shortcuts to trigger the right-click context menu on whatever item is currently highlighted:
+Shift + F10 (On some Lenovo models, you may need to press Shift + Fn + F10).
+Menu Key ≣ (If your Lenovo keyboard layout has this key, it is usually located on the bottom row to the right of the Spacebar, looking like a box with horizontal lines inside it).
+2. Touchpad Gestures (Once Windows is Installed)
+If you are already inside Windows and your touchpad is working, you can right-click using these built-in hardware methods:
+Two-Finger Tap: Tap the touchpad with two fingers simultaneously.
+Bottom-Right Click: Press down firmly on the absolute bottom-right corner of the touchpad surface until it physically clicks.
+Are you trying to open a specific right-click menu during the Windows installation, or are you already booted into the desktop? Let me know if the shortcut opens the menu you need!
+
+
+
+
+For this lenovo 20sl l3novo mt 20sl bu idea fm thinkbook 14-iil where can we get a fulls etup driver packages installer for windows 10 enterprise.All required drivers for it to run well.even scrolling, 2 finger tap etc etc.i did not imagine that lenovonis this unsupported
+Lenovo absolutely provides full driver packages for corporate and clean-install deployments like Windows 10 Enterprise. 
+
+Lenovo
+The reason you are missing core hardware functionalities (like scrolling and two-finger tap gestures) is that the laptop relies on Intel Serial IO and I2C host controllers to bridge the touchpad to the operating system. Without these specific motherboard drivers, Windows treats the touchpad as a generic, legacy hardware device. 
+Since you are setting up a clean Windows 10 Enterprise machine, you can fetch all required drivers using the professional solutions outlined below.
+The Absolute Simplest Method: Official Lenovo Driver Packs
+Instead of downloading 30 individual executable files, you can download Lenovo's official SCCM Enterprise Deployment Package designed for system administrators. This is a single, compressed archive containing every raw driver matching your hardware. 
+
+Lenovo
+Go to the official Lenovo ThinkBook 14-IIL SCCM Package Page. 
+Download the full .exe or compressed package container. 
+
+Lenovo
+Extract it to a temporary folder (e.g., C:\Drivers).
+Force Windows to update all missing devices at once:
+Press Windows Key + X and choose Device Manager.
+Right-click the top item (your computer's name) or any items flagged with a yellow triangle.
+Select Scan for hardware changes or choose Update Driver.
+Select Browse my computer for drivers, point it to your extracted C:\Drivers folder, and check Include subfolders. Windows will instantly look up, grab, and install all underlying platform configurations.
+Fixing the Touchpad Mismatch Manually
+If you prefer to grab only the specific tools required to restore your gesture controls immediately, they are listed within the Lenovo 14-IIL Driver Directory: 
+The Core Missing Link: Download and install the Intel Serial IO Driver located under the Motherboard Devices category. Install this first and reboot. This opens the communication line between the OS and the smart trackpad chip. 
+
+Lenovo
+The Gesture Driver: Download the official Lenovo Clickpad Driver (ELAN, Synaptics, Alps). Running this will immediately activate multi-touch controls, edge scrolling, and 2-finger taps. 
+
+Lenovo
+Automated Local Update Alternative
+If you have an internet connection established on the laptop, you can avoid manual searching entirely:
+Open the Microsoft Store, search for Lenovo Commercial Vantage, and install it.
+Launch the utility, go to System Update, and click Check for Updates. It will query your machine type (20SL) against the database and automatically configure the missing elements. 
+
+Lenovo
+ +2
+If your network card isn't working yet and you cannot get online to grab these packages, let me know:
+Do you have another computer and a USB drive handy to transfer files over?
+Inside your Device Manager, what specific items are listed under "Other Devices" or flagged with yellow warnings?
+Try without personalization
+
+
+
+
+
+Lenovo
+ThinkBook 14-IIL Laptop - Drivers & Software - Lenovo Support
+This package provides SCCM Package and is supported on Thinkbook 14-IIL, Thinkbook 15-IIL and running the following Operating Syst...
+
+Lenovo
+Drivers & Software
+ThinkBook 14-IIL Laptop (Type 20SL). Status: End of Development Support; results for Windows 10 (64-bit), Categories include Advan...
+
+DriverIdentifier
+LENOVO Lenovo ThinkBook 14 (20SL) Drivers
+Hardware Categories and Drivers: Battery (Microsoft ACPI, AC Adapter); Biometric (ELAN WBF Fingerprint Sensor); Bluetooth (Intel W...
+Skip to previous prompt
+Ask anything
+
+
+
+AI Mode response is readyAsk about
