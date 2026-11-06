@@ -164,7 +164,7 @@ const puppeteer = require('puppeteer');
         console.log("Compiling final, borderless vector text PDF...");
         
         await page.pdf({
-            path: '/home/hulbert/Desktop/try/Emilio_Hulbert_Resume.pdf',
+            path: '/home/remac/Desktop/try/Emilio_Hulbert_Resume.pdf',
             format: 'A4',
             printBackground: true,
             preferCSSPageSize: true,
