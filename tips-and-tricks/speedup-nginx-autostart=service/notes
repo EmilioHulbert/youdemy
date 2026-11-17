@@ -1,0 +1,53 @@
+To make Nginx (or any systemd service) spin up immediately on boot without waiting for network synchronization targets like `network-online.target` or dealing with startup delays, you need to decouple the service from network state dependencies and tell systemd to launch it as early and unconditionally as possible.
+
+The reason you experience a delay is typically because systemd is configured to wait for `network-online.target` or a network manager wait-online helper (`NetworkManager-wait-online.service` or `systemd-networkd-wait-online.service`), which stalls dependent services until a full IP address is acquired or a timeout is reached.
+
+---
+
+### Step-by-Step Solution
+
+#### 1. Edit the Service Override Configuration
+
+Never modify the original package file in `/lib/systemd/system/` because package updates will overwrite it. Instead, use systemd’s built-in override editor:
+
+```bash
+sudo systemctl edit nginx
+
+```
+
+#### 2. Inject the Unconditional Start Directives
+
+Paste the following configuration block into the editor:
+
+```ini
+[Unit]
+# Clear out strict network dependencies that cause delays
+After=network.target
+Wants=
+After=
+
+# Re-add only the basic local network target (non-blocking)
+After=network.target
+
+[Service]
+# Ensure it doesn't block on start timeouts
+TimeoutStartSec=5
+
+```
+
+* **Verification:** Run `sudo systemctl daemon-reload` after saving the file to ensure systemd picks up the changes.
+
+---
+
+### Alternative: Speeding up or Disabling the Global Network Waiter
+
+If other services on your system are also lagging during boot because the network manager is timing out (often waiting up to 2 minutes for an unconnected interface), you can disable the network-online blocking service entirely:
+
+```bash
+sudo systemctl disable NetworkManager-wait-online.service
+# Or if using systemd-networkd:
+sudo systemctl disable systemd-networkd-wait-online.service
+
+```
+
+* *Verification:* Run `systemd-analyze blame` after a reboot to check which services are consuming startup time, confirming that network-wait delays have disappeared.
